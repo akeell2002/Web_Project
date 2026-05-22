@@ -1,1 +1,12 @@
 /target
+# Local database files
+*.db
+patients.db
+
+# Editor and OS files
+.vscode/
+Thumbs.db
+desktop.ini
+
+# Build/debug folders
+/debug

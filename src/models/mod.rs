@@ -1,5 +1,5 @@
-use serde::{Serialize, Deserialize};
 use chrono::NaiveDateTime;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct User {
@@ -7,7 +7,7 @@ pub struct User {
     pub username: String,
     pub email: String,
     pub password_hash: String,
-    pub role: String,  // admin, doctor, nurse, receptionist
+    pub role: String, // admin, doctor, nurse, receptionist
     pub created_at: NaiveDateTime,
 }
 
