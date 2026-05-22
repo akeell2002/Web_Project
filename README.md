@@ -13,3 +13,6 @@ models/: Handles database mapping and structure definition. This directory holds
 handlers/: Represents your Controller layer. These endpoints extract incoming data from client browser requests, call the correct background business workflows, and compile data directly into your HTML layouts.
 
 services/: Houses your domain's logical control functions. This layer implements core business rules separate from raw web actions, such as running calculations or double-checking schedule availability before updating database records.
+
+
+download the extension SQLITE VIEWER
