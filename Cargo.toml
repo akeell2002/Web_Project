@@ -8,7 +8,7 @@ actix-web = "4"
 actix-session = "0.9"
 actix-identity = "0.9"
 tera = "1"
-sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "sqlite", "chrono"] }
+sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "chrono"] }
 serde = { version = "1", features = ["derive"] }
 argon2 = "0.5"
 chrono = { version = "0.4", features = ["serde"] }

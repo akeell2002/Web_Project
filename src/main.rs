@@ -1,5 +1,5 @@
-pub mod db;
-pub mod models;
+mod db;
+mod models;
 
 use actix_web::{App, HttpResponse, HttpServer, Responder, web};
 use tera::{Context, Tera}; // Added Context to pass variables to HTML
@@ -21,7 +21,8 @@ async fn home_page(tera: web::Data<Tera>) -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    // Initialize logging (Make sure env_logger is in your Cargo.toml if you uncomment this!)
+    // To load environment variables from .env file and initialize logger
+    dotenv::dotenv().ok();
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 
     println!("Starting Patient Management System...");
@@ -34,15 +35,14 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("Failed to run migrations");
 
-    // Fixed the Tera directory path (removed "src/")
-    let tera = Tera::new("templates/**/*.html").expect("Failed to load templates");
+    let tera = Tera::new("templates/*.html").expect("Failed to load templates");
 
     println!("Server running at http://127.0.0.1:8080");
 
     // Start server
     HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(db_pool.clone())) // Commented out for now
+            .app_data(web::Data::new(db_pool.clone()))
             .app_data(web::Data::new(tera.clone()))
             .route("/", web::get().to(home_page))
     })

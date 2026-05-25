@@ -14,5 +14,5 @@ handlers/: Represents your Controller layer. These endpoints extract incoming da
 
 services/: Houses your domain's logical control functions. This layer implements core business rules separate from raw web actions, such as running calculations or double-checking schedule availability before updating database records.
 
-
+static/: For all CSS JS Images fonts and other design stuff that is not meant to be inside the rust codes.
 download the extension SQLITE VIEWER
