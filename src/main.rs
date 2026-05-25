@@ -46,26 +46,32 @@ async fn main() -> std::io::Result<()> {
     println!("Server running at http://127.0.0.1:8080");
 
     // Start server
-    HttpServer::new(move || {
-        App::new()
-            // First add session middleware so it's available in all routes
-            .wrap(SessionMiddleware::builder(CookieSessionStore::default(), secret_key.clone()).build())
-            // Then all the shared data - database pool and template engine
-            .app_data(web::Data::new(db_pool.clone()))
-            .app_data(web::Data::new(tera.clone()))
-            // Then all the routes
-            // Index route
-            .route("/", web::get().to(home_page))
-            // Auth routes
-            .route("/login", web::get().to(handlers::auth::show_login))
-            .route("/login", web::post().to(handlers::auth::login))
-            .route("/register", web::get().to(handlers::auth::show_register))
-            .route("/register", web::post().to(handlers::auth::register))
-            // Logged in user routes
-            .route("/dashboard", web::get().to(handlers::auth::dashboard))
-            .route("/logout", web::get().to(handlers::auth::logout))
-    })
-    .bind(("127.0.0.1", 8080))?
-    .run()
-    .await
+HttpServer::new(move || {
+    App::new()
+        // First add session middleware so it's available in all routes [cite: 426]
+        .wrap(SessionMiddleware::builder(CookieSessionStore::default(), secret_key.clone()).build())
+        
+        // Then all the shared data - database pool and template engine [cite: 326, 422, 425]
+        .app_data(web::Data::new(db_pool.clone()))
+        .app_data(web::Data::new(tera.clone()))
+        
+        // Serves your Instagram-style CSS files securely [cite: 597, 598]
+        .service(actix_files::Files::new("/static", "./static").show_files_listing()) 
+        
+        // Index route (Renders your homepage template) [cite: 325, 362]
+        .route("/", web::get().to(home_page))
+        
+        // Auth routes [cite: 436, 439]
+        .route("/login", web::get().to(handlers::auth::show_login))
+        .route("/login", web::post().to(handlers::auth::login))
+        .route("/register", web::get().to(handlers::auth::show_register))
+        .route("/register", web::post().to(handlers::auth::register))
+        
+        // Logged in user routes [cite: 442, 446]
+        .route("/dashboard", web::get().to(handlers::auth::dashboard))
+        .route("/logout", web::get().to(handlers::auth::logout))
+})
+.bind(("127.0.0.1", 8080))?
+.run()
+.await
 }
