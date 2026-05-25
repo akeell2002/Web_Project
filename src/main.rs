@@ -1,5 +1,7 @@
 mod db;
 mod models;
+mod utils;
+mod handlers;
 
 use actix_web::{App, HttpResponse, HttpServer, Responder, web};
 use tera::{Context, Tera}; // Added Context to pass variables to HTML
@@ -44,7 +46,13 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(db_pool.clone()))
             .app_data(web::Data::new(tera.clone()))
+            // Index route
             .route("/", web::get().to(home_page))
+            // Auth routes
+            .route("/login", web::get().to(handlers::auth::show_login))
+            .route("/login", web::post().to(handlers::auth::login))
+            .route("/register", web::get().to(handlers::auth::show_register))
+            .route("/register", web::post().to(handlers::auth::register))
     })
     .bind(("127.0.0.1", 8080))?
     .run()
