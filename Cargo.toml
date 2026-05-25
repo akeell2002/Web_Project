@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 actix-web = "4"
-actix-session = "0.9"
+actix-session = { version = "0.9", features = ["cookie-session"] }
 actix-identity = "0.9"
 tera = "1"
 sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "chrono"] }
