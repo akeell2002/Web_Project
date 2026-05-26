@@ -75,6 +75,10 @@ HttpServer::new(move || {
         .route("/patients", web::get().to(handlers::patients::list_patients))
         .route("/patients/add", web::get().to(handlers::patients::show_add_patient))
         .route("/patients/add", web::post().to(handlers::patients::add_patient))
+        .route("/patients/{id}", web::get().to(handlers::patients::view_patient))
+        .route("/patients/{id}/edit", web::get().to(handlers::patients::show_edit_patient))
+        .route("/patients/{id}/edit", web::post().to(handlers::patients::edit_patient))
+        .route("/patients/{id}/delete", web::post().to(handlers::patients::delete_patient_handler))
 })
 .bind(("127.0.0.1", 8080))?
 .run()

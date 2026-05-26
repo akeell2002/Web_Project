@@ -33,7 +33,11 @@
                     {% for p in patients %}
                     <tr>
                         <td>#{{ p.id }}</td>
-                        <td style="color: #3b82f6; font-weight: 600;">{{ p.first_name }} {{ p.last_name }}</td>
+                        <td>
+                            <a href="/patients/{{ p.id }}" style="color: #3b82f6; font-weight: 600; text-decoration: none;">
+                                {{ p.first_name }} {{ p.last_name }}
+                            </a>
+                        </td>
                         <td>{{ p.date_of_birth }}</td>
                         <td>{{ p.gender }}</td>
                         <td>{{ p.phone }}</td>

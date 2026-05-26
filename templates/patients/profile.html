@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ patient.first_name }}'s Medical Profile</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <div class="portal-wrapper" style="height: auto; min-height: 500px; margin: 40px 0;">
+        
+        <div class="brand-panel" style="flex: 0.5;">
+            <div class="system-tag">Patient Profile #{{ patient.id }}</div>
+            <div class="brand-message">
+                <h2>{{ patient.first_name }}<br>{{ patient.last_name }}</h2>
+                <p><strong>DOB:</strong> {{ patient.date_of_birth }}</p>
+                <p><strong>Blood Type:</strong> {% if patient.blood_type %}{{ patient.blood_type }}{% else %}Unknown{% endif %}</p>
+            </div>
+        </div>
+
+        <div class="form-panel" style="flex: 1.5; padding: 40px;">
+            <h3 style="color: white; margin-bottom: 20px;">Contact Information</h3>
+            <p style="color: #94a3b8; margin-bottom: 10px;"><strong>Phone:</strong> {{ patient.phone }}</p>
+            <p style="color: #94a3b8; margin-bottom: 10px;"><strong>Email:</strong> {% if patient.email %}{{ patient.email }}{% else %}Not provided{% endif %}</p>
+            <p style="color: #94a3b8; margin-bottom: 30px;"><strong>Address:</strong> {% if patient.address %}{{ patient.address }}{% else %}Not provided{% endif %}</p>
+            
+            <hr style="border-color: #1f2937; margin-bottom: 20px;">
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <a href="/patients" class="btn-submit" style="background: #334155; text-align: center; text-decoration: none; margin-top: 0;">← Back to List</a>
+                
+                <a href="/patients/{{ patient.id }}/edit" class="btn-submit" style="background: #eab308; color: black; text-align: center; text-decoration: none; margin-top: 0;">Edit Patient</a>
+                
+                <form method="POST" action="/patients/{{ patient.id }}/delete" style="margin: 0;" onsubmit="return confirm('WARNING: Are you sure you want to permanently delete this patient chart? This action cannot be undone.');">
+                    <button type="submit" class="btn-submit" style="background: #ef4444; margin-top: 0;">Delete Patient</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

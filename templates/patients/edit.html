@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Patient - Clinical Portal</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <div class="portal-wrapper" style="height: auto; margin: 40px 0;">
+        
+        <div class="brand-panel">
+            <div class="system-tag">Data Modification</div>
+            <div class="brand-message">
+                <h2>Edit Chart<br>#{{ patient.id }}</h2>
+                <p>Ensure all updated demographic data is verified by the patient before saving to the central registry.</p>
+            </div>
+        </div>
+
+        <div class="form-panel">
+            <div class="form-header">
+                <h3>Update Demographics</h3>
+            </div>
+            
+            <form method="POST" action="/patients/{{ patient.id }}/edit">
+                <div class="input-field"><input type="text" name="first_name" value="{{ patient.first_name }}" required></div>
+                <div class="input-field"><input type="text" name="last_name" value="{{ patient.last_name }}" required></div>
+                
+                <p style="font-size: 12px; color: #94a3b8; margin-bottom: 5px;">Date of Birth:</p>
+                <div class="input-field"><input type="date" name="date_of_birth" value="{{ patient.date_of_birth }}" required></div>
+                
+                <div class="input-field">
+                    <select name="gender" class="modern-select" required>
+                        <option value="Male" {% if patient.gender == "Male" %}selected{% endif %}>Male</option>
+                        <option value="Female" {% if patient.gender == "Female" %}selected{% endif %}>Female</option>
+                        <option value="Other" {% if patient.gender == "Other" %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                
+                <div class="input-field"><input type="tel" name="phone" value="{{ patient.phone }}" required></div>
+                <div class="input-field"><input type="email" name="email" value="{% if patient.email %}{{ patient.email }}{% endif %}"></div>
+                <div class="input-field"><input type="text" name="address" value="{% if patient.address %}{{ patient.address }}{% endif %}"></div>
+                
+                <div class="input-field">
+                    <select name="blood_type" class="modern-select">
+                        <option value="">Unknown...</option>
+                        <option value="A+" {% if patient.blood_type == "A+" %}selected{% endif %}>A+</option>
+                        <option value="B+" {% if patient.blood_type == "B+" %}selected{% endif %}>B+</option>
+                        <option value="O+" {% if patient.blood_type == "O+" %}selected{% endif %}>O+</option>
+                        </select>
+                </div>
+
+                <button type="submit" class="btn-submit">Update Record</button>
+            </form>
+
+            <div class="switch-auth">
+                <p><a href="/patients/{{ patient.id }}">Cancel</a></p>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
