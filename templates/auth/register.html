@@ -1,17 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Register</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Registration - HealthHub Clinical Systems</title>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <h1>Register</h1>
-    <form method="POST" action="/register">
-        <input type="text" name="username" placeholder="Username" required><br>
-        <input type="email" name="email" placeholder="Email" required><br>
-        <input type="password" name="password" placeholder="Password" required><br>
-        <input type="password" name="confirm_password" placeholder="Confirm Password" required><br>
-        <button type="submit">Register</button>
-    </form>
-    <p>Already have an account? <a href="/login">Login</a></p>
+
+    <div class="portal-wrapper">
+        
+        <div class="brand-panel">
+            <div class="system-tag" style="color: #6EE7B7;">🔒 SECURE PROVISIONING</div>
+            
+            <div class="brand-message">
+                <h2>Request<br>Credentials.</h2>
+                <p>Submit your details for administrative review. Access to the HealthHub EHR (Electronic Health Record) system is strictly limited to verified healthcare providers.</p>
+                
+                <div style="margin-top: 25px; padding: 12px; background: rgba(0,0,0,0.15); border-left: 3px solid #FCD34D; border-radius: 4px;">
+                    <p style="font-size: 11.5px; line-height: 1.4; color: #E6F0F9; margin: 0;">
+                        <strong>Verification Notice:</strong> All credential requests are subject to identity verification and employment status confirmation by the IT Security Department prior to activation.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="panel-footer">
+                &copy; 2026 HealthHub Medical Infrastructure.
+            </div>
+        </div>
+
+        <div class="form-panel">
+            <div class="form-header">
+                <h3>Credential Request Form</h3>
+                <p>Please provide your employment details.</p>
+            </div>
+            
+            <form method="POST" action="/register">
+                <div class="input-field">
+                    <input type="text" name="username" placeholder="Staff ID" required autocomplete="off">
+                </div>
+                <div class="input-field">
+                    <input type="email" name="email" placeholder="Institutional Email Address" required>
+                </div>
+                <div class="input-field">
+                    <input type="password" name="password" placeholder="Create Secure Password" required>
+                </div>
+                <div class="input-field">
+                    <input type="password" name="confirm_password" placeholder="Confirm Secure Password" required>
+                </div>
+                
+                <button type="submit" class="btn-submit" style="background: #005999; margin-top: 15px;">Submit Request for Review</button>
+            </form>
+
+            <div class="switch-auth">
+                <p>Already provisioned? <a href="/login">Return to secure log in</a></p>
+            </div>
+        </div>
+
+    </div>
+
 </body>
 </html>

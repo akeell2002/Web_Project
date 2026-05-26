@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gateway Authentication - Clinical Portal</title>
+    <title>Staff Login - HealthHub Clinical Systems</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
@@ -11,37 +11,43 @@
     <div class="portal-wrapper">
         
         <div class="brand-panel">
-            <div class="system-tag">Secure Gateway</div>
+            <div class="system-tag" style="color: #FFB3B3;">⚠️ RESTRICTED SYSTEM</div>
             
             <div class="brand-message">
-                <h2>Next-Gen<br>Patient Registry.</h2>
-                <p>Access central diagnostics, patient scheduling pipelines, and encrypted medical logs effortlessly within a unified clinical dashboard environment.</p>
+                <h2>Clinical<br>Staff Portal.</h2>
+                <p>Centralized access to Electronic Health Records (EHR), diagnostic imaging, and internal scheduling. Authorized healthcare providers and administration only.</p>
+                
+                <div style="margin-top: 25px; padding: 12px; background: rgba(0,0,0,0.15); border-left: 3px solid #F87171; border-radius: 4px;">
+                    <p style="font-size: 11.5px; line-height: 1.4; color: #E6F0F9; margin: 0;">
+                        <strong>Compliance Notice:</strong> Unauthorized access to patient health information violates hospital policy and local privacy laws. All activity is logged and monitored.
+                    </p>
+                </div>
             </div>
             
             <div class="panel-footer">
-                &copy; 2026 Patient Management System Infrastructure.
+                &copy; 2026 HealthHub Medical Infrastructure.
             </div>
         </div>
 
         <div class="form-panel">
             <div class="form-header">
-                <h3>Welcome Back</h3>
-                <p>Please enter your access tokens.</p>
+                <h3>Provider Log In</h3>
+                <p>Please authenticate with your staff credentials.</p>
             </div>
             
             <form method="POST" action="/login">
                 <div class="input-field">
-                    <input type="text" name="username" placeholder="Username / Email" required autocomplete="off">
+                    <input type="text" name="username" placeholder="Staff ID or Email Address" required autocomplete="off">
                 </div>
                 <div class="input-field">
                     <input type="password" name="password" placeholder="Password" required>
                 </div>
                 
-                <button type="submit" class="btn-submit">Sign In to Dashboard</button>
+                <button type="submit" class="btn-submit" style="background: #005999; margin-top: 15px;">Secure Log In</button>
             </form>
 
             <div class="switch-auth">
-                <p>New terminal user? <a href="/register">Create an account</a></p>
+                <p>No active credentials? <a href="/register">Set Password</a></p>
             </div>
         </div>
 

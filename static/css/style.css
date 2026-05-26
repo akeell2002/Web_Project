@@ -1,4 +1,4 @@
-/* Clean Editorial Reset */
+/* HealthHub Inspired Clean Theme Reset */
 * {
     margin: 0;
     padding: 0;
@@ -7,81 +7,98 @@
 }
 
 body {
-    background-color: #0b0f19; /* Deep, professional clinical midnight blue */
-    color: #f1f5f9;
+    background-color: #F4F7F6; /* Soft light grey background */
+    color: #333333;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
     min-height: 100vh;
 }
 
-/* Split-screen layout inspired by modern design portfolios */
+/* Navbar Component (New for Dashboard/List pages) */
+.navbar {
+    width: 100%;
+    background-color: #005999; /* Trustworthy Medical Blue */
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.navbar-links a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+
+.navbar-links a:hover {
+    opacity: 0.8;
+}
+
+/* Main Wrapper for centered auth/entry pages */
 .portal-wrapper {
     display: flex;
     width: 100%;
     max-width: 900px;
-    height: 550px;
-    background: #111827;
-    border: 1px solid #1f2937;
-    border-radius: 16px;
+    min-height: 550px;
+    background: #ffffff;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    margin: 40px auto;
 }
 
-/* Left Side: Editorial Branding Panel */
+/* Left Side: Brand Panel */
 .brand-panel {
     flex: 1;
-    background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+    background: linear-gradient(135deg, #005999 0%, #0084D6 100%);
     padding: 40px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    position: relative;
-    border-right: 1px solid #1f2937;
-}
-
-.brand-panel::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+    color: white;
 }
 
 .system-tag {
-    font-size: 11px;
-    letter-spacing: 2px;
+    font-size: 12px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-    color: #60a5fa;
+    color: #E6F0F9;
     font-weight: 700;
 }
 
 .brand-message h2 {
     font-size: 2.25rem;
-    font-weight: 400;
-    line-height: 1.2;
-    color: #ffffff;
+    font-weight: 600;
+    line-height: 1.3;
     margin-bottom: 15px;
 }
 
 .brand-message p {
-    color: #94a3b8;
-    font-size: 14px;
-    line-height: 1.5;
+    color: #E6F0F9;
+    font-size: 15px;
+    line-height: 1.6;
 }
 
-.panel-footer {
-    font-size: 12px;
-    color: #64748b;
-}
-
-/* Right Side: Clean Login Grid Interface */
+/* Right Side / Standalone Form Panel */
 .form-panel {
-    width: 420px;
+    width: 450px;
     padding: 50px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    background: #0f172a;
+    background: #ffffff;
 }
 
 .form-header {
@@ -89,122 +106,98 @@ body {
 }
 
 .form-header h3 {
-    font-size: 24px;
-    font-weight: 500;
-    color: #ffffff;
+    font-size: 26px;
+    font-weight: 600;
+    color: #111827;
 }
 
 .form-header p {
-    color: #64748b;
-    font-size: 14px;
-    margin-top: 4px;
+    color: #6B7280;
+    font-size: 15px;
+    margin-top: 8px;
 }
 
-/* Modern Minimalist Input Boxes */
+/* Inputs */
 .input-field {
-    position: relative;
     margin-bottom: 20px;
 }
 
-.input-field input {
+.input-field input, select.modern-select {
     width: 100%;
     padding: 14px 16px;
-    background: #1e293b;
-    border: 1px solid #334155;
+    background: #F9FAFB;
+    border: 1px solid #D1D5DB;
     border-radius: 8px;
-    color: #ffffff;
-    font-size: 14px;
+    color: #111827;
+    font-size: 15px;
     outline: none;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s ease;
 }
 
-.input-field input:focus {
-    border-color: #3b82f6;
-    background: #1e293b;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+.input-field input:focus, select.modern-select:focus {
+    border-color: #005999;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(0, 89, 153, 0.15);
 }
 
-/* Smooth Premium Action Button */
+/* Buttons */
 .btn-submit {
     width: 100%;
-    background: #2563eb;
+    background: #00A98F; /* Teal/Green action color */
     color: #ffffff;
     border: none;
     border-radius: 8px;
     padding: 14px;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background 0.2s ease;
     margin-top: 10px;
+    text-align: center;
 }
 
 .btn-submit:hover {
-    background: #3b82f6;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    background: #008F79;
 }
 
-/* Redirection Footer Links */
-.switch-auth {
-    margin-top: 24px;
-    text-align: center;
-    font-size: 13px;
-    color: #94a3b8;
-}
-
-.switch-auth a {
-    color: #3b82f6;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.switch-auth a:hover {
-    text-decoration: underline;
-}
-
-/* Clinical Data Table Styling */
+/* Tables */
 .clinical-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
-    background: #1e293b;
+    background: #ffffff;
     border-radius: 8px;
     overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
 .clinical-table th, .clinical-table td {
-    padding: 14px 16px;
+    padding: 16px;
     text-align: left;
     font-size: 14px;
-    border-bottom: 1px solid #334155;
+    border-bottom: 1px solid #E5E7EB;
 }
 
 .clinical-table th {
-    background: #0f172a;
-    color: #94a3b8;
-    font-weight: 600;
+    background: #F9FAFB;
+    color: #4B5563;
+    font-weight: 700;
     text-transform: uppercase;
     font-size: 12px;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 }
 
 .clinical-table tr:hover {
-    background: #283548;
+    background: #F3F4F6;
 }
 
-/* Custom Select Dropdowns */
-select.modern-select {
-    width: 100%;
-    padding: 14px 16px;
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 8px;
-    color: #ffffff;
-    font-size: 14px;
-    outline: none;
-    appearance: none;
+/* Links */
+.switch-auth a, a.link-primary {
+    color: #005999;
+    text-decoration: none;
+    font-weight: 600;
 }
-select.modern-select:focus {
-    border-color: #3b82f6;
+
+.switch-auth a:hover, a.link-primary:hover {
+    text-decoration: underline;
 }
