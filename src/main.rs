@@ -9,10 +9,9 @@ use actix_web::cookie::Key;
 use tera::{Context, Tera};
 
 async fn home_page(tera: web::Data<Tera>) -> impl Responder {
-    let mut ctx = Context::new();
-    ctx.insert("project_title", "Patient Management System");
+    let ctx = Context::new();
 
-    match tera.render("index.html", &ctx) {
+    match tera.render("auth/login.html", &ctx) {
         Ok(html_content) => HttpResponse::Ok()
             .content_type("text/html; charset=utf-8")
             .body(html_content),
