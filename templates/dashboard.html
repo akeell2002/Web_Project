@@ -1,12 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Dashboard - HealthHub EHR</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        /* Dashboard-specific Grid Styling */
+        .dashboard-container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        /* Clinical Welcome Banner */
+        .welcome-banner {
+            background: linear-gradient(135deg, #005999 0%, #0084D6 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(0, 89, 153, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .welcome-banner h2 { font-size: 32px; font-weight: 600; margin-bottom: 8px; }
+        .welcome-banner p { font-size: 15px; color: #E6F0F9; font-weight: 500; }
+        
+        /* Action Cards Grid */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        
+        .action-card {
+            background: #ffffff;
+            padding: 35px 30px;
+            border-radius: 12px;
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+            border-color: #005999;
+        }
+        
+        .action-icon {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        
+        .action-card h3 {
+            color: #111827;
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+        
+        .action-card p {
+            color: #6B7280;
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            flex-grow: 1; /* Pushes button to the bottom */
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome, {{ username }}!</h1>
-    <p>User ID: {{ user_id }}</p>
-    <p>Role: Patient</p>
-    <a href="/logout">Logout</a>
+
+    <nav class="navbar">
+        <div class="navbar-brand">⚕️ HealthHub Clinical Portal</div>
+        <div class="navbar-links">
+            <a href="/dashboard" style="opacity: 1; border-bottom: 2px solid white; padding-bottom: 5px;">Overview</a>
+            <a href="/patients">Patient Directory</a>
+            <a href="/logout" style="background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px;">Secure Logout</a>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        
+        <div class="welcome-banner">
+            <h2>Welcome to your shift, {{ username }}</h2>
+            <p>System Access ID: #{{ user_id }} &nbsp;|&nbsp; Clearance: Clinical Provider</p>
+        </div>
+
+        <div class="action-grid">
+            
+            <div class="action-card">
+                <div class="action-icon">🗂️</div>
+                <h3>Master Patient Directory</h3>
+                <p>Search, view, and manage all registered patient electronic health records (EHR). Access detailed medical histories and update profiles.</p>
+                <a href="/patients" class="btn-submit" style="text-decoration: none;">Access Directory</a>
+            </div>
+
+            <div class="action-card">
+                <div class="action-icon">📝</div>
+                <h3>Patient Intake Protocol</h3>
+                <p>Register a new patient into the HealthHub system. Ensure you have the patient's legal identification and demographic data ready for entry.</p>
+                <a href="/patients/add" class="btn-submit" style="text-decoration: none; background: #005999;">Start New Intake</a>
+            </div>
+
+            <div class="action-card">
+                <div class="action-icon">🛡️</div>
+                <h3>System Security</h3>
+                <p>Your session is actively monitored, encrypted, and bound to your User ID. Remember to securely log out when stepping away from your terminal.</p>
+                <a href="/logout" class="btn-submit" style="text-decoration: none; background: #DC2626;">End Secure Session</a>
+            </div>
+
+        </div>
+    </div>
+
 </body>
 </html>
