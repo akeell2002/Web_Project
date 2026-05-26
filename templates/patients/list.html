@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Directory - Clinical Portal</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <div class="portal-wrapper" style="max-width: 1000px; height: auto; min-height: 550px;">
+        <div class="form-panel" style="width: 100%;">
+            
+            <div class="form-header">
+                <h3>Patient Directory</h3>
+                <p>Central registry of all registered medical profiles.</p>
+            </div>
+            
+            <a href="/patients/add" class="btn-submit" style="display: inline-block; width: auto; text-decoration: none; margin-bottom: 20px; text-align: center;">+ Register New Patient</a>
+            
+            <table class="clinical-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>DOB</th>
+                        <th>Gender</th>
+                        <th>Phone</th>
+                        <th>Blood Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in patients %}
+                    <tr>
+                        <td>#{{ p.id }}</td>
+                        <td style="color: #3b82f6; font-weight: 600;">{{ p.first_name }} {{ p.last_name }}</td>
+                        <td>{{ p.date_of_birth }}</td>
+                        <td>{{ p.gender }}</td>
+                        <td>{{ p.phone }}</td>
+                        <td>{% if p.blood_type %}{{ p.blood_type }}{% else %}-{% endif %}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #94a3b8;">No patients registered yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="switch-auth" style="margin-top: 30px;">
+                <p><a href="/dashboard">← Back to Dashboard</a></p>
+            </div>
+            
+        </div>
+    </div>
+
+</body>
+</html>

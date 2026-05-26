@@ -162,3 +162,49 @@ body {
 .switch-auth a:hover {
     text-decoration: underline;
 }
+
+/* Clinical Data Table Styling */
+.clinical-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: #1e293b;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.clinical-table th, .clinical-table td {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 14px;
+    border-bottom: 1px solid #334155;
+}
+
+.clinical-table th {
+    background: #0f172a;
+    color: #94a3b8;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+.clinical-table tr:hover {
+    background: #283548;
+}
+
+/* Custom Select Dropdowns */
+select.modern-select {
+    width: 100%;
+    padding: 14px 16px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 14px;
+    outline: none;
+    appearance: none;
+}
+select.modern-select:focus {
+    border-color: #3b82f6;
+}

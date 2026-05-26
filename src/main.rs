@@ -70,6 +70,11 @@ HttpServer::new(move || {
         // Logged in user routes [cite: 442, 446]
         .route("/dashboard", web::get().to(handlers::auth::dashboard))
         .route("/logout", web::get().to(handlers::auth::logout))
+
+        // Patient management routes
+        .route("/patients", web::get().to(handlers::patients::list_patients))
+        .route("/patients/add", web::get().to(handlers::patients::show_add_patient))
+        .route("/patients/add", web::post().to(handlers::patients::add_patient))
 })
 .bind(("127.0.0.1", 8080))?
 .run()
