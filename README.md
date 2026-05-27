@@ -1,18 +1,121 @@
-Cargo.toml: The project manifest. It specifies package metadata and manages every external library crate your team needs—such as actix-web, template tools, and database components.
+# Patient Management System
 
-.gitignore: Instructs Git which system generation files (like the heavy /target build output folder) to exclude from your cloud repository so you do not push unnecessary binary tracking files.
+A modern SSR web application built with Rust, Actix Web, Tera, and PostgreSQL. The project is structured as a layered enterprise backend with clear separation between HTTP handlers, database access, domain models, utility code, and frontend templates.
 
-templates/: This folder lives outside of src because template engines expect it at the project root. This is your View layer, hosting all raw HTML layouts for Server-Side Rendering (SSR).
+## Project Goals
 
-main.rs: The main execution runtime engine. It loads application modules, configures environment settings, establishes database connections, and builds the HTTP server platform to handle client web traffic.
+This project demonstrates:
 
-db/: Handles data persistence layers. This is where database connection pools are defined and raw SQL execution statements are structured.
+- Rust backend development with `struct` and `impl` based design
+- Modular architecture with controller, service, persistence, and view layers
+- Server Side Rendering with reusable HTML templates
+- Authentication and session-based authorization
+- CRUD workflows backed by a relational database
+- Form validation and business-rule checks
+- Responsive, server-rendered UI for enterprise-style workflows
 
-models/: Handles database mapping and structure definition. This directory holds your Rust data objects (structs) and behavioral contracts (traits) representing database entities like Patient, Doctor, and Appointment.
+## Current Feature Set
 
-handlers/: Represents your Controller layer. These endpoints extract incoming data from client browser requests, call the correct background business workflows, and compile data directly into your HTML layouts.
+The repository currently includes:
 
-services/: Houses your domain's logical control functions. This layer implements core business rules separate from raw web actions, such as running calculations or double-checking schedule availability before updating database records.
+- User registration and login
+- Session-based authentication with role storage
+- Patient registration, listing, detail view, edit, and delete flows
+- PostgreSQL persistence via SQLx
+- Tera templates for SSR pages
+- Static CSS assets for the frontend
 
-static/: For all CSS JS Images fonts and other design stuff that is not meant to be inside the rust codes.
-download the extension SQLITE VIEWER
+The database schema is also prepared for future enterprise modules such as appointments and medical records.
+
+## Architecture
+
+The codebase follows a layered layout:
+
+- `src/main.rs` bootstraps Actix Web, sessions, templates, and routing
+- `src/handlers/` contains HTTP request handlers for auth and patients
+- `src/db/` contains SQLx database operations
+- `src/models/` contains shared application data structures and forms
+- `src/utils.rs` contains supporting logic such as password hashing
+- `templates/` contains SSR HTML pages rendered by Tera
+- `static/` contains CSS and other frontend assets
+
+This design keeps presentation logic out of persistence code and makes the system easier to extend with additional business modules.
+
+## Domain Model
+
+The schema supports a realistic hospital or clinic workflow:
+
+- `users` stores staff and patient accounts with roles such as `admin`, `doctor`, `nurse`, `receptionist`, and `patient`
+- `patients` stores demographic and contact information
+- `appointments` stores visit scheduling data
+- `medical_records` stores diagnoses, prescriptions, and notes
+
+That structure allows the project to grow into a fuller enterprise system without changing the underlying data model.
+
+## Technology Stack
+
+- Rust 2024 edition
+- Actix Web for HTTP routing and middleware
+- Actix Session for cookie-based session management
+- SQLx for PostgreSQL access
+- Tera for server-side HTML rendering
+- Argon2 for password hashing
+- dotenv for local configuration
+- env_logger and tracing for runtime logging
+
+## Setup
+
+### 1. Prerequisites
+
+- Rust toolchain
+- PostgreSQL
+- A `.env` file with `DATABASE_URL` configured
+
+### 2. Database
+
+Run the migration to create the schema:
+
+```bash
+cargo sqlx migrate run
+```
+
+If you prefer to inspect the schema first, see [migrations/01_schema_init.sql](migrations/01_schema_init.sql).
+
+### 3. Run the app
+
+```bash
+cargo run
+```
+
+The app starts on `http://127.0.0.1:8080`.
+
+## Routes
+
+- `/` renders the login page
+- `/login` handles authentication
+- `/register` handles account creation
+- `/dashboard` renders the authenticated landing page
+- `/patients` shows the patient list
+- `/patients/add` creates a new patient
+- `/patients/{id}` shows a patient profile
+- `/patients/{id}/edit` updates a patient
+- `/patients/{id}/delete` removes a patient
+
+## Database Schema
+
+The schema is defined in [migrations/01_schema_init.sql](migrations/01_schema_init.sql) and includes:
+
+- `users`
+- `patients`
+- `appointments`
+- `medical_records`
+
+This supports both the current patient-management workflow and the planned expansion into broader clinical operations.
+
+## Implemented Enterprise Modules
+
+- Appointment queue management
+- Patient history timeline
+- Staff role-based access control per module
+- Medical report generation
+- Billing and invoice workflows
