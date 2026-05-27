@@ -54,7 +54,6 @@ HttpServer::new(move || {
         .app_data(web::Data::new(db_pool.clone()))
         .app_data(web::Data::new(tera.clone()))
         
-        // Serves your Instagram-style CSS files securely [cite: 597, 598]
         .service(actix_files::Files::new("/static", "./static").show_files_listing()) 
         
         // Index route (Renders your homepage template) [cite: 325, 362]
@@ -78,6 +77,10 @@ HttpServer::new(move || {
         .route("/patients/{id}/edit", web::get().to(handlers::patients::show_edit_patient))
         .route("/patients/{id}/edit", web::post().to(handlers::patients::edit_patient))
         .route("/patients/{id}/delete", web::post().to(handlers::patients::delete_patient_handler))
+
+        // Appointment management routes
+        .route("/appointments", web::get().to(handlers::appointments::list_appointments))
+        .route("/appointments/book", web::post().to(handlers::appointments::book_appointment))
 })
 .bind(("127.0.0.1", 8080))?
 .run()

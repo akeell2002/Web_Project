@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Appointments</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar" style="background: linear-gradient(135deg, #005999 0%, #0084D6 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+            <h2 class="brand-logo">⚕️ HealthHub</h2>
+            <p class="user-welcome">Logged in as: <strong>{{ username }}</strong> ({{ role }})</p>
+            <nav class="nav-menu" style="display: flex; gap: 15px; margin-top: 10px;">
+                <a href="/dashboard" style="color: white; text-decoration: none;">Dashboard</a>
+                <a href="/patients" style="color: white; text-decoration: none;">Patients</a>
+                <a href="/appointments" style="color: white; text-decoration: underline; font-weight: bold;">Appointments</a>
+                <a href="/logout" style="color: #ffcccc; text-decoration: none;">Log Out</a>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <header class="content-header" style="margin-bottom: 30px;">
+                <h1 style="color: #111827;">Appointment Scheduling</h1>
+            </header>
+
+            <div class="dashboard-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div class="card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #E5E7EB;">
+                    <h3 style="margin-bottom: 20px;">Book New Appointment</h3>
+                    <form action="/appointments/book" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+                        
+                        <div>
+                            <label for="patient_id" style="font-weight: bold; font-size: 14px;">Select Patient:</label>
+                            <select name="patient_id" id="patient_id" required style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc;">
+                                <option value="">-- Choose Patient --</option>
+                                {% for patient in patients %}
+                                <option value="{{ patient.id }}">{{ patient.first_name }} {{ patient.last_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="doctor_id" style="font-weight: bold; font-size: 14px;">Assign Doctor:</label>
+                            <select name="doctor_id" id="doctor_id" required style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc;">
+                                <option value="">-- Choose Doctor --</option>
+                                {% for doc in doctors %}
+                                    {% if doc.role == "doctor" or doc.role == "Doctor" %}
+                                    <option value="{{ doc.id }}">Dr. {{ doc.username }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="appointment_date" style="font-weight: bold; font-size: 14px;">Date and Time:</label>
+                            <input type="datetime-local" name="appointment_date" id="appointment_date" required style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc;">
+                        </div>
+
+                        <div>
+                            <label for="reason" style="font-weight: bold; font-size: 14px;">Reason / Symptoms:</label>
+                            <textarea name="reason" id="reason" placeholder="Brief explanation for appointment..." rows="3" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc;"></textarea>
+                        </div>
+
+                        <button type="submit" style="background: #005999; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px;">Confirm Appointment Schedule</button>
+                    </form>
+                </div>
+
+                <div class="card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #E5E7EB;">
+                    <h3 style="margin-bottom: 20px;">Upcoming Schedule</h3>
+                    <div class="appointment-list">
+                        {% if appointments | length == 0 %}
+                            <p style="color: #6B7280; font-style: italic;">No scheduled appointments found.</p>
+                        {% else %}
+                            {% for appt in appointments %}
+                            <div class="appointment-item" style="border-left: 4px solid #0EA5E9; margin-bottom: 15px; padding: 10px 15px; background: #F3F4F6; border-radius: 0 8px 8px 0;">
+                                <p style="margin: 0 0 5px 0;"><strong>Date:</strong> {{ appt.appointment_date }}</p>
+                                <p style="margin: 0 0 5px 0; font-size: 14px;"><strong>Patient ID:</strong> {{ appt.patient_id }} | <strong>Doctor ID:</strong> {{ appt.doctor_id }}</p>
+                                <p style="margin: 0 0 5px 0; font-size: 14px;"><strong>Status:</strong> <span style="background: #D1FAE5; color: #065F46; padding: 2px 8px; border-radius: 12px; font-weight: bold;">{{ appt.status }}</span></p>
+                                {% if appt.reason %}
+                                <p style="margin: 0; font-size: 14px; color: #4B5563;"><em>"{{ appt.reason }}"</em></p>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

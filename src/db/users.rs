@@ -61,3 +61,20 @@ pub async fn authenticate_user(pool: &PgPool, username: &str, password: &str) ->
         Ok(None)
     }
 }
+
+
+// Fetch all users (so we can filter out doctors for the appointments dropdown)
+pub async fn get_all_users(pool: &sqlx::PgPool) -> Result<Vec<User>, sqlx::Error> {
+    let users = sqlx::query_as!(
+        User,
+        r#"
+        SELECT id, username, email, password_hash, role, created_at
+        FROM users
+        ORDER BY username ASC
+        "#
+    )
+    .fetch_all(pool)
+    .await?;
+
+    Ok(users)
+}
