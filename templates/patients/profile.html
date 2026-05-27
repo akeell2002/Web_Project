@@ -26,6 +26,28 @@
             <p style="color: #94a3b8; margin-bottom: 30px;"><strong>Address:</strong> {% if patient.address %}{{ patient.address }}{% else %}Not provided{% endif %}</p>
             
             <hr style="border-color: #1f2937; margin-bottom: 20px;">
+            <div class="appointment-history-panel" style="margin-top: 30px; padding: 20px; background: #1e293b; border-radius: 8px;">
+    <h3 style="color: white; margin-bottom: 15px;">🗓️ Appointment History</h3>
+    
+    {% if appointments | length == 0 %}
+        <p style="color: #94a3b8; font-style: italic;">No appointments found for this patient.</p>
+    {% else %}
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            {% for appt in appointments %}
+            <div style="padding: 12px; background: #334155; border-radius: 6px; border-left: 4px solid #0EA5E9; color: white;">
+                <p style="margin: 0;"><strong>Date:</strong> {{ appt.appointment_date }}</p>
+                <p style="margin: 5px 0 0 0; font-size: 14px;">
+                    <strong>Status:</strong> {{ appt.status }} | 
+                    <strong>Doctor ID:</strong> {{ appt.doctor_id }}
+                </p>
+                {% if appt.reason %}
+                <p style="margin: 5px 0 0 0; font-size: 13px; color: #cbd5e1;"><em>Reason: "{{ appt.reason }}"</em></p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
 
             <div style="display: flex; gap: 10px; align-items: center;">
                 <a href="/patients" class="btn-submit" style="background: #334155; text-align: center; text-decoration: none; margin-top: 0;">← Back to List</a>

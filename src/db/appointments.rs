@@ -54,3 +54,28 @@ pub async fn create_appointment(pool: &PgPool, data: CreateAppointmentDto) -> Re
 
     Ok(appointment)
 }
+
+// Fetch appointments for a specific patient
+pub async fn get_appointments_by_patient(pool: &sqlx::PgPool, patient_id: i32) -> Result<Vec<Appointment>, sqlx::Error> {
+    let appointments = sqlx::query_as!(
+        Appointment,
+        r#"
+        SELECT 
+            id, 
+            patient_id as "patient_id!", 
+            doctor_id as "doctor_id!", 
+            appointment_date, 
+            status, 
+            reason, 
+            created_at as "created_at!"
+        FROM appointments 
+        WHERE patient_id = $1
+        ORDER BY appointment_date DESC
+        "#,
+        patient_id
+    )
+    .fetch_all(pool)
+    .await?;
+
+    Ok(appointments)
+}

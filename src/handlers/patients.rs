@@ -65,33 +65,31 @@ pub async fn add_patient(
 
 // GET /patients/{id} - View a single patient profile
 pub async fn view_patient(
-    tera: web::Data<Tera>, 
-    pool: web::Data<PgPool>,
-    session: Session,
-    path: web::Path<i32> // This extracts the {id} from the URL
+    pool: web::Data<sqlx::PgPool>,
+    tmpl: web::Data<tera::Tera>,
+    path: web::Path<i32>,
+    session: actix_session::Session,
 ) -> impl Responder {
-    // 1. Security Check: Are they logged in?
-    if session.get::<i32>("user_id").unwrap_or(None).is_none() {
-        return HttpResponse::SeeOther().append_header(("Location", "/login")).finish();
-    }
-
     let patient_id = path.into_inner();
-    let mut ctx = Context::new();
+    
+    // 1. Fetch the patient
+    let patient = crate::db::patients::get_patient_by_id(&pool, patient_id).await.unwrap();
+    
+    // 2. Fetch their specific appointments (ADD THIS LINE)
+    let appointments = crate::db::appointments::get_appointments_by_patient(&pool, patient_id).await.unwrap_or_default();
 
-    // 2. Fetch the specific patient
-    match db_patients::get_patient_by_id(&pool, patient_id).await {
-        Ok(patient) => {
-            ctx.insert("patient", &patient);
-            match tera.render("patients/profile.html", &ctx) {
-                Ok(html) => HttpResponse::Ok().content_type("text/html").body(html),
-                Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
-            }
-        },
-        Err(sqlx::Error::RowNotFound) => {
-            HttpResponse::NotFound().body("Patient not found in the database.")
-        },
-        Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
-    }
+    let mut ctx = tera::Context::new();
+    ctx.insert("patient", &patient);
+    
+    // 3. Send the appointments to the HTML (ADD THIS LINE)
+    ctx.insert("appointments", &appointments);
+    
+    // Pass session data...
+    ctx.insert("username", &session.get::<String>("username").unwrap().unwrap_or_default());
+    ctx.insert("role", &session.get::<String>("role").unwrap().unwrap_or_default());
+
+    let rendered = tmpl.render("patients/profile.html", &ctx).unwrap();
+    actix_web::HttpResponse::Ok().content_type("text/html").body(rendered)
 }
 
 // GET /patients/{id}/edit - Show the pre-filled edit form
@@ -162,3 +160,6 @@ pub async fn delete_patient_handler(
         Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
     }
 }
+
+
+

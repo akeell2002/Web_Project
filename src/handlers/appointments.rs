@@ -46,3 +46,5 @@ pub async fn book_appointment(
         Err(err) => HttpResponse::InternalServerError().body(format!("Failed to schedule appointment: {}", err)),
     }
 }
+
+
