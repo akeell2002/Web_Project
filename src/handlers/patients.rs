@@ -4,6 +4,7 @@ use tera::{Tera, Context};
 use sqlx::PgPool; 
 use crate::models::patient::PatientForm;
 use crate::db::patients as db_patients;
+use crate::db::medical_records;
 
 // GET /patients - Render list of all patients
 pub async fn list_patients(
@@ -65,28 +66,31 @@ pub async fn add_patient(
 
 // GET /patients/{id} - View a single patient profile
 pub async fn view_patient(
+    path: web::Path<i32>,
     pool: web::Data<sqlx::PgPool>,
     tmpl: web::Data<tera::Tera>,
-    path: web::Path<i32>,
     session: actix_session::Session,
-) -> impl Responder {
+) -> impl actix_web::Responder {
+    // Basic auth check
+    if session.get::<i32>("user_id").unwrap_or(None).is_none() {
+        return actix_web::HttpResponse::SeeOther().insert_header(("Location", "/login")).finish();
+    }
+
     let patient_id = path.into_inner();
     
-    // 1. Fetch the patient
+    // 1. Get Patient Details
     let patient = crate::db::patients::get_patient_by_id(&pool, patient_id).await.unwrap();
     
-    // 2. Fetch their specific appointments (ADD THIS LINE)
+    // 2. Get Appointments
     let appointments = crate::db::appointments::get_appointments_by_patient(&pool, patient_id).await.unwrap_or_default();
+    
+    // 3.Get Medical Records (This fixes your warning!)
+    let records = medical_records::get_records_by_patient(&pool, patient_id).await.unwrap_or_default();
 
     let mut ctx = tera::Context::new();
     ctx.insert("patient", &patient);
-    
-    // 3. Send the appointments to the HTML (ADD THIS LINE)
     ctx.insert("appointments", &appointments);
-    
-    // Pass session data...
-    ctx.insert("username", &session.get::<String>("username").unwrap().unwrap_or_default());
-    ctx.insert("role", &session.get::<String>("role").unwrap().unwrap_or_default());
+    ctx.insert("medical_records", &records); // Pass records to the HTML
 
     let rendered = tmpl.render("patients/profile.html", &ctx).unwrap();
     actix_web::HttpResponse::Ok().content_type("text/html").body(rendered)

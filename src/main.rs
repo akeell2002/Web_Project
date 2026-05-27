@@ -81,6 +81,10 @@ HttpServer::new(move || {
         // Appointment management routes
         .route("/appointments", web::get().to(handlers::appointments::list_appointments))
         .route("/appointments/book", web::post().to(handlers::appointments::book_appointment))
+
+        // Medical record management routes
+        .route("/patients/{id}/records/new", web::get().to(handlers::medical_records::add_record_form))
+        .route("/patients/{id}/records/new", web::post().to(handlers::medical_records::add_record))
 })
 .bind(("127.0.0.1", 8080))?
 .run()

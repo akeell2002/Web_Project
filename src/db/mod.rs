@@ -3,6 +3,7 @@ use sqlx::PgPool;
 pub mod users;
 pub mod patients;
 pub mod appointments;
+pub mod medical_records;
 
 pub async fn create_db_pool() -> Result<PgPool, sqlx::Error> {
     let database_url = std::env::var("DATABASE_URL")

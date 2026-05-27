@@ -1,5 +1,6 @@
 pub mod patient;
 pub mod appointment;
+pub mod medical_record;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
