@@ -70,7 +70,8 @@ async fn main() -> std::io::Result<()> {
 
             // Admin interface routes
             .route("/admin/dashboard", web::get().to(handlers::auth::admin_dashboard))
-            .route("/admin/add-staff", web::post().to(handlers::admin::add_staff))
+            .route("/admin/doctors/add", web::get().to(handlers::admin::add_doctor_page))
+            .route("/admin/doctors/add", web::post().to(handlers::admin::add_doctor_submit))
 
             // Staff interface routes
             .route("/staff/login", web::get().to(handlers::auth::staff_login))

@@ -72,7 +72,7 @@
 <nav class="navbar">
     <div class="navbar-brand">⚕️ HealthHub Staff Portal</div>
     <div class="navbar-links">
-        <a href="/dashboard">Overview</a>
+        <a href="/staff/dashboard">Overview</a>
         <a href="/patients">Patients</a>
         <a href="/appointments">Appointments</a>
         <a href="/logout" style="background: rgba(255,255,255,0.2); padding:8px 15px; border-radius:20px;">Logout</a>
@@ -83,7 +83,7 @@
 
     <div class="welcome-banner">
         <h2>Welcome, {{ staff_name }}</h2>
-        <p>Role: Clinical Staff | System Access: Authorized Healthcare Provider</p>
+        <p>Role: {{ specific_role }} | System Access: Authorized Healthcare Provider</p>
     </div>
 
     <div class="action-grid">

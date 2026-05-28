@@ -1,60 +1,64 @@
 use actix_web::{web, HttpResponse, Responder};
 use actix_session::Session;
-use tera::{Context, Tera};
+use tera::{Tera, Context};
 use sqlx::PgPool;
-
 use crate::models::user::UserRole;
-use crate::models::staff::CreateStaffProfile;
+use crate::models::staff::{AddDoctorForm, CreateStaffProfile};
 use crate::db::staff::register_staff;
 
-// Form payload matching the Admin Onboarding Dashboard form
-#[derive(Debug, serde::Deserialize)]
-pub struct StaffOnboardForm {
-    pub email: String,
-    pub password: String,
-    pub role_selection: String, // "doctor", "nurse", or "receptionist"
-    pub first_name: String,
-    pub last_name: String,
-    pub phone_number: Option<String>,
-}
-
-/// Process a request from the Admin to add a new staff member
-pub async fn add_staff(
-    pool: web::Data<PgPool>,
-    session: Session,
-    form: web::Form<StaffOnboardForm>,
-) -> impl Responder {
-    // 1. Guard check: Ensure only an Admin can invoke this action
+/// GET request handler
+pub async fn add_doctor_page(tmpl: web::Data<Tera>, session: Session) -> impl Responder {
+    // Security Guard: Only let logged-in admins see this page
     if let Ok(Some(role)) = session.get::<String>("role") {
         if role != "admin" {
-            return HttpResponse::Forbidden().body("Access Denied: Administrative privileges required.");
+            return HttpResponse::Forbidden().body("Access Denied: Admin access required.");
         }
     } else {
-        return HttpResponse::Unauthorized().body("Session expired or missing.");
+        return HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish();
     }
 
-    // 2. Parse string choice back into our database model Enum
-    let targeted_role = match form.role_selection.as_str() {
-        "doctor" => UserRole::Doctor,
-        "nurse" => UserRole::Nurse,
-        "receptionist" => UserRole::Receptionist,
-        _ => return HttpResponse::BadRequest().body("Invalid staff role selection."),
-    };
+    let ctx = Context::new();
+    match tmpl.render("admin/add_doctor.html", &ctx) {
+        Ok(html) => HttpResponse::Ok()
+            .content_type("text/html; charset=utf-8")
+            .append_header(("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"))
+            .body(html),
+        Err(e) => HttpResponse::InternalServerError().body(format!("Template compilation error: {}", e)),
+    }
+}
 
-    let profile = CreateStaffProfile {
+/// To process the form submission for adding a new doctor
+pub async fn add_doctor_submit(
+    pool: web::Data<PgPool>,
+    session: Session,
+    form: web::Form<AddDoctorForm>,
+) -> impl Responder {
+    // Security Guard: Double check authentication role criteria
+    if let Ok(Some(role)) = session.get::<String>("role") {
+        if role != "admin" {
+            return HttpResponse::Forbidden().body("Access Denied.");
+        }
+    } else {
+        return HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish();
+    }
+
+    // Wrap the profile pieces to match register_staff signature
+    let staff_profile = CreateStaffProfile {
         first_name: form.first_name.clone(),
         last_name: form.last_name.clone(),
         phone_number: form.phone_number.clone(),
     };
 
-    // 3. Execute the database transaction
-    match register_staff(&pool, &form.email, &form.password, targeted_role, profile).await {
+    // Execute the transaction with the type-safe Doctor role
+    match register_staff(&pool, &form.email, &form.password, UserRole::Doctor, staff_profile).await {
         Ok(_) => {
-            // Redirect back to the admin dashboard with a success state
+            // Success! Send them back to the admin dashboard
             HttpResponse::SeeOther()
-                .append_header(("Location", "/admin/dashboard?success=staff_created"))
+                .append_header(("Location", "/admin/dashboard?success=doctor_added"))
                 .finish()
         }
-        Err(e) => HttpResponse::InternalServerError().body(format!("Onboarding process failed: {}", e)),
+        Err(err_msg) => {
+            HttpResponse::BadRequest().body(format!("Failed to register doctor: {}", err_msg))
+        }
     }
 }
