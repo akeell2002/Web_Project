@@ -1,0 +1,69 @@
+use serde::{Deserialize, Serialize};
+use sqlx::FromRow;
+use uuid::Uuid;
+use chrono::{DateTime, Utc};
+
+// Postgres ENUM to Rust Enum
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type, PartialEq)]
+#[sqlx(type_name = "user_role", rename_all = "lowercase")]
+pub enum UserRole {
+    Admin,
+    Doctor,
+    Nurse,
+    Receptionist,
+    Patient,
+}
+
+// Struct for pulling user data from database
+#[derive(Debug, Clone, Serialize, FromRow)]
+pub struct User {
+    pub id: Uuid,
+    pub email: String,
+    #[serde(skip_serializing)] // To avoid sending password hash in API responses
+    pub password: String,
+    pub role: UserRole,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+// Struct for handling user registration data
+#[derive(Debug, Deserialize)]
+pub struct RegisterRequest {
+    pub email: String,
+    pub password: String, // Plain text password from the user to be hashed later
+    pub role: UserRole,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct PatientRegisterForm {
+    pub email: String,
+    pub password: String,  
+    pub confirm_password: String,
+    pub first_name: String,
+    pub last_name: String,
+    pub date_of_birth: String, 
+    pub gender: Option<String>,
+    pub phone_number: Option<String>,
+    pub emergency_contact_name: Option<String>,
+    pub emergency_contact_phone: Option<String>,
+}
+
+// Struct for handling login attempts
+#[derive(Debug, Deserialize)]
+pub struct LoginRequest {
+    pub email: String,
+    pub password: String,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct LoginForm {
+    pub email: String,
+    pub password: String,
+}
+
+// Simple JSON structure to communicate authorization responses to client pages if needed
+#[derive(Debug, serde::Serialize)]
+pub struct LoginResponse {
+    pub success: bool,
+    pub message: String,
+}

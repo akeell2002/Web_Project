@@ -1,10 +1,12 @@
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
-pub mod users;
-pub mod patients;
-pub mod appointments;
-pub mod medical_records;
 
+pub mod patients;
+pub mod staff;
+pub mod users;
+
+
+/// initializes the connection pool using the environment variable
 pub async fn create_db_pool() -> Result<PgPool, sqlx::Error> {
     let database_url = std::env::var("DATABASE_URL")
         .expect("DATABASE_URL must be set in .env file");

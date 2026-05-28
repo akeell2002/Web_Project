@@ -52,13 +52,11 @@
             <form method="POST" action="/patient/register">
 
                 <div class="input-field">
-                    <input 
-                        type="text"
-                        name="username"
-                        placeholder="Choose Username"
-                        required
-                        autocomplete="off"
-                    >
+                    <input type="text" name="first_name" placeholder="First Name" required>
+                </div>
+
+                <div class="input-field">
+                    <input type="text" name="last_name" placeholder="Last Name" required>
                 </div>
 
                 <div class="input-field">
@@ -68,6 +66,18 @@
                         placeholder="Email Address"
                         required
                     >
+                </div>
+                
+                <div class="input-field">
+                    <input type="date" name="date_of_birth" title="Date of Birth" required>
+                </div>     
+                <div class="input-field">
+                    <select name="gender" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #E5E7EB; margin-bottom: 15px;">
+                        <option value="">Select Gender (Optional)</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
                 </div>
 
                 <div class="input-field">
@@ -86,6 +96,18 @@
                         placeholder="Confirm Password"
                         required
                     >
+                </div>
+
+                <div class="input-field">
+                    <input type="text" name="phone_number" placeholder="Phone Number (Optional)">
+                </div>
+
+                <div class="input-field">
+                    <input type="text" name="emergency_contact_name" placeholder="Emergency Contact Name (Optional)">
+                </div>
+
+                <div class="input-field">
+                    <input type="text" name="emergency_contact_phone" placeholder="Emergency Contact Phone (Optional)">
                 </div>
                 
                 <button 

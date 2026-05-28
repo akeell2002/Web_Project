@@ -2,6 +2,10 @@
 
 A modern SSR web application built with Rust, Actix Web, Tera, and PostgreSQL. The project is structured as a layered enterprise backend with clear separation between HTTP handlers, database access, domain models, utility code, and frontend templates.
 
+## ADMIN ACCOUNT
+admin@clinic.com
+Password123!
+
 ## Project Goals
 
 This project demonstrates:

@@ -1,7 +1,7 @@
-mod db;
-mod models;
-mod utils;
-mod handlers;
+pub mod db;
+pub mod models;
+pub mod utils;
+pub mod handlers;
 
 use actix_web::{App, HttpServer, HttpResponse, Responder, web};
 use actix_session::{SessionMiddleware, storage::CookieSessionStore};
@@ -40,6 +40,11 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("Failed to run migrations");
 
+    // Seed the admin user if not already present
+    if let Err(e) = crate::db::users::seed_admin_user(&db_pool).await {
+        eprintln!("System initialization warning: Resetting seed failed: {}", e);
+    }
+
     let tera = Tera::new("templates/**/*.html").expect("Failed to load templates");
     
     //to encrypt session cookies
@@ -63,17 +68,27 @@ async fn main() -> std::io::Result<()> {
             // Index route
             .route("/", web::get().to(home_page))
 
-            // Staff routes
-            .route("/staff/login", web::get().to(handlers::auth::staff_login))
+            // Admin interface routes
+            .route("/admin/dashboard", web::get().to(handlers::auth::admin_dashboard))
+            .route("/admin/add-staff", web::post().to(handlers::admin::add_staff))
 
-            // Patient routes
+            // Staff interface routes
+            .route("/staff/login", web::get().to(handlers::auth::staff_login))
+            .route("/staff/login", web::post().to(handlers::auth::login)) // Binds staff login form submission here
+            .route("/staff/dashboard", web::get().to(handlers::auth::staff_dashboard))
+
+            // Patient interface routes
             .route("/patient/login", web::get().to(handlers::auth::patient_login))
-            .route("/patient/login", web::post().to(handlers::auth::login))
+            .route("/patient/login", web::post().to(handlers::auth::login)) // Binds patient login form submission here
             .route("/patient/register", web::get().to(handlers::auth::show_register))
             .route("/patient/register", web::post().to(handlers::auth::register))
+            .route("/patient/dashboard", web::get().to(handlers::auth::patient_dashboard))
+
+            // Logout route
+            .route("/logout", web::get().to(handlers::auth::logout))
             
-    })
-    .bind(("127.0.0.1", 8080))?
-    .run()
-    .await
-    }
+        })
+        .bind(("127.0.0.1", 8080))?
+        .run()
+        .await
+}
