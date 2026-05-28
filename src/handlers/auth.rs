@@ -5,6 +5,7 @@ use sqlx::PgPool;
 use crate::models::{LoginForm, RegisterForm, LoginResponse};
 use crate::db::users::{create_user, authenticate_user};
 
+// Staff login page
 pub async fn staff_login(tera: web::Data<Tera>) -> impl Responder {
     let ctx = Context::new();
 
@@ -19,6 +20,7 @@ pub async fn staff_login(tera: web::Data<Tera>) -> impl Responder {
     }
 }
 
+// Patient login page
 pub async fn patient_login(tera: web::Data<Tera>) -> impl Responder {
     let ctx = Context::new();
 
@@ -33,7 +35,7 @@ pub async fn patient_login(tera: web::Data<Tera>) -> impl Responder {
     }
 }
 
-// Process login form submission
+// Process login form submission for both staff and patients under same function
 pub async fn login(
     pool: web::Data<PgPool>,
     form: web::Form<LoginForm>,
@@ -63,7 +65,7 @@ pub async fn login(
     }
 }
 
-// Show registration page
+// Patient registration page
 pub async fn show_register(tera: web::Data<Tera>) -> impl Responder {
     let ctx = Context::new();
     match tera.render("patient/register.html", &ctx) {
@@ -96,7 +98,7 @@ pub async fn register(
     }
 }
 
-// Dashboard page aft login
+// Dashboard page after login
 pub async fn dashboard(
     session: Session,
     tera: web::Data<Tera>,
