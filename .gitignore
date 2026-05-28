@@ -11,3 +11,4 @@ desktop.ini
 # Build/debug folders
 /debug
 Cargo.lock
+*.lock
