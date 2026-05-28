@@ -20,7 +20,7 @@ pub async fn list_patients(
     match db_patients::get_all_patients(&pool).await {
         Ok(patients) => {
             ctx.insert("patients", &patients);
-            match tera.render("patients/list.html", &ctx) {
+            match tera.render("patient/list.html", &ctx) {
                 Ok(html) => HttpResponse::Ok().content_type("text/html").body(html),
                 Err(_) => HttpResponse::InternalServerError().body("Template Error"),
             }
@@ -36,7 +36,7 @@ pub async fn show_add_patient(tera: web::Data<Tera>, session: Session) -> impl R
     }
 
     let ctx = Context::new();
-    match tera.render("patients/add.html", &ctx) {
+    match tera.render("patient/add.html", &ctx) {
         Ok(html) => HttpResponse::Ok().content_type("text/html").body(html),
         Err(_) => HttpResponse::InternalServerError().body("Template Error"),
     }
@@ -92,7 +92,7 @@ pub async fn view_patient(
     ctx.insert("appointments", &appointments);
     ctx.insert("medical_records", &records); // Pass records to the HTML
 
-    let rendered = tmpl.render("patients/profile.html", &ctx).unwrap();
+    let rendered = tmpl.render("patient/profile.html", &ctx).unwrap();
     actix_web::HttpResponse::Ok().content_type("text/html").body(rendered)
 }
 
@@ -113,7 +113,7 @@ pub async fn show_edit_patient(
     match db_patients::get_patient_by_id(&pool, patient_id).await {
         Ok(patient) => {
             ctx.insert("patient", &patient);
-            match tera.render("patients/edit.html", &ctx) {
+            match tera.render("patient/edit.html", &ctx) {
                 Ok(html) => HttpResponse::Ok().content_type("text/html").body(html),
                 Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
             }

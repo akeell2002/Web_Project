@@ -47,7 +47,7 @@ pub async fn login(
             let _ = session.insert("role", &user.role);
             
             HttpResponse::SeeOther()
-                .append_header(("Location", "/dashboard"))
+                .append_header(("Location", "/patient/dashboard"))
                 .finish()
         }
         Ok(None) => HttpResponse::Unauthorized().json(LoginResponse {
@@ -85,7 +85,7 @@ pub async fn register(
             let _ = session.insert("role", &user.role);
             
             HttpResponse::SeeOther()
-                .append_header(("Location", "/dashboard"))
+                .append_header(("Location", "/patient/dashboard"))
                 .finish()
         }
         Err(e) => HttpResponse::BadRequest().json(LoginResponse {
@@ -114,7 +114,7 @@ pub async fn dashboard(
         }
         _ => {
             HttpResponse::SeeOther()
-                .append_header(("Location", "/login"))
+                .append_header(("Location", "/patient/login"))
                 .finish()
         }
     }
@@ -124,6 +124,6 @@ pub async fn dashboard(
 pub async fn logout(session: Session) -> impl Responder {
     session.clear();
     HttpResponse::SeeOther()
-        .append_header(("Location", "/login"))
+    .append_header(("Location", "/patient/login"))
         .finish()
 }

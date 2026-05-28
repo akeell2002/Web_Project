@@ -63,13 +63,19 @@ async fn main() -> std::io::Result<()> {
             // Index route
             .route("/", web::get().to(home_page))
 
-            // Staff routes
-            .route("/staff/login", web::get().to(handlers::auth::staff_login))
+                // Staff routes
+                .route("/staff/login", web::get().to(handlers::auth::staff_login))
 
-            // Patient routes
-            .route("/patient/login", web::get().to(handlers::auth::patient_login))
-            .route("/patient/register", web::get().to(handlers::auth::show_register))
-            .route("/patient/register", web::post().to(handlers::auth::register))
+                // Patient routes
+                .route("/login", web::get().to(handlers::auth::patient_login))
+                .route("/login", web::post().to(handlers::auth::login))
+                .route("/patient/login", web::get().to(handlers::auth::patient_login))
+                .route("/patient/login", web::post().to(handlers::auth::login))
+                .route("/register", web::get().to(handlers::auth::show_register))
+                .route("/register", web::post().to(handlers::auth::register))
+                .route("/patient/register", web::get().to(handlers::auth::show_register))
+                .route("/patient/register", web::post().to(handlers::auth::register))
+                
     })
     .bind(("127.0.0.1", 8080))?
     .run()
