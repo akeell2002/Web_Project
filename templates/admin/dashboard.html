@@ -99,11 +99,16 @@
 
 <nav class="navbar">
     <div class="navbar-brand">🛡️ HealthHub Admin Console</div>
+
     <div class="navbar-links">
         <a href="/admin/dashboard">Overview</a>
         <a href="/admin/staff">Staff Management</a>
         <a href="/admin/security">Security</a>
-        <a href="/logout" style="background: rgba(255,255,255,0.2); padding:8px 15px; border-radius:20px;">Logout</a>
+
+        <a href="/logout"
+           style="background: rgba(255,255,255,0.2); padding:8px 15px; border-radius:20px;">
+            Logout
+        </a>
     </div>
 </nav>
 
@@ -133,6 +138,11 @@
         </div>
 
         <div class="stat-card">
+            <h3>Receptionists Registered</h3>
+            <div class="value">12</div>
+        </div>
+
+        <div class="stat-card">
             <h3>Security Alerts</h3>
             <div class="value" style="color:#DC2626;">3</div>
         </div>
@@ -144,30 +154,88 @@
 
         <div class="action-card">
             <div class="action-icon">👨‍⚕️</div>
+
             <h3>Add Doctor</h3>
-            <p>Create and register new doctor accounts with department assignment and system permissions.</p>
-            <a href="/admin/doctors/add" class="btn-submit" style="text-decoration:none;">Add Doctor</a>
+
+            <p>
+                Create and register new doctor accounts with department
+                assignment and clinical system permissions.
+            </p>
+
+            <a href="/admin/doctors/add"
+               class="btn-submit"
+               style="text-decoration:none;">
+                Add Doctor
+            </a>
         </div>
 
         <div class="action-card">
             <div class="action-icon">👩‍⚕️</div>
+
             <h3>Add Nurse</h3>
-            <p>Onboard nursing staff into the system and assign ward or department responsibilities.</p>
-            <a href="/admin/nurses/add" class="btn-submit" style="text-decoration:none; background:#005999;">Add Nurse</a>
+
+            <p>
+                Onboard nursing staff into the system and assign
+                ward or department responsibilities.
+            </p>
+
+            <a href="/admin/nurses/add"
+               class="btn-submit"
+               style="text-decoration:none; background:#005999;">
+                Add Nurse
+            </a>
+        </div>
+
+        <!-- NEW RECEPTIONIST CARD -->
+        <div class="action-card">
+            <div class="action-icon">🧾</div>
+
+            <h3>Add Receptionist</h3>
+
+            <p>
+                Register front desk reception staff responsible for
+                patient check-ins, appointment coordination, and clinic support.
+            </p>
+
+            <a href="/admin/receptionists/add"
+               class="btn-submit"
+               style="text-decoration:none; background:#7C3AED;">
+                Add Receptionist
+            </a>
         </div>
 
         <div class="action-card">
             <div class="action-icon">🛡️</div>
+
             <h3>Security Monitoring</h3>
-            <p>Review login activity, detect anomalies, and monitor system access logs for compliance.</p>
-            <a href="/admin/security" class="btn-submit" style="text-decoration:none; background:#DC2626;">View Security Logs</a>
+
+            <p>
+                Review login activity, detect anomalies, and monitor
+                system access logs for compliance auditing.
+            </p>
+
+            <a href="/admin/security"
+               class="btn-submit"
+               style="text-decoration:none; background:#DC2626;">
+                View Security Logs
+            </a>
         </div>
 
         <div class="action-card">
             <div class="action-icon">📊</div>
+
             <h3>System Analytics</h3>
-            <p>View system-wide usage metrics including appointments, patient load, and staff activity trends.</p>
-            <a href="/admin/analytics" class="btn-submit" style="text-decoration:none; background:#0EA5E9;">View Analytics</a>
+
+            <p>
+                View usage metrics including appointments, patient volume,
+                staff activity, and operational performance trends.
+            </p>
+
+            <a href="/admin/analytics"
+               class="btn-submit"
+               style="text-decoration:none; background:#0EA5E9;">
+                View Analytics
+            </a>
         </div>
 
     </div>

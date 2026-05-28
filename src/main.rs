@@ -74,7 +74,7 @@ async fn main() -> std::io::Result<()> {
 
             // Staff interface routes
             .route("/staff/login", web::get().to(handlers::auth::staff_login))
-            .route("/staff/login", web::post().to(handlers::auth::login)) // Binds staff login form submission here
+            .route("/staff/login", web::post().to(handlers::auth::login))
             .route("/staff/dashboard", web::get().to(handlers::auth::staff_dashboard))
 
             // Patient interface routes

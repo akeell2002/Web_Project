@@ -94,8 +94,7 @@ pub async fn get_all_doctors(pool: &PgPool) -> Result<Vec<User>, sqlx::Error> {
     Ok(doctors)
 }
 
-
-
+// Function to initialise admin user if not already present in the database
 pub async fn seed_admin_user(pool: &PgPool) -> Result<(), String> {
     // 1. Check if the admin account already exists
     let admin_exists = sqlx::query!(

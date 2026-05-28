@@ -123,7 +123,11 @@ pub async fn patient_dashboard(session: Session, tera: web::Data<Tera>) -> impl 
             ctx.insert("email", &email);
 
             return match tera.render("patient/dashboard.html", &ctx) {
-                Ok(html) => HttpResponse::Ok().content_type("text/html").body(html),
+                Ok(html) => HttpResponse::Ok()
+                    .content_type("text/html")
+                    .append_header(("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"))
+                    .append_header(("Pragma", "no-cache"))
+                    .body(html),
                 Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
             };
         }
@@ -144,7 +148,11 @@ pub async fn staff_dashboard(session: Session, tera: web::Data<Tera>) -> impl Re
             ctx.insert("specific_role", &role);
             
             return match tera.render("staff/dashboard.html", &ctx) {
-                Ok(html) => HttpResponse::Ok().content_type("text/html").body(html),
+                Ok(html) => HttpResponse::Ok()
+                    .content_type("text/html")
+                    .append_header(("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"))
+                    .append_header(("Pragma", "no-cache"))
+                    .body(html),
                 Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
             };
         }
@@ -160,7 +168,11 @@ pub async fn admin_dashboard(session: Session, tera: web::Data<Tera>) -> impl Re
             ctx.insert("email", &email);
             
             return match tera.render("admin/dashboard.html", &ctx) {
-                Ok(html) => HttpResponse::Ok().content_type("text/html").body(html),
+                Ok(html) => HttpResponse::Ok()
+                    .content_type("text/html")
+                    .append_header(("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"))
+                    .append_header(("Pragma", "no-cache"))
+                    .body(html),
                 Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
             };
         }
