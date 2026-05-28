@@ -108,7 +108,7 @@ pub async fn seed_admin_user(pool: &PgPool) -> Result<(), String> {
         println!("Seeding layer: Admin account not found. Creating clean entry...");
 
         // 2. Hash the password directly using your utils utility crate
-        let raw_password = "Password123!";
+        let raw_password = "faipi";
         let database_secure_hash = hash_password(raw_password)?;
 
         // 3. Generate a clean random UUID for the admin identifier

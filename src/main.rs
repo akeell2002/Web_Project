@@ -72,6 +72,8 @@ async fn main() -> std::io::Result<()> {
             .route("/admin/dashboard", web::get().to(handlers::auth::admin_dashboard))
             .route("/admin/doctors/add", web::get().to(handlers::admin::add_doctor_page))
             .route("/admin/doctors/add", web::post().to(handlers::admin::add_doctor_submit))
+            .route("/admin/nurses/add", web::get().to(handlers::admin::add_nurse_page))
+            .route("/admin/nurses/add", web::post().to(handlers::admin::add_nurse_submit))
 
             // Staff interface routes
             .route("/staff/login", web::get().to(handlers::auth::staff_login))

@@ -21,7 +21,7 @@ pub struct CreateStaffProfile {
 }
 
 #[derive(Debug, serde::Deserialize)]
-pub struct AddDoctorForm {
+pub struct AddStaffForm {
     pub email: String,
     pub password: String,
     pub first_name: String,
