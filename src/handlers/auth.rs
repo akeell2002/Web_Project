@@ -5,12 +5,31 @@ use sqlx::PgPool;
 use crate::models::{LoginForm, RegisterForm, LoginResponse};
 use crate::db::users::{create_user, authenticate_user};
 
-// Show login page
-pub async fn show_login(tera: web::Data<Tera>) -> impl Responder {
+pub async fn staff_login(tera: web::Data<Tera>) -> impl Responder {
     let ctx = Context::new();
-    match tera.render("auth/login.html", &ctx) {
-        Ok(html) => HttpResponse::Ok().content_type("text/html").body(html),
-        Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
+
+    match tera.render("staff/login.html", &ctx) {
+        Ok(html_content) => HttpResponse::Ok()
+            .content_type("text/html; charset=utf-8")
+            .body(html_content),
+        Err(e) => {
+            println!("Template error: {}", e);
+            HttpResponse::InternalServerError().body("Failed to compile layout.")
+        }
+    }
+}
+
+pub async fn patient_login(tera: web::Data<Tera>) -> impl Responder {
+    let ctx = Context::new();
+
+    match tera.render("patient/login.html", &ctx) {
+        Ok(html_content) => HttpResponse::Ok()
+            .content_type("text/html; charset=utf-8")
+            .body(html_content),
+        Err(e) => {
+            println!("Template error: {}", e);
+            HttpResponse::InternalServerError().body("Failed to compile layout.")
+        }
     }
 }
 
@@ -47,7 +66,7 @@ pub async fn login(
 // Show registration page
 pub async fn show_register(tera: web::Data<Tera>) -> impl Responder {
     let ctx = Context::new();
-    match tera.render("auth/register.html", &ctx) {
+    match tera.render("patient/register.html", &ctx) {
         Ok(html) => HttpResponse::Ok().content_type("text/html").body(html),
         Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
     }

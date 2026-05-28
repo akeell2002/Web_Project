@@ -11,7 +11,7 @@ use tera::{Context, Tera};
 async fn home_page(tera: web::Data<Tera>) -> impl Responder {
     let ctx = Context::new();
 
-    match tera.render("auth/login.html", &ctx) {
+    match tera.render("index.html", &ctx) {
         Ok(html_content) => HttpResponse::Ok()
             .content_type("text/html; charset=utf-8")
             .body(html_content),
@@ -21,6 +21,8 @@ async fn home_page(tera: web::Data<Tera>) -> impl Responder {
         }
     }
 }
+
+
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -56,14 +58,17 @@ HttpServer::new(move || {
         
         .service(actix_files::Files::new("/static", "./static").show_files_listing()) 
         
-        // Index route (Renders your homepage template) [cite: 325, 362]
+        // Index route (Renders your homepage template)
         .route("/", web::get().to(home_page))
+
+        // Staff routes
+        .route("/staff/login", web::get().to(handlers::auth::staff_login))
+
+        // Patient routes
+        .route("/patient/login", web::get().to(handlers::auth::patient_login))
+        .route("/patient/register", web::get().to(handlers::auth::show_register))
+        .route("/patient/register", web::post().to(handlers::auth::register))
         
-        // Auth routes [cite: 436, 439]
-        .route("/login", web::get().to(handlers::auth::show_login))
-        .route("/login", web::post().to(handlers::auth::login))
-        .route("/register", web::get().to(handlers::auth::show_register))
-        .route("/register", web::post().to(handlers::auth::register))
         
         // Logged in user routes [cite: 442, 446]
         .route("/dashboard", web::get().to(handlers::auth::dashboard))

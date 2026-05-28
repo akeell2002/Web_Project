@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Login - HealthHub Clinical Systems</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <div class="portal-wrapper">
+
+        <!-- Left Branding Panel -->
+        <div class="brand-panel">
+            <div class="system-tag" style="color: #FFB3B3;">
+                ⚠ AUTHORIZED STAFF ONLY
+            </div>
+
+            <div class="brand-message">
+                <h2>Healthcare Staff<br>Access Portal.</h2>
+
+                <p>
+                    Secure authentication portal for healthcare professionals,
+                    clinic administrators, and authorized medical personnel
+                    accessing patient appointment and healthcare management systems.
+                </p>
+
+                <div style="margin-top: 25px; padding: 12px; background: rgba(0,0,0,0.15); border-left: 3px solid #F87171; border-radius: 4px;">
+                    <p style="font-size: 11.5px; line-height: 1.4; color: #E6F0F9; margin: 0;">
+                        <strong>Compliance Notice:</strong> Unauthorized access to
+                        patient information is strictly prohibited. All login activity
+                        is logged and monitored for security and auditing purposes.
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel-footer">
+                &copy; 2026 HealthHub Medical Infrastructure.
+            </div>
+        </div>
+
+        <!-- Right Login Form -->
+        <div class="form-panel">
+
+            <div class="form-header">
+                <h3>Staff Log In</h3>
+                <p>Please sign in using your authorized staff credentials.</p>
+            </div>
+
+            <form method="POST" action="/staff/login">
+
+                <div class="input-field">
+                    <input 
+                        type="text" 
+                        name="username"
+                        placeholder="Staff Username"
+                        required
+                        autocomplete="off"
+                    >
+                </div>
+
+                <div class="input-field">
+                    <input 
+                        type="password" 
+                        name="password"
+                        placeholder="Password"
+                        required
+                    >
+                </div>
+
+                <button 
+                    type="submit"
+                    class="btn-submit"
+                    style="background: #005999; margin-top: 10px;"
+                >
+                    Secure Staff Login
+                </button>
+
+            </form>
+
+            <div class="switch-auth" style="margin-top: 25px;">
+                <p>
+                    Return to <a href="/">Main Portal</a>
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

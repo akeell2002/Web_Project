@@ -3,21 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ project_title }}</title>
-    <style>
-        body { font-family: sans-serif; background: #eef2f7; color: #333; text-align: center; padding-top: 50px; }
-        .card { background: white; max-width: 550px; margin: 0 auto; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid #2ecc71; }
-        h1 { color: #2c3e50; }
-        span { color: #2ecc71; font-weight: bold; }
-        .badge { background: #e8f8f5; color: #1abc9c; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; }
-    </style>
+    <title>HealthHub Clinical Systems</title>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <div class="card">
-        <h1>Welcome to your <span>{{ project_title }}</span></h1>
-        <p>Phase 1 Core Infrastructure Layer successfully running via <mark>Tera SSR Engine</mark>.</p>
-        <br>
-        <span class="badge">Architecture Verified</span>
+
+    <div class="portal-wrapper">
+
+        <!-- Left Branding Panel -->
+        <div class="brand-panel">
+            <div class="system-tag">HEALTHHUB ACCESS PORTAL</div>
+
+            <div class="brand-message">
+                <h2>Unified Medical<br>Access System.</h2>
+
+                <p>
+                    Secure access for patients and healthcare staff to manage
+                    appointments, medical records, and healthcare services
+                    through the HealthHub Clinical Systems platform.
+                </p>
+
+                <div style="margin-top: 25px; padding: 12px; background: rgba(0,0,0,0.15); border-left: 3px solid #7DD3FC; border-radius: 4px;">
+                    <p style="font-size: 11.5px; line-height: 1.4; color: #E6F0F9; margin: 0;">
+                        <strong>Security Notice:</strong> All sessions are encrypted and monitored for patient data protection and healthcare compliance standards.
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel-footer">
+                &copy; 2026 HealthHub Medical Infrastructure.
+            </div>
+        </div>
+
+        <!-- Right Entry Panel -->
+        <div class="form-panel">
+
+            <div class="form-header">
+                <h3>Choose Access Portal</h3>
+                <p>Select the appropriate login portal to continue.</p>
+            </div>
+
+            <!-- Patient Login -->
+            <a href="/patient/login" style="text-decoration: none;">
+                <button 
+                    class="btn-submit"
+                    style="background: #00A98F; margin-bottom: 18px;"
+                >
+                    Log In as Patient
+                </button>
+            </a>
+
+            <!-- Staff Login -->
+            <a href="/staff/login" style="text-decoration: none;">
+                <button 
+                    class="btn-submit"
+                    style="background: #005999;"
+                >
+                    Log In as Staff
+                </button>
+            </a>
+
+            <div class="switch-auth" style="margin-top: 30px; text-align: center;">
+                <p>
+                    Need assistance? 
+                    <a href="/support">Contact System Support</a>
+                </p>
+            </div>
+
+        </div>
+
     </div>
+
 </body>
 </html>
