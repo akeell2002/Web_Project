@@ -64,6 +64,32 @@
             flex-grow: 1;
             line-height: 1.6;
         }
+
+        .module-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #E0F2FE;
+            color: #075985;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 12px;
+            width: fit-content;
+        }
+
+        .action-link {
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 14px;
+        }
+
+        .action-link.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
     </style>
 </head>
 
@@ -88,33 +114,83 @@
 
     <div class="action-grid">
 
+        {% if specific_role == 'doctor' %}
         <div class="action-card">
+            <div class="module-badge">Doctor Module</div>
+            <div class="action-icon">🩺</div>
+            <h3>Consult Patients</h3>
+            <p>Review assigned patient records and capture consultation notes for active visits.</p>
+            <a href="/patients" class="btn-submit action-link" style="text-decoration:none;">Open Consultations</a>
+        </div>
+
+        <div class="action-card">
+            <div class="module-badge">Doctor Module</div>
+            <div class="action-icon">💊</div>
+            <h3>Prescribe Medication</h3>
+            <p>Create prescription plans and document treatment instructions tied to a patient visit.</p>
+            <a href="/patients" class="btn-submit action-link" style="text-decoration:none; background:#005999;">Write Prescription</a>
+        </div>
+
+        <div class="action-card">
+            <div class="module-badge">Doctor Module</div>
             <div class="action-icon">📁</div>
             <h3>Patient Records</h3>
-            <p>View and manage full electronic health records, including diagnosis history, medications, and visit summaries.</p>
-            <a href="/patients" class="btn-submit" style="text-decoration:none;">Open Records</a>
+            <p>View the full electronic health record history, including diagnoses and visit summaries.</p>
+            <a href="/patients" class="btn-submit action-link" style="text-decoration:none; background:#0EA5E9;">Open Records</a>
+        </div>
+        {% endif %}
+
+        {% if specific_role == 'nurse' %}
+        <div class="action-card">
+            <div class="module-badge">Nurse Module</div>
+            <div class="action-icon">💉</div>
+            <h3>Check Medicine Inventory</h3>
+            <p>Review supply levels and verify medication availability before care administration.</p>
+            <span class="btn-submit action-link disabled" style="text-decoration:none; background:#005999;">Inventory View</span>
         </div>
 
         <div class="action-card">
+            <div class="module-badge">Nurse Module</div>
+            <div class="action-icon">🩹</div>
+            <h3>Update Patient Care</h3>
+            <p>Record vital checks, nursing notes, and bedside updates during patient care.</p>
+            <a href="/patients" class="btn-submit action-link" style="text-decoration:none; background:#0EA5E9;">Open Care Charts</a>
+        </div>
+
+        <div class="action-card">
+            <div class="module-badge">Nurse Module</div>
+            <div class="action-icon">📋</div>
+            <h3>Medication Administration</h3>
+            <p>Document administered medication and track patient response after treatment.</p>
+            <span class="btn-submit action-link disabled" style="text-decoration:none; background:#005999;">Administration Log</span>
+        </div>
+        {% endif %}
+
+        {% if specific_role == 'receptionist' %}
+        <div class="action-card">
+            <div class="module-badge">Reception Module</div>
+            <div class="action-icon">📅</div>
+            <h3>Manage Appointments</h3>
+            <p>Book, reschedule, and coordinate clinic appointments and daily schedules.</p>
+            <span class="btn-submit action-link disabled" style="text-decoration:none; background:#0EA5E9;">Appointment Desk</span>
+        </div>
+
+        <div class="action-card">
+            <div class="module-badge">Reception Module</div>
             <div class="action-icon">➕</div>
             <h3>Register Patient</h3>
-            <p>Create new patient profiles and assign them to the system for tracking appointments and medical history.</p>
-            <a href="/patients/add" class="btn-submit" style="text-decoration:none; background:#005999;">New Registration</a>
+            <p>Create new patient profiles and capture the details needed for front desk processing.</p>
+            <a href="/patients/add" class="btn-submit action-link" style="text-decoration:none; background:#005999;">New Registration</a>
         </div>
 
         <div class="action-card">
-            <div class="action-icon">📅</div>
-            <h3>Schedule Management</h3>
-            <p>Manage doctor schedules, assign appointments, and coordinate clinic workflow in real time.</p>
-            <a href="/appointments" class="btn-submit" style="text-decoration:none; background:#0EA5E9;">View Schedule</a>
+            <div class="module-badge">Reception Module</div>
+            <div class="action-icon">🧾</div>
+            <h3>Manage Bills</h3>
+            <p>Prepare and track billing records for appointments and front desk transactions.</p>
+            <span class="btn-submit action-link disabled" style="text-decoration:none; background:#005999;">Billing Desk</span>
         </div>
-
-        <div class="action-card">
-            <div class="action-icon">🔒</div>
-            <h3>Security & Audit Logs</h3>
-            <p>Monitor system activity, login attempts, and compliance logs for patient data protection.</p>
-            <a href="/security" class="btn-submit" style="text-decoration:none; background:#DC2626;">View Logs</a>
-        </div>
+        {% endif %}
 
     </div>
 

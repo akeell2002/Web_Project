@@ -98,9 +98,10 @@ pub async fn get_all_doctors(pool: &PgPool) -> Result<Vec<User>, sqlx::Error> {
 pub async fn seed_default_staff_users(pool: &PgPool) -> Result<(), String> {
     let seed_accounts = [
         (UserRole::Admin, vec!["admin@clinic.com"]),
-        (UserRole::Doctor, vec!["doctor@clinic.com", "doctor@clinic"]),
+        (UserRole::Doctor, vec!["doctor@clinic.com"]),
         (UserRole::Nurse, vec!["nurse@clinic.com"]),
         (UserRole::Receptionist, vec!["receptionist@clinic.com"]),
+        (UserRole::Patient, vec!["patient@clinic.com"]),
     ];
 
     for (role, emails) in seed_accounts {
