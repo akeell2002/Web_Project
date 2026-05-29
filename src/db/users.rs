@@ -1,5 +1,6 @@
 use sqlx::PgPool;
 use crate::models::user::{User, UserRole};
+use crate::db::security::log_access_event;
 use crate::utils::{hash_password, verify_password};
 
 /// Create a new user in the database
@@ -107,26 +108,60 @@ pub async fn seed_default_staff_users(pool: &PgPool) -> Result<(), String> {
     for (role, emails) in seed_accounts {
         for email in emails {
             let hashed_password = hash_password("faipi")?;
+            let existing_user = find_user_by_email(pool, email).await?;
 
-            sqlx::query!(
-                r#"
-                INSERT INTO users (email, password, role)
-                VALUES ($1, $2, $3::user_role)
-                ON CONFLICT (email)
-                DO UPDATE SET
-                    password = EXCLUDED.password,
-                    role = EXCLUDED.role,
-                    updated_at = CURRENT_TIMESTAMP
-                "#,
-                email,
-                hashed_password,
-                role.clone() as UserRole
-            )
-            .execute(pool)
-            .await
-            .map_err(|e| format!("Failed to seed {}: {}", email, e))?;
+            match existing_user {
+                Some(_) => {
+                    sqlx::query!(
+                        r#"
+                        UPDATE users
+                        SET password = $2,
+                            role = $3::user_role,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE LOWER(email) = LOWER($1)
+                        "#,
+                        email,
+                        hashed_password,
+                        role.clone() as UserRole
+                    )
+                    .execute(pool)
+                    .await
+                    .map_err(|e| format!("Failed to refresh {}: {}", email, e))?;
 
-            println!("Seeding layer: {} deployed or refreshed.", email);
+                    println!("Seeding layer: {} refreshed.", email);
+                }
+                None => {
+                    let created = create_user(pool, email, "faipi", role.clone()).await?;
+                    let details = format!("System seeded {} account for {}.", match role {
+                        UserRole::Admin => "Admin",
+                        UserRole::Doctor => "Doctor",
+                        UserRole::Nurse => "Nurse",
+                        UserRole::Receptionist => "Receptionist",
+                        UserRole::Patient => "Patient",
+                    }, email);
+
+                    log_access_event(
+                        pool,
+                        None,
+                        Some("system"),
+                        "seed_account_created",
+                        Some(created.id),
+                        &created.email,
+                        match role {
+                            UserRole::Admin => "Admin",
+                            UserRole::Doctor => "Doctor",
+                            UserRole::Nurse => "Nurse",
+                            UserRole::Receptionist => "Receptionist",
+                            UserRole::Patient => "Patient",
+                        },
+                        &details,
+                    )
+                    .await
+                    .map_err(|e| format!("Failed to log seed for {}: {}", email, e))?;
+
+                    println!("Seeding layer: {} deployed.", email);
+                }
+            }
         }
     }
 

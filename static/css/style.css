@@ -70,6 +70,29 @@ body {
     color: white;
 }
 
+/* Patient portal theme overrides (green) */
+.patient-portal .brand-panel {
+    background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+}
+.patient-portal .input-field input:focus, .patient-portal select.modern-select:focus {
+    border-color: #047857;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(4,120,87,0.12);
+}
+.patient-portal .switch-auth a, .patient-portal a.link-primary {
+    color: #047857;
+}
+.patient-portal .system-tag {
+    color: #DFF7EE;
+}
+
+.patient-portal .btn-submit {
+    background: #047857;
+}
+.patient-portal .btn-submit:hover {
+    background: #065f46;
+}
+
 .system-tag {
     font-size: 12px;
     letter-spacing: 1.5px;

@@ -3,6 +3,7 @@ use sqlx::PgPool;
 
 pub mod patients;
 pub mod staff;
+pub mod security;
 pub mod users;
 
 

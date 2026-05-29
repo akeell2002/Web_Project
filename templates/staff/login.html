@@ -54,6 +54,7 @@
                         type="email" 
                         name="email"
                         placeholder="Staff Email"
+                        value='{{ email | default(value="") }}'
                         required
                         autocomplete="off"
                     >
@@ -66,6 +67,10 @@
                         placeholder="Password"
                         required
                     >
+                </div>
+
+                <div id="login-error" style="color: #ff4d4f; min-height:18px; line-height:18px;">
+                    {% if error_message %}{{ error_message }}{% else %}&nbsp;{% endif %}
                 </div>
 
                 <button 

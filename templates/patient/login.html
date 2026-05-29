@@ -8,10 +8,10 @@
 </head>
 <body>
 
-    <div class="portal-wrapper">
+    <div class="portal-wrapper patient-portal">
 
         <!-- Left Branding Panel -->
-        <div class="brand-panel">
+        <div class="brand-panel" style="background: linear-gradient(135deg, #047857 0%, #065f46 100%);">
             <div class="system-tag">
                 HEALTHHUB PATIENT ACCESS
             </div>
@@ -25,7 +25,7 @@
                     through the HealthHub Patient Management System.
                 </p>
 
-                <div style="margin-top: 25px; padding: 12px; background: rgba(0,0,0,0.15); border-left: 3px solid #34D399; border-radius: 4px;">
+                <div style="margin-top: 25px; padding: 12px; background: rgba(0,0,0,0.15); border-left: 3px solid #065f46; border-radius: 4px;">
                     <p style="font-size: 11.5px; line-height: 1.4; color: #E6F0F9; margin: 0;">
                         <strong>Privacy Notice:</strong> Your personal and medical
                         information is protected under healthcare privacy and
@@ -54,6 +54,7 @@
                         type="email"
                         name="email"
                         placeholder="Email Address"
+                        value='{{ email | default(value="") }}'
                         required
                         autocomplete="off"
                     >
@@ -67,6 +68,8 @@
                         required
                     >
                 </div>
+
+                <div id="login-error" style="color: #ff4d4f; min-height:18px; line-height:18px;">{% if error_message %}{{ error_message }}{% else %}&nbsp;{% endif %}</div>
 
                 <button
                     type="submit"

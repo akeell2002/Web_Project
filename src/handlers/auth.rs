@@ -1,4 +1,4 @@
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse, Responder, HttpRequest};
 use actix_session::Session;
 use tera::{Context, Tera};
 use sqlx::PgPool;
@@ -8,6 +8,7 @@ use crate::models::user::{LoginForm, PatientRegisterForm, UserRole};
 use crate::db::users::{authenticate_user, find_user_by_email};
 use crate::db::staff::get_staff_dashboard_counts;
 use crate::db::patients::register_patient;
+use crate::db::security::log_access_event;
 
 // Staff login page rendering
 pub async fn staff_login(tera: web::Data<Tera>) -> impl Responder {
@@ -30,6 +31,8 @@ pub async fn patient_login(tera: web::Data<Tera>) -> impl Responder {
 // Centralized Processing for ALL login submissions (Both Staff & Patients)
 pub async fn login(
     pool: web::Data<PgPool>,
+    tera: web::Data<Tera>,
+    req: HttpRequest,
     form: web::Form<LoginForm>,
     session: Session,
 ) -> impl Responder {
@@ -50,6 +53,21 @@ pub async fn login(
             };
             let _ = session.insert("role", role_str);
 
+            if let Err(err) = log_access_event(
+                pool.get_ref(),
+                Some(user.id),
+                Some(&user.email),
+                "login_success",
+                Some(user.id),
+                &user.email,
+                role_str,
+                &format!("{} logged in successfully.", user.email),
+            )
+            .await
+            {
+                eprintln!("Security log write failed for login_success: {}", err);
+            }
+
             // 3. Smart routing: Send users to their dedicated dashboard structures!
             let redirect_target = match user.role {
                 UserRole::Admin => "/admin/dashboard",
@@ -62,8 +80,23 @@ pub async fn login(
                 .finish()
         }
         Ok(None) => {
-            // Return an HTTP 401 Unauthorized page response or contextual message
-            HttpResponse::Unauthorized().body("Invalid email or password.")
+            // Authentication failed — choose the correct login template based on request path
+            let mut ctx = Context::new();
+            ctx.insert("error_message", &"Invalid email or password.");
+            ctx.insert("email", &form.email);
+
+            // Default to staff login; if the incoming path is under /patient, render patient login
+            let path = req.path();
+            let template_name = if path.starts_with("/patient") {
+                "patient/login.html"
+            } else {
+                "staff/login.html"
+            };
+
+            return match tera.render(template_name, &ctx) {
+                Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
+                Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
+            };
         }
         Err(e) => HttpResponse::InternalServerError().body(format!("System Authentication Error: {}", e)),
     }
@@ -92,7 +125,7 @@ pub async fn register(
     let profile = crate::models::patient::CreatePatientProfile {
         first_name: form.first_name.clone(),
         last_name: form.last_name.clone(),
-        date_of_birth: chrono::NaiveDate::parse_from_str(&form.date_of_birth, "%Y-%m-%d").unwrap_or_else(|_| chrono::NaiveDate::from_ymd_opt(1970, 1, 1).unwrap()),
+        date_of_birth: chrono::NaiveDate::parse_from_str(&form.date_of_birth, "%d/%m/%Y").unwrap_or_else(|_| chrono::NaiveDate::from_ymd_opt(1970, 1, 1).unwrap()),
         gender: form.gender.clone(),
         phone_number: form.phone_number.clone(),
         emergency_contact_name: form.emergency_contact_name.clone(),
@@ -191,8 +224,37 @@ pub async fn admin_dashboard(session: Session, pool: web::Data<PgPool>, tera: we
 }
 
 // Centralized Session Cleanup
-pub async fn logout(session: Session) -> impl Responder {
+pub async fn logout(pool: web::Data<PgPool>, session: Session) -> impl Responder {
+    let current_user_id = session.get::<Uuid>("user_id").unwrap_or_default();
+    let current_email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
     let current_role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
+
+    if !current_email.is_empty() {
+        let role_label = match current_role.as_str() {
+            "admin" => "admin",
+            "doctor" => "doctor",
+            "nurse" => "nurse",
+            "receptionist" => "receptionist",
+            "patient" => "patient",
+            _ => "unknown",
+        };
+
+        if let Err(err) = log_access_event(
+            pool.get_ref(),
+            current_user_id,
+            Some(&current_email),
+            "logout_success",
+            current_user_id,
+            &current_email,
+            role_label,
+            &format!("{} logged out successfully.", current_email),
+        )
+        .await
+        {
+            eprintln!("Security log write failed for logout_success: {}", err);
+        }
+    }
+
     session.clear();
     
     // Clean redirect based on who is leaving

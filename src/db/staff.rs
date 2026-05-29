@@ -1,6 +1,18 @@
 use sqlx::{PgPool, Postgres, Transaction};
+use uuid::Uuid;
 use crate::models::user::{User, UserRole};
 use crate::models::staff::{CreateStaffProfile, StaffDashboardCounts, StaffDirectoryRow};
+use crate::db::security::log_access_event;
+
+fn role_label(role: &UserRole) -> &'static str {
+    match role {
+        UserRole::Admin => "Admin",
+        UserRole::Doctor => "Doctor",
+        UserRole::Nurse => "Nurse",
+        UserRole::Receptionist => "Receptionist",
+        UserRole::Patient => "Patient",
+    }
+}
 
 fn display_name(first_name: Option<String>, last_name: Option<String>, email: &str, role: &UserRole) -> String {
     match (first_name, last_name) {
@@ -19,6 +31,8 @@ pub async fn register_staff(
     raw_password: &str,
     role: UserRole,
     profile: CreateStaffProfile,
+    created_by_user_id: Option<Uuid>,
+    created_by_email: Option<&str>,
     ) -> Result<User, String> {
         if role == UserRole::Patient {
             return Err("Invalid staff provisioning assignment context error.".to_string());
@@ -40,7 +54,7 @@ pub async fn register_staff(
             "#,
             email,
             hashed_password,
-            role as UserRole
+            role.clone() as UserRole
         )
         .fetch_one(&mut *tx)
         .await
@@ -59,6 +73,20 @@ pub async fn register_staff(
         .execute(&mut *tx)
         .await
         .map_err(|e| format!("Database staff profile creation failed: {}", e))?;
+
+        let details = format!("Created {} account for {}.", role_label(&role), email);
+        log_access_event(
+            &mut *tx,
+            created_by_user_id,
+            created_by_email,
+            "staff_account_created",
+            Some(user.id),
+            &user.email,
+            role_label(&role),
+            &details,
+        )
+        .await
+        .map_err(|e| format!("Database access log insertion failed: {}", e))?;
 
         tx.commit()
             .await

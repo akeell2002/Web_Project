@@ -70,6 +70,7 @@ async fn main() -> std::io::Result<()> {
 
             // Admin interface routes
             .route("/admin/dashboard", web::get().to(handlers::auth::admin_dashboard))
+            .route("/admin/security", web::get().to(handlers::admin::security_monitoring_page))
             .route("/admin/staff/onboard", web::get().to(handlers::admin::onboard_staff_page))
             .route("/admin/staff/onboard", web::post().to(handlers::admin::onboard_staff_submit))
             .route("/admin/staff", web::get().to(handlers::admin::staff_directory_page))
@@ -78,6 +79,7 @@ async fn main() -> std::io::Result<()> {
             .route("/staff/login", web::get().to(handlers::auth::staff_login))
             .route("/staff/login", web::post().to(handlers::auth::login))
             .route("/staff/dashboard", web::get().to(handlers::auth::staff_dashboard))
+            .route("/staff/patients", web::get().to(handlers::admin::patient_directory_page))
 
             // Patient interface routes
             .route("/patient/login", web::get().to(handlers::auth::patient_login))

@@ -2,6 +2,9 @@ use sqlx::{PgPool, Postgres, Transaction};
 use crate::models::user::{User, UserRole};
 use crate::models::patient::CreatePatientProfile;
 use crate::db::users::create_user;
+use serde_json::json;
+use uuid::Uuid;
+use sqlx::Row;
 
 // Registers a new patient user account and profile atomically using a transaction
 pub async fn register_patient(
@@ -58,4 +61,43 @@ pub async fn register_patient(
         .map_err(|e| format!("Failed to commit transaction: {}", e))?;
 
     Ok(user)
+}
+
+// Retrieve a simplified patient directory suitable for staff listing
+pub async fn get_patient_directory(pool: &PgPool) -> Result<Vec<serde_json::Value>, String> {
+    let rows = sqlx::query(
+        r#"
+        SELECT u.id, u.email, p.first_name, p.last_name, p.date_of_birth, p.gender, p.phone_number
+        FROM users u
+        JOIN patient p ON u.id = p.id
+        ORDER BY p.last_name, p.first_name
+        "#,
+    )
+    .fetch_all(pool)
+    .await
+    .map_err(|e| format!("DB error fetching patients: {}", e))?;
+
+    let mut out = Vec::with_capacity(rows.len());
+    for row in rows {
+        let id: Uuid = row.get::<Uuid, _>("id");
+        let email: Option<String> = row.get::<Option<String>, _>("email");
+        let first_name: String = row.get::<String, _>("first_name");
+        let last_name: String = row.get::<String, _>("last_name");
+        let date_of_birth: chrono::NaiveDate = row.get::<chrono::NaiveDate, _>("date_of_birth");
+        let gender: Option<String> = row.get::<Option<String>, _>("gender");
+        let phone: Option<String> = row.get::<Option<String>, _>("phone_number");
+
+        out.push(json!({
+            "id": id,
+            "email": email,
+            "first_name": first_name,
+            "last_name": last_name,
+            "date_of_birth": date_of_birth.to_string(),
+            "gender": gender,
+            "phone": phone,
+            "blood_type": serde_json::Value::Null
+        }));
+    }
+
+    Ok(out)
 }
