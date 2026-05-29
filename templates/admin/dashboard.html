@@ -41,6 +41,19 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.03);
         }
 
+        .stat-card-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .stat-card-link:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+            border-color: #005999;
+        }
+
         .stat-card h3 {
             font-size: 14px;
             color: #6B7280;
@@ -122,30 +135,30 @@
     <!-- SECURITY / SYSTEM ANALYTICS -->
     <div class="stats-grid">
 
-        <div class="stat-card">
-            <h3>Active Users</h3>
-            <div class="value">128</div>
-        </div>
+        <a href="/admin/staff" class="stat-card stat-card-link">
+            <h3>Total Staff</h3>
+            <div class="value">{{ staff_counts.total_staff }}</div>
+        </a>
 
-        <div class="stat-card">
+        <a href="/admin/staff?role=doctor" class="stat-card stat-card-link">
             <h3>Doctors Registered</h3>
-            <div class="value">34</div>
-        </div>
+            <div class="value">{{ staff_counts.doctors }}</div>
+        </a>
 
-        <div class="stat-card">
+        <a href="/admin/staff?role=nurse" class="stat-card stat-card-link">
             <h3>Nurses Registered</h3>
-            <div class="value">61</div>
-        </div>
+            <div class="value">{{ staff_counts.nurses }}</div>
+        </a>
 
-        <div class="stat-card">
+        <a href="/admin/staff?role=receptionist" class="stat-card stat-card-link">
             <h3>Receptionists Registered</h3>
-            <div class="value">12</div>
-        </div>
+            <div class="value">{{ staff_counts.receptionists }}</div>
+        </a>
 
-        <div class="stat-card">
-            <h3>Security Alerts</h3>
-            <div class="value" style="color:#DC2626;">3</div>
-        </div>
+        <a href="/admin/staff?role=admin" class="stat-card stat-card-link">
+            <h3>Admins Registered</h3>
+            <div class="value">{{ staff_counts.admins }}</div>
+        </a>
 
     </div>
 
@@ -153,54 +166,19 @@
     <div class="action-grid">
 
         <div class="action-card">
-            <div class="action-icon">👨‍⚕️</div>
+            <div class="action-icon">🧑‍⚕️</div>
 
-            <h3>Add Doctor</h3>
-
-            <p>
-                Create and register new doctor accounts with department
-                assignment and clinical system permissions.
-            </p>
-
-            <a href="/admin/doctors/add"
-               class="btn-submit"
-               style="text-decoration:none;">
-                Add Doctor
-            </a>
-        </div>
-
-        <div class="action-card">
-            <div class="action-icon">👩‍⚕️</div>
-
-            <h3>Add Nurse</h3>
+            <h3>Onboard Staff</h3>
 
             <p>
-                Onboard nursing staff into the system and assign
-                ward or department responsibilities.
+                Create doctor, nurse, receptionist, or admin accounts
+                from a single controlled onboarding flow.
             </p>
 
-            <a href="/admin/nurses/add"
+            <a href="/admin/staff/onboard"
                class="btn-submit"
                style="text-decoration:none; background:#005999;">
-                Add Nurse
-            </a>
-        </div>
-
-        <!-- NEW RECEPTIONIST CARD -->
-        <div class="action-card">
-            <div class="action-icon">🧾</div>
-
-            <h3>Add Receptionist</h3>
-
-            <p>
-                Register front desk reception staff responsible for
-                patient check-ins, appointment coordination, and clinic support.
-            </p>
-
-            <a href="/admin/receptionists/add"
-               class="btn-submit"
-               style="text-decoration:none; background:#7C3AED;">
-                Add Receptionist
+                Onboard Staff
             </a>
         </div>
 

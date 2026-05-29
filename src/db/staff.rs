@@ -1,17 +1,27 @@
 use sqlx::{PgPool, Postgres, Transaction};
 use crate::models::user::{User, UserRole};
-use crate::models::staff::CreateStaffProfile;
+use crate::models::staff::{CreateStaffProfile, StaffDashboardCounts, StaffDirectoryRow};
 
-/// Provisions a staff credentials and metadata mapping via an Admin execution block
+fn display_name(first_name: Option<String>, last_name: Option<String>, email: &str, role: &UserRole) -> String {
+    match (first_name, last_name) {
+        (Some(first_name), Some(last_name)) => format!("{} {}", first_name, last_name),
+        (Some(first_name), None) => first_name,
+        (None, Some(last_name)) => last_name,
+        _ if *role == UserRole::Admin => "System Admin".to_string(),
+        _ => email.split('@').next().unwrap_or("Staff Member").replace('.', " "),
+    }
+}
+
+/// Provisions staff credentials and metadata mapping via an Admin execution block
 pub async fn register_staff(
     pool: &PgPool,
     email: &str,
     raw_password: &str,
-    role: UserRole, // Can be Doctor, Nurse, or Receptionist
+    role: UserRole,
     profile: CreateStaffProfile,
     ) -> Result<User, String> {
-        if role == UserRole::Patient || role == UserRole::Admin {
-            return Err("Invalid staff provisioning assignment context context error.".to_string());
+        if role == UserRole::Patient {
+            return Err("Invalid staff provisioning assignment context error.".to_string());
         }
 
         let mut tx: Transaction<'_, Postgres> = pool
@@ -55,4 +65,121 @@ pub async fn register_staff(
             .map_err(|e| format!("Transaction commit failed: {}", e))?;
 
         Ok(user)
+}
+
+pub async fn get_staff_dashboard_counts(pool: &PgPool) -> Result<StaffDashboardCounts, String> {
+    let counts = sqlx::query!(
+        r#"
+        SELECT
+            COUNT(*) FILTER (WHERE role = 'admin'::user_role) AS "admins!",
+            COUNT(*) FILTER (WHERE role = 'doctor'::user_role) AS "doctors!",
+            COUNT(*) FILTER (WHERE role = 'nurse'::user_role) AS "nurses!",
+            COUNT(*) FILTER (WHERE role = 'receptionist'::user_role) AS "receptionists!",
+            COUNT(*) FILTER (
+                WHERE role IN (
+                    'admin'::user_role,
+                    'doctor'::user_role,
+                    'nurse'::user_role,
+                    'receptionist'::user_role
+                )
+            ) AS "total_staff!"
+        FROM users
+        "#
+    )
+    .fetch_one(pool)
+    .await
+    .map_err(|e| format!("Database staff count query failed: {}", e))?;
+
+    Ok(StaffDashboardCounts {
+        total_staff: counts.total_staff,
+        admins: counts.admins,
+        doctors: counts.doctors,
+        nurses: counts.nurses,
+        receptionists: counts.receptionists,
+    })
+}
+
+pub async fn get_staff_directory(pool: &PgPool, role_filter: Option<UserRole>) -> Result<Vec<StaffDirectoryRow>, String> {
+    let rows = match role_filter {
+        Some(role) => {
+            let rows = sqlx::query!(
+                r#"
+                SELECT
+                    u.id,
+                    u.email,
+                    u.role as "role: UserRole",
+                    s.first_name as "first_name?",
+                    s.last_name as "last_name?",
+                    s.phone_number as "phone_number?",
+                    u.created_at as "created_at!"
+                FROM users u
+                LEFT JOIN staff s ON s.id = u.id
+                WHERE u.role = $1::user_role
+                ORDER BY u.created_at DESC
+                "#,
+                role as UserRole
+            )
+            .fetch_all(pool)
+            .await
+            .map_err(|e| format!("Database staff directory query failed: {}", e))?;
+
+            rows.into_iter()
+                .map(|row| {
+                    let display_name = display_name(row.first_name, row.last_name, &row.email, &row.role);
+
+                    StaffDirectoryRow {
+                        id: row.id,
+                        email: row.email,
+                        role: row.role,
+                        display_name,
+                        phone_number: row.phone_number,
+                        created_at: row.created_at.format("%Y-%m-%d %H:%M").to_string(),
+                    }
+                })
+                .collect::<Vec<_>>()
+        }
+        None => {
+            let rows = sqlx::query!(
+                r#"
+                SELECT
+                    u.id,
+                    u.email,
+                    u.role as "role: UserRole",
+                    s.first_name as "first_name?",
+                    s.last_name as "last_name?",
+                    s.phone_number as "phone_number?",
+                    u.created_at as "created_at!"
+                FROM users u
+                LEFT JOIN staff s ON s.id = u.id
+                WHERE u.role IN (
+                    'admin'::user_role,
+                    'doctor'::user_role,
+                    'nurse'::user_role,
+                    'receptionist'::user_role
+                )
+                ORDER BY u.role ASC, u.created_at DESC
+                "#
+            )
+            .fetch_all(pool)
+            .await
+            .map_err(|e| format!("Database staff directory query failed: {}", e))?;
+
+            rows.into_iter()
+                .map(|row| {
+                    let display_name = display_name(row.first_name, row.last_name, &row.email, &row.role);
+
+                    StaffDirectoryRow {
+                        id: row.id,
+                        email: row.email,
+                        role: row.role,
+                        display_name,
+                        phone_number: row.phone_number,
+                        created_at: row.created_at.format("%Y-%m-%d %H:%M").to_string(),
+                    }
+                })
+                .collect::<Vec<_>>()
+        }
+    };
+
+    Ok(rows)
 }

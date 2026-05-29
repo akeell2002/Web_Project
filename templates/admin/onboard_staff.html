@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboard Staff - HealthHub Admin</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+    <div class="portal-wrapper">
+
+        <div class="brand-panel" style="background: linear-gradient(135deg, #0F172A 0%, #005999 100%);">
+            <div class="system-tag" style="color: #BFDBFE;">
+                ADMINISTRATIVE STAFF PROVISIONING
+            </div>
+
+            <div class="brand-message">
+                <h2>Onboard<br>Staff.</h2>
+
+                <p>
+                    Create secure accounts for doctors, nurses,
+                    receptionists, and admins from one place.
+                    Every account is tied to a staff profile and
+                    ready for audit-friendly access control.
+                </p>
+
+                <div style="
+                    margin-top: 25px;
+                    padding: 12px;
+                    background: rgba(255,255,255,0.08);
+                    border-left: 3px solid #93C5FD;
+                    border-radius: 4px;
+                ">
+                    <p style="
+                        font-size: 11.5px;
+                        line-height: 1.4;
+                        color: #E6F0F9;
+                        margin: 0;
+                    ">
+                        <strong>Administrator Notice:</strong>
+                        Choose the correct staff role before submitting.
+                        Admin accounts are granted the same system access
+                        protections as other staff roles.
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel-footer">
+                &copy; 2026 HealthHub Medical Infrastructure.
+            </div>
+        </div>
+
+        <div class="form-panel">
+            <div class="form-header">
+                <h3>Onboard Staff Member</h3>
+                <p>Enter the staff details and choose a role.</p>
+            </div>
+
+            <form method="POST" action="/admin/staff/onboard">
+                <div class="input-field">
+                    <select class="modern-select" name="role" required>
+                        <option value="" disabled selected>Select Staff Role</option>
+                        <option value="doctor">Doctor</option>
+                        <option value="nurse">Nurse</option>
+                        <option value="receptionist">Receptionist</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+
+                <div class="input-field">
+                    <input type="email" name="email" placeholder="Staff Email Address" required>
+                </div>
+
+                <div class="input-field">
+                    <input type="password" name="password" placeholder="Password" required>
+                </div>
+
+                <div class="input-field">
+                    <input type="text" name="first_name" placeholder="First Name" required>
+                </div>
+
+                <div class="input-field">
+                    <input type="text" name="last_name" placeholder="Last Name" required>
+                </div>
+
+                <div class="input-field">
+                    <input type="text" name="phone_number" placeholder="Phone Number">
+                </div>
+
+                <button type="submit" class="btn-submit" style="background:#005999; margin-top: 15px;">
+                    Create Staff Account
+                </button>
+            </form>
+
+            <div class="switch-auth" style="margin-top: 25px;">
+                <p>
+                    Return to
+                    <a href="/admin/dashboard">Administrator Dashboard</a>
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

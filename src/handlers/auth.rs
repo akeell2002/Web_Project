@@ -6,6 +6,7 @@ use uuid::Uuid;
 
 use crate::models::user::{LoginForm, PatientRegisterForm, UserRole};
 use crate::db::users::{authenticate_user, find_user_by_email};
+use crate::db::staff::get_staff_dashboard_counts;
 use crate::db::patients::register_patient;
 
 // Staff login page rendering
@@ -160,12 +161,21 @@ pub async fn staff_dashboard(session: Session, tera: web::Data<Tera>) -> impl Re
     HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish()
 }
 
-pub async fn admin_dashboard(session: Session, tera: web::Data<Tera>) -> impl Responder {
+pub async fn admin_dashboard(session: Session, pool: web::Data<PgPool>, tera: web::Data<Tera>) -> impl Responder {
     if let Ok(Some(role)) = session.get::<String>("role") {
         if role == "admin" {
             let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
             let mut ctx = Context::new();
             ctx.insert("email", &email);
+
+            let counts = match get_staff_dashboard_counts(&pool).await {
+                Ok(counts) => counts,
+                Err(err) => {
+                    return HttpResponse::InternalServerError().body(format!("Failed to load staff counts: {}", err));
+                }
+            };
+
+            ctx.insert("staff_counts", &counts);
             
             return match tera.render("admin/dashboard.html", &ctx) {
                 Ok(html) => HttpResponse::Ok()

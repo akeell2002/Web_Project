@@ -94,43 +94,39 @@ pub async fn get_all_doctors(pool: &PgPool) -> Result<Vec<User>, sqlx::Error> {
     Ok(doctors)
 }
 
-// Function to initialise admin user if not already present in the database
-pub async fn seed_admin_user(pool: &PgPool) -> Result<(), String> {
-    // 1. Check if the admin account already exists
-    let admin_exists = sqlx::query!(
-        r#"SELECT id FROM users WHERE LOWER(email) = 'admin@clinic.com'"#
-    )
-    .fetch_optional(pool)
-    .await
-    .map_err(|e| format!("Database verification failed: {}", e))?;
+// Function to initialise the default staff accounts if they are not already present in the database
+pub async fn seed_default_staff_users(pool: &PgPool) -> Result<(), String> {
+    let seed_accounts = [
+        (UserRole::Admin, vec!["admin@clinic.com"]),
+        (UserRole::Doctor, vec!["doctor@clinic.com", "doctor@clinic"]),
+        (UserRole::Nurse, vec!["nurse@clinic.com"]),
+        (UserRole::Receptionist, vec!["receptionist@clinic.com"]),
+    ];
 
-    if admin_exists.is_none() {
-        println!("Seeding layer: Admin account not found. Creating clean entry...");
+    for (role, emails) in seed_accounts {
+        for email in emails {
+            let hashed_password = hash_password("faipi")?;
 
-        // 2. Hash the password directly using your utils utility crate
-        let raw_password = "faipi";
-        let database_secure_hash = hash_password(raw_password)?;
+            sqlx::query!(
+                r#"
+                INSERT INTO users (email, password, role)
+                VALUES ($1, $2, $3::user_role)
+                ON CONFLICT (email)
+                DO UPDATE SET
+                    password = EXCLUDED.password,
+                    role = EXCLUDED.role,
+                    updated_at = CURRENT_TIMESTAMP
+                "#,
+                email,
+                hashed_password,
+                role.clone() as UserRole
+            )
+            .execute(pool)
+            .await
+            .map_err(|e| format!("Failed to seed {}: {}", email, e))?;
 
-        // 3. Generate a clean random UUID for the admin identifier
-        let admin_id = uuid::Uuid::new_v4();
-
-        // 4. Securely write the record to your live database schema
-        sqlx::query!(
-            r#"
-            INSERT INTO users (id, email, password, role)
-            VALUES ($1, $2, $3, 'admin'::user_role)
-            "#,
-            admin_id,
-            "admin@clinic.com",
-            database_secure_hash
-        )
-        .execute(pool)
-        .await
-        .map_err(|e| format!("Failed to write seed record: {}", e))?;
-
-        println!("Seeding layer: Admin account successfully deployed!");
-    } else {
-        println!("Seeding layer: Admin account already exists. Skipping deployment.");
+            println!("Seeding layer: {} deployed or refreshed.", email);
+        }
     }
 
     Ok(())

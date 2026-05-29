@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ directory_title }} - HealthHub Admin</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <style>
+        .directory-shell {
+            width: 100%;
+            max-width: 1180px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .directory-header {
+            background: linear-gradient(135deg, #0F172A 0%, #005999 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+            margin-bottom: 24px;
+        }
+
+        .directory-header h2 {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+
+        .directory-header p {
+            color: #D6E7F8;
+            line-height: 1.6;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 14px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            background: rgba(255,255,255,0.12);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .filter-chip.active {
+            background: #ffffff;
+            color: #005999;
+        }
+
+        .directory-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+        }
+
+        .directory-topline {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .directory-count {
+            color: #64748B;
+            font-size: 14px;
+        }
+
+        .directory-table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .directory-table th,
+        .directory-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid #E2E8F0;
+            font-size: 14px;
+        }
+
+        .directory-table th {
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 12px;
+            color: #64748B;
+            background: #F8FAFC;
+        }
+
+        .role-pill {
+            display: inline-flex;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #E0F2FE;
+            color: #075985;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748B;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="navbar-brand">🛡️ HealthHub Admin Console</div>
+
+    <div class="navbar-links">
+        <a href="/admin/dashboard">Overview</a>
+        <a href="/admin/staff">Staff Management</a>
+        <a href="/admin/staff/onboard">Onboard Staff</a>
+        <a href="/logout"
+           style="background: rgba(255,255,255,0.2); padding:8px 15px; border-radius:20px;">
+            Logout
+        </a>
+    </div>
+</nav>
+
+<div class="directory-shell">
+    <div class="directory-header">
+        <h2>{{ directory_title }}</h2>
+        <p>
+            Browse registered staff accounts. Use the filters to switch between roles or view the full staff registry.
+        </p>
+
+        <div class="filter-row">
+            <a href="/admin/staff" class="filter-chip {% if selected_role == 'all' %}active{% endif %}">All Staff</a>
+            <a href="/admin/staff?role=doctor" class="filter-chip {% if selected_role == 'doctor' %}active{% endif %}">Doctors</a>
+            <a href="/admin/staff?role=nurse" class="filter-chip {% if selected_role == 'nurse' %}active{% endif %}">Nurses</a>
+            <a href="/admin/staff?role=receptionist" class="filter-chip {% if selected_role == 'receptionist' %}active{% endif %}">Receptionists</a>
+            <a href="/admin/staff?role=admin" class="filter-chip {% if selected_role == 'admin' %}active{% endif %}">Admins</a>
+        </div>
+    </div>
+
+    <div class="directory-panel">
+        <div class="directory-topline">
+            <div>
+                <h3 style="margin-bottom: 4px; color: #0F172A;">Registry</h3>
+                <div class="directory-count">{{ staff_count }} account{% if staff_count != 1 %}s{% endif %} found</div>
+            </div>
+            <a href="/admin/staff/onboard" class="btn-submit" style="display: inline-block; width: auto; text-decoration: none;">Onboard New Staff</a>
+        </div>
+
+        <table class="directory-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Phone</th>
+                    <th>Registered</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in staff_members %}
+                <tr>
+                    <td>{{ member.display_name }}</td>
+                    <td>{{ member.email }}</td>
+                    <td><span class="role-pill">{{ member.role }}</span></td>
+                    <td>{% if member.phone_number %}{{ member.phone_number }}{% else %}-{% endif %}</td>
+                    <td>{{ member.created_at }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">No staff members found for this role.</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

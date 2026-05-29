@@ -40,8 +40,8 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("Failed to run migrations");
 
-    // Seed the admin user if not already present
-    if let Err(e) = crate::db::users::seed_admin_user(&db_pool).await {
+    // Seed the default staff accounts if they are not already present
+    if let Err(e) = crate::db::users::seed_default_staff_users(&db_pool).await {
         eprintln!("System initialization warning: Resetting seed failed: {}", e);
     }
 
@@ -70,12 +70,9 @@ async fn main() -> std::io::Result<()> {
 
             // Admin interface routes
             .route("/admin/dashboard", web::get().to(handlers::auth::admin_dashboard))
-            .route("/admin/doctors/add", web::get().to(handlers::admin::add_doctor_page))
-            .route("/admin/doctors/add", web::post().to(handlers::admin::add_doctor_submit))
-            .route("/admin/nurses/add", web::get().to(handlers::admin::add_nurse_page))
-            .route("/admin/nurses/add", web::post().to(handlers::admin::add_nurse_submit))
-            .route("/admin/receptionists/add", web::get().to(handlers::admin::add_receptionist_page))
-            .route("/admin/receptionists/add", web::post().to(handlers::admin::add_receptionist_submit))
+            .route("/admin/staff/onboard", web::get().to(handlers::admin::onboard_staff_page))
+            .route("/admin/staff/onboard", web::post().to(handlers::admin::onboard_staff_submit))
+            .route("/admin/staff", web::get().to(handlers::admin::staff_directory_page))
 
             // Staff interface routes
             .route("/staff/login", web::get().to(handlers::auth::staff_login))
