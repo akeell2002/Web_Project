@@ -23,6 +23,7 @@ struct DoctorDropdownItem {
     last_name: String,
 }
 
+
 pub async fn show_booking_form(
     tmpl: web::Data<Tera>,
     pool: web::Data<PgPool>,
@@ -143,5 +144,56 @@ pub async fn submit_appointment(
                 .finish()
         }
         Err(e) => HttpResponse::BadRequest().body(format!("Scheduling failed: {}", e)),
+    }
+}
+
+#[derive(Deserialize)]
+pub struct QueueFilterParams {
+    pub view: Option<String>,
+}
+
+/// GET route handler presenting the doctor with a dynamically filtered clinical queue tracking layout.
+pub async fn doctor_daily_queue_page(
+    pool: web::Data<PgPool>,
+    session: Session,
+    tmpl: web::Data<Tera>,
+    query: web::Query<QueueFilterParams>,
+) -> impl Responder {
+    // Role Enforcement Gatekeeper
+    match session.get::<String>("role") {
+        Ok(Some(role)) if role == "doctor" => {},
+        _ => return HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish(),
+    };
+
+    let doctor_id = match session.get::<Uuid>("user_id") {
+        Ok(Some(id)) => id,
+        _ => return HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish(),
+    };
+
+    // Determine filter mode (defaults to "today" if parameter is missing or unrecognized)
+    let filter_mode = match query.view.as_deref() {
+        Some("all") => "all",
+        _ => "today",
+    };
+
+    let today = chrono::Local::now().date_naive();
+    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+
+    // Query our dynamically filtered clinical dataset slice
+    let appointments = match crate::db::appointments::get_doctor_daily_appointments(&pool, doctor_id, filter_mode).await {
+        Ok(data) => data,
+        Err(err) => return HttpResponse::InternalServerError().body(format!("Clinical query tracking failure: {}", err)),
+    };
+
+    let mut ctx = Context::new();
+    ctx.insert("email", &email);
+    ctx.insert("formatted_date", &today.format("%A, %B %d, %Y").to_string());
+    ctx.insert("queue", &appointments);
+    ctx.insert("queue_count", &appointments.len());
+    ctx.insert("current_view", filter_mode); // Pass view to template to toggle active tab states
+
+    match tmpl.render("staff/doctor_queue.html", &ctx) {
+        Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
+        Err(e) => HttpResponse::InternalServerError().body(format!("Rendering compilation error: {}", e)),
     }
 }

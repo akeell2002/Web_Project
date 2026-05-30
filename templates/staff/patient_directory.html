@@ -7,56 +7,65 @@
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
+    <!-- Standardized Master Header -->
+    <nav class="navbar">
+        <div class="navbar-brand"> HealthHub Staff Portal</div>
+        <div class="navbar-links">
+            <a href="/staff/dashboard">Overview</a>
+            <a href="/staff/queue">My Daily Queue</a>
+            <a href="/staff/patients">Patients Registry</a>
+            <a href="/logout" style="background: rgba(255,255,255,0.2); padding:8px 15px; border-radius:20px;">Logout</a>
+        </div>
+    </nav>
 
-    <div class="portal-wrapper" style="max-width: 1000px; height: auto; min-height: 550px;">
-        <div class="form-panel" style="width: 100%;">
-            
+    <div class="portal-wrapper" style="max-width: 1100px; height: auto; min-height: 550px; margin-top: 40px;">
+        <div class="form-panel" style="width: 100%; padding: 40px;">
+                         
             <div class="form-header">
                 <h3>Patient Directory</h3>
-                <p>Central registry of all registered medical profiles.</p>
+                <p>Central registry of all registered medical profiles within the infrastructure.</p>
             </div>
-            
-            <a href="/patients/add" class="btn-submit" style="display: inline-block; width: auto; text-decoration: none; margin-bottom: 20px; text-align: center;">+ Register New Patient</a>
-            
+                         
+            <a href="/patients/add" class="btn-submit" style="display: inline-block; width: auto; text-decoration: none; margin-bottom: 25px; text-align: center; background: #005999;">+ Register New Patient</a>
+                         
             <table class="clinical-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>DOB</th>
-                        <th>Gender</th>
-                        <th>Phone</th>
-                        <th>Email</th>
+                        <th>ID Parameters</th>
+                        <th>Legal Name</th>
+                        <th>Birth Parameters</th>
+                        <th>Biological Sex</th>
+                        <th>Primary Contact</th>
+                        <th>Secure Email Target</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for p in patients %}
-                    <tr>
-                        <td>#{{ p.id }}</td>
+                    <tr style="transition: background 0.15s;" onmouseover="this.style.backgroundColor='#F9FAFB'" onmouseout="this.style.backgroundColor='transparent'">
+                        <td style="font-weight: bold; color: #64748B;">#{{ p.id | truncate(end=8, suffix="") }}</td>
                         <td>
-                            <a href="/patients/{{ p.id }}" style="color: #3b82f6; font-weight: 600; text-decoration: none;">
+                            <a href="/patients/{{ p.id }}" style="color: #005999; font-weight: 600; text-decoration: none;">
                                 {{ p.first_name }} {{ p.last_name }}
                             </a>
                         </td>
                         <td>{{ p.date_of_birth }}</td>
                         <td>{{ p.gender }}</td>
-                        <td>{% if p.phone %}{{ p.phone }}{% else %}-{% endif %}</td>
-                        <td>{% if p.email %}{{ p.email }}{% else %}-{% endif %}</td>
+                        <td>{% if p.phone %}{{ p.phone }}{% else %}<span style="color:#94a3b8;">-</span>{% endif %}</td>
+                        <td>{% if p.email %}{{ p.email }}{% else %}<span style="color:#94a3b8;">-</span>{% endif %}</td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" style="text-align: center; color: #94a3b8;">No patients registered yet.</td>
+                        <td colspan="6" style="text-align: center; color: #94a3b8; padding: 30px; font-style: italic;">No patients registered inside the master system index yet.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-
-            <div class="switch-auth" style="margin-top: 30px;">
-                <p><a href="/staff/dashboard">← Back to Dashboard</a></p>
-            </div>
             
+            <div class="switch-auth" style="margin-top: 30px; text-align: left;">
+                <p><a href="/staff/dashboard" style="color: #64748B;">← Return to Console Overview</a></p>
+            </div>
+                     
         </div>
     </div>
-
 </body>
 </html>

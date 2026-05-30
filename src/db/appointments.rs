@@ -175,3 +175,85 @@ pub async fn get_patient_appointments(
 
     Ok(list)
 }
+
+/// Retrieves appointments assigned to a specific practitioner from today onwards,
+/// with dynamic filtering options synchronized with the application clock.
+pub async fn get_doctor_daily_appointments(
+    pool: &sqlx::PgPool,
+    doctor_id: uuid::Uuid,
+    filter_mode: &str,
+) -> Result<Vec<serde_json::Value>, String> {
+    
+    let mut list = Vec::new();
+    let today_date = chrono::Local::now().date_naive();
+
+    if filter_mode == "today" {
+        // CHANGED: Swapped CURRENT_DATE out for an explicit bind variable ($2)
+        let rows = sqlx::query!(
+            r#"
+            SELECT a.id, a.date, a.start_time, a.end_time, a.status::text as "status!", a.queue_number,
+                   p.first_name, p.last_name, p.date_of_birth, p.gender
+            FROM appointment a
+            JOIN patient p ON a.patient_id = p.id
+            WHERE a.doctor_id = $1 AND a.date = $2
+            ORDER BY 
+                CASE WHEN a.status = 'checked_in' THEN 1 WHEN a.status = 'scheduled' THEN 2 ELSE 3 END ASC,
+                a.queue_number ASC, a.start_time ASC
+            "#,
+            doctor_id,
+            today_date
+        )
+        .fetch_all(pool)
+        .await
+        .map_err(|e| format!("Failed to query daily clinical queue: {}", e))?;
+
+        for row in rows {
+            list.push(serde_json::json!({
+                "id": row.id,
+                "appointment_date": row.date.format("%A, %b %d, %Y").to_string(),
+                "is_today": true,
+                "start_time": row.start_time.format("%I:%M %p").to_string(),
+                "end_time": row.end_time.format("%I:%M %p").to_string(),
+                "status": row.status,
+                "queue_number": row.queue_number,
+                "patient_name": format!("{} {}", row.first_name, row.last_name),
+                "patient_dob": row.date_of_birth.to_string(),
+                "patient_gender": row.gender.unwrap_or_else(|| "Undisclosed".to_string())
+            }));
+        }
+    } else {
+        // CHANGED: Swapped CURRENT_DATE out for an explicit bind variable ($2)
+        let rows = sqlx::query!(
+            r#"
+            SELECT a.id, a.date, a.start_time, a.end_time, a.status::text as "status!", a.queue_number,
+                   p.first_name, p.last_name, p.date_of_birth, p.gender
+            FROM appointment a
+            JOIN patient p ON a.patient_id = p.id
+            WHERE a.doctor_id = $1 AND a.date >= $2
+            ORDER BY a.date ASC, a.start_time ASC
+            "#,
+            doctor_id,
+            today_date
+        )
+        .fetch_all(pool)
+        .await
+        .map_err(|e| format!("Failed to query upcoming clinical caseload: {}", e))?;
+
+        for row in rows {
+            list.push(serde_json::json!({
+                "id": row.id,
+                "appointment_date": row.date.format("%A, %b %d, %Y").to_string(),
+                "is_today": row.date == today_date,
+                "start_time": row.start_time.format("%I:%M %p").to_string(),
+                "end_time": row.end_time.format("%I:%M %p").to_string(),
+                "status": row.status,
+                "queue_number": row.queue_number,
+                "patient_name": format!("{} {}", row.first_name, row.last_name),
+                "patient_dob": row.date_of_birth.to_string(),
+                "patient_gender": row.gender.unwrap_or_else(|| "Undisclosed".to_string())
+            }));
+        }
+    }
+
+    Ok(list)
+}
