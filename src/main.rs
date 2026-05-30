@@ -88,6 +88,10 @@ async fn main() -> std::io::Result<()> {
             .route("/patient/register", web::post().to(handlers::auth::register))
             .route("/patient/dashboard", web::get().to(handlers::auth::patient_dashboard))
 
+            // Patient appointment scheduling endpoints
+            .route("/patient/appointments/book", web::get().to(handlers::appointments::show_booking_form))
+            .route("/patient/appointments/create", web::post().to(handlers::appointments::submit_appointment))
+
             // Logout route
             .route("/logout", web::get().to(handlers::auth::logout))
             

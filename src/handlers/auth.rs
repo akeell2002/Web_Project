@@ -149,20 +149,41 @@ pub async fn register(
 }
 
 // Explicit Dashboard Gatekeepers
-pub async fn patient_dashboard(session: Session, tera: web::Data<Tera>) -> impl Responder {
+pub async fn patient_dashboard(
+    session: actix_session::Session, 
+    pool: web::Data<sqlx::PgPool>, 
+    tera: web::Data<tera::Tera>
+) -> impl Responder {
     if let Ok(Some(role)) = session.get::<String>("role") {
         if role == "patient" {
             let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-            let mut ctx = Context::new();
+            let patient_id = session.get::<uuid::Uuid>("user_id").unwrap_or_default().unwrap_or_default();
+            
+            let mut ctx = tera::Context::new();
             ctx.insert("email", &email);
+
+            // Fetch the dynamic active and past tracking records from the database layer
+            let appointments = match crate::db::appointments::get_patient_appointments(&pool, patient_id).await {
+                Ok(list) => list,
+                Err(e) => {
+                    eprintln!("Dashboard tracking query failure: {}", e);
+                    Vec::new()
+                }
+            };
+
+            // Filter into two clear timeline slices based on our helper identifier flag
+            let upcoming: Vec<_> = appointments.iter().filter(|a| a["is_upcoming"].as_bool().unwrap_or(false)).collect();
+            let historical: Vec<_> = appointments.iter().filter(|a| !a["is_upcoming"].as_bool().unwrap_or(false)).collect();
+
+            ctx.insert("upcoming_appointments", &upcoming);
+            ctx.insert("historical_appointments", &historical);
 
             return match tera.render("patient/dashboard.html", &ctx) {
                 Ok(html) => HttpResponse::Ok()
                     .content_type("text/html")
                     .append_header(("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"))
-                    .append_header(("Pragma", "no-cache"))
                     .body(html),
-                Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
+                Err(e) => HttpResponse::InternalServerError().body(format!("Dashboard template error: {}", e)),
             };
         }
     }
