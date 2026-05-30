@@ -1,4 +1,4 @@
-use sqlx::PgPool;
+use sqlx::{PgPool, Postgres, Transaction};
 use crate::models::user::{User, UserRole};
 use crate::db::security::log_access_event;
 use crate::utils::{hash_password, verify_password};
@@ -95,7 +95,7 @@ pub async fn get_all_doctors(pool: &PgPool) -> Result<Vec<User>, sqlx::Error> {
     Ok(doctors)
 }
 
-// Function to initialise the default staff accounts if they are not already present in the database
+// To seed default users for testing
 pub async fn seed_default_staff_users(pool: &PgPool) -> Result<(), String> {
     let seed_accounts = [
         (UserRole::Admin, vec!["admin@clinic.com"]),
@@ -105,13 +105,15 @@ pub async fn seed_default_staff_users(pool: &PgPool) -> Result<(), String> {
         (UserRole::Patient, vec!["patient@clinic.com"]),
     ];
 
+    // Loop to check each role and email and creating or refreshing as needed
     for (role, emails) in seed_accounts {
         for email in emails {
             let hashed_password = hash_password("faipi")?;
             let existing_user = find_user_by_email(pool, email).await?;
 
             match existing_user {
-                Some(_) => {
+                Some(user) => {
+                    // Update existing user with new password and role in case of changes, but keep the created_at timestamp
                     sqlx::query!(
                         r#"
                         UPDATE users
@@ -128,11 +130,108 @@ pub async fn seed_default_staff_users(pool: &PgPool) -> Result<(), String> {
                     .await
                     .map_err(|e| format!("Failed to refresh {}: {}", email, e))?;
 
-                    println!("Seeding layer: {} refreshed.", email);
+                    let mut tx = pool.begin().await.map_err(|e| format!("Transaction error: {}", e))?;
+                    
+                    // To make sure we avoid database integrity issues by inserting into patient and staff tables
+                    if role == UserRole::Patient {
+                        sqlx::query!(
+                            r#"
+                            INSERT INTO patient (id, first_name, last_name, date_of_birth, gender, phone_number)
+                            VALUES ($1, $2, $3, '1990-01-01', 'Not Specified', '000-000-0000')
+                            ON CONFLICT (id) DO NOTHING
+                            "#,
+                            user.id,
+                            "Seeded",
+                            "Patient"
+                        )
+                        .execute(&mut *tx)
+                        .await
+                        .map_err(|e| format!("Failed to backfill patient profile: {}", e))?;
+                    } else {
+                        // Admin, Doctor, Nurse, and Receptionists go into the staff table
+                        sqlx::query!(
+                            r#"
+                            INSERT INTO staff (id, first_name, last_name, phone_number)
+                            VALUES ($1, $2, $3, '000-000-0000')
+                            ON CONFLICT (id) DO NOTHING
+                            "#,
+                            user.id,
+                            "Seeded",
+                            match role {
+                                UserRole::Admin => "Admin",
+                                UserRole::Doctor => "Doctor",
+                                UserRole::Nurse => "Nurse",
+                                UserRole::Receptionist => "Receptionist",
+                                _ => "Staff"
+                            }
+                        )
+                        .execute(&mut *tx)
+                        .await
+                        .map_err(|e| format!("Failed to backfill staff profile: {}", e))?;
+                    }
+                    tx.commit().await.map_err(|e| format!("Failed to commit backfill: {}", e))?;
+
+                    println!("Seeding layer: {} and accompanying profiles verified/refreshed.", email);
                 }
                 None => {
-                    let created = create_user(pool, email, "faipi", role.clone()).await?;
-                    let details = format!("System seeded {} account for {}.", match role {
+                    // Same thing but is users dont exist we create them from scratch with the same default password and profile info
+                    let mut tx = pool.begin().await.map_err(|e| format!("Transaction error: {}", e))?;
+
+                    // Insert the user credentials first
+                    let new_user_id = uuid::Uuid::new_v4();
+                    sqlx::query!(
+                        r#"
+                        INSERT INTO users (id, email, password, role)
+                        VALUES ($1, $2, $3, $4::user_role)
+                        "#,
+                        new_user_id,
+                        email.trim().to_lowercase(),
+                        hashed_password,
+                        role.clone() as UserRole
+                    )
+                    .execute(&mut *tx)
+                    .await
+                    .map_err(|e| format!("Database seed user insertion failed: {}", e))?;
+
+                    // Branch profile generation based on the target entity role context
+                    if role == UserRole::Patient {
+                        sqlx::query!(
+                            r#"
+                            INSERT INTO patient (id, first_name, last_name, date_of_birth, gender, phone_number)
+                            VALUES ($1, $2, $3, '1990-01-01', 'Not Specified', '000-000-0000')
+                            "#,
+                            new_user_id,
+                            "Seeded",
+                            "Patient"
+                        )
+                        .execute(&mut *tx)
+                        .await
+                        .map_err(|e| format!("Database seed patient profile creation failed: {}", e))?;
+                    } else {
+                        let role_label = match role {
+                            UserRole::Admin => "Admin",
+                            UserRole::Doctor => "Doctor",
+                            UserRole::Nurse => "Nurse",
+                            UserRole::Receptionist => "Receptionist",
+                            _ => "Staff",
+                        };
+
+                        sqlx::query!(
+                            r#"
+                            INSERT INTO staff (id, first_name, last_name, phone_number)
+                            VALUES ($1, $2, $3, '000-000-0000')
+                            "#,
+                            new_user_id,
+                            "Seeded",
+                            role_label
+                        )
+                        .execute(&mut *tx)
+                        .await
+                        .map_err(|e| format!("Database seed staff profile creation failed: {}", e))?;
+                    }
+
+                    // To audit the seeding process
+                    let details = format!("System seeded {} account and profile for {}.", match role {
                         UserRole::Admin => "Admin",
                         UserRole::Doctor => "Doctor",
                         UserRole::Nurse => "Nurse",
@@ -140,13 +239,16 @@ pub async fn seed_default_staff_users(pool: &PgPool) -> Result<(), String> {
                         UserRole::Patient => "Patient",
                     }, email);
 
-                    log_access_event(
+                    tx.commit().await.map_err(|e| format!("Transaction commit failed for {}: {}", email, e))?;
+
+                    // Execute logging after a successful transaction commit
+                    let _ = log_access_event(
                         pool,
                         None,
                         Some("system"),
                         "seed_account_created",
-                        Some(created.id),
-                        &created.email,
+                        Some(new_user_id),
+                        email,
                         match role {
                             UserRole::Admin => "Admin",
                             UserRole::Doctor => "Doctor",
@@ -155,11 +257,9 @@ pub async fn seed_default_staff_users(pool: &PgPool) -> Result<(), String> {
                             UserRole::Patient => "Patient",
                         },
                         &details,
-                    )
-                    .await
-                    .map_err(|e| format!("Failed to log seed for {}: {}", email, e))?;
+                    ).await;
 
-                    println!("Seeding layer: {} deployed.", email);
+                    println!("Seeding layer: {} and associated profile deployed.", email);
                 }
             }
         }
