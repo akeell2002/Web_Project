@@ -51,51 +51,30 @@ pub async fn get_patient_busy_periods(
     Ok(rows.into_iter().map(|r| (r.start_time, r.end_time)).collect())
 }
 
-/// Safely inserts a new appointment into the database after final backend overlap validation
+/// Safely inserts a new appointment into the database using an atomic INSERT to prevent race conditions.
 pub async fn book_patient_appointment(
     pool: &sqlx::PgPool,
     patient_id: uuid::Uuid,
     doctor_id: uuid::Uuid,
     date: chrono::NaiveDate,
     start_time: chrono::NaiveTime,
-    end_time: chrono::NaiveTime, // Added 6th argument to handle variable durations
+    end_time: chrono::NaiveTime, 
 ) -> Result<crate::models::appointment::Appointment, String> {
     
-    // Double-check overlap boundaries right before database insertion to ensure structural integrity
-    let conflict = sqlx::query!(
-        r#"
-        SELECT 
-            EXISTS (
-                SELECT 1 FROM appointment
-                WHERE doctor_id = $1 AND date = $2 AND status NOT IN ('cancelled', 'no_show') AND (start_time < $4 AND end_time > $3)
-            ) as "doctor_conflict!",
-            EXISTS (
-                SELECT 1 FROM appointment
-                WHERE patient_id = $5 AND date = $2 AND status NOT IN ('cancelled', 'no_show') AND (start_time < $4 AND end_time > $3)
-            ) as "patient_conflict!"
-        "#,
-        doctor_id,
-        date,
-        start_time,
-        end_time,
-        patient_id
-    )
-    .fetch_one(pool)
-    .await
-    .map_err(|e| format!("Database verification failed: {}", e))?;
-
-    if conflict.doctor_conflict {
-        return Err("This doctor is already booked for an appointment during this time slot.".to_string());
-    }
-    if conflict.patient_conflict {
-        return Err("You already have an active appointment booked during this time window.".to_string());
-    }
-
+    // Atomic INSERT: It will only insert if BOTH the doctor and patient are free.
+    // If a conflict exists, it inserts nothing and returns 0 rows.
     let appointment = sqlx::query_as!(
         crate::models::appointment::Appointment,
         r#"
         INSERT INTO appointment (patient_id, doctor_id, room_id, date, start_time, end_time, created_by)
-        VALUES ($1, $2, NULL, $3, $4, $5, $1)
+        SELECT $1, $2, NULL, $3, $4, $5, $1
+        WHERE NOT EXISTS (
+            SELECT 1 FROM appointment 
+            WHERE doctor_id = $2 AND date = $3 AND status NOT IN ('cancelled', 'no_show') AND (start_time < $5 AND end_time > $4)
+        ) AND NOT EXISTS (
+            SELECT 1 FROM appointment 
+            WHERE patient_id = $1 AND date = $3 AND status NOT IN ('cancelled', 'no_show') AND (start_time < $5 AND end_time > $4)
+        )
         RETURNING 
             id, patient_id, doctor_id, room_id, 
             status::text as "status!", 
@@ -108,11 +87,14 @@ pub async fn book_patient_appointment(
         start_time,
         end_time
     )
-    .fetch_one(pool)
+    .fetch_optional(pool) // Use fetch_optional because it might return None if blocked by the WHERE NOT EXISTS
     .await
-    .map_err(|e| format!("Failed to insert appointment row: {}", e))?;
+    .map_err(|e| format!("Failed to execute booking query: {}", e))?;
 
-    Ok(appointment)
+    match appointment {
+        Some(appt) => Ok(appt),
+        None => Err("Booking failed: This time slot was just taken or you already have a conflicting appointment.".to_string()),
+    }
 }
 
 /// Retrieve all appointments for a specific patient, enriched with doctor details
