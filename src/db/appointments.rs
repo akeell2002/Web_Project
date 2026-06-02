@@ -239,3 +239,73 @@ pub async fn get_doctor_daily_appointments(
 
     Ok(list)
 }
+
+
+/// Fetches all appointments for TODAY across the whole clinic for the Receptionist
+pub async fn get_today_clinic_schedule(
+    pool: &sqlx::PgPool,
+) -> Result<Vec<serde_json::Value>, String> {
+    let today_date = chrono::Local::now().date_naive();
+
+    let rows = sqlx::query!(
+        r#"
+        SELECT a.id, a.start_time, a.status::text as "status!", a.queue_number,
+               p.first_name as patient_first, p.last_name as patient_last,
+               s.first_name as doc_first, s.last_name as doc_last
+        FROM appointment a
+        JOIN patient p ON a.patient_id = p.id
+        JOIN staff s ON a.doctor_id = s.id
+        WHERE a.date = $1
+        ORDER BY a.start_time ASC
+        "#,
+        today_date
+    )
+    .fetch_all(pool)
+    .await
+    .map_err(|e| format!("Failed to fetch clinic schedule: {}", e))?;
+
+    let mut list = Vec::new();
+    for row in rows {
+        list.push(serde_json::json!({
+            "id": row.id,
+            "time": row.start_time.format("%I:%M %p").to_string(),
+            "status": row.status,
+            "queue_number": row.queue_number,
+            "patient_name": format!("{} {}", row.patient_first, row.patient_last),
+            "doctor_name": format!("Dr. {}", row.doc_last)
+        }));
+    }
+    Ok(list)
+}
+
+/// Updates an appointment to 'checked_in' and assigns the next available queue number.
+pub async fn check_in_patient(
+    pool: &sqlx::PgPool,
+    appointment_id: uuid::Uuid,
+) -> Result<i32, String> {
+    // We use COALESCE to handle the very first patient of the day (when MAX is null, it becomes 0, then we add 1).
+    let record = sqlx::query!(
+        r#"
+        UPDATE appointment
+        SET 
+            status = 'checked_in',
+            check_in_time = CURRENT_TIMESTAMP,
+            queue_number = (
+                SELECT COALESCE(MAX(queue_number), 0) + 1 
+                FROM appointment 
+                WHERE doctor_id = appointment.doctor_id AND date = appointment.date
+            )
+        WHERE id = $1 AND status = 'scheduled'
+        RETURNING queue_number
+        "#,
+        appointment_id
+    )
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| format!("Failed to update check-in status: {}", e))?;
+
+    match record {
+        Some(row) => Ok(row.queue_number.unwrap_or(0)),
+        None => Err("Check-in failed: Appointment not found or already checked in.".to_string()),
+    }
+}

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nurse Triage - HealthHub EHR</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <style>
+        .dashboard-container { width: 100%; max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+        .card { background: #fff; padding: 30px; border-radius: 12px; border: 1px solid #E5E7EB; box-shadow: 0 4px 6px rgba(0,0,0,0.03); }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 15px; border-bottom: 1px solid #E5E7EB; }
+        th { background-color: #F3F4F6; color: #374151; }
+        .vitals-input { width: 70px; padding: 6px; border: 1px solid #D1D5DB; border-radius: 4px; margin-top: 4px; }
+        .btn-submit { background-color: #0EA5E9; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-submit:hover { background-color: #0284C7; }
+    </style>
+</head>
+<body>
+{% include "staff/navbar.html" %}
+<div class="dashboard-container">
+    <h1 style="color: #111827; margin-bottom: 5px;">Nurse Triage Station</h1>
+    <p style="color: #6B7280; margin-bottom: 30px;">Date: {{ date }}</p>
+
+    <div class="card">
+        {% if queue | length == 0 %}
+            <p style="color: #6B7280; text-align: center; padding: 20px;">No patients are currently waiting for triage.</p>
+        {% else %}
+        <table>
+            <tr>
+                <th>Queue #</th>
+                <th>Patient Name</th>
+                <th>Details</th>
+                <th>Record Vitals & Send to Doctor</th>
+            </tr>
+            {% for appt in queue %}
+            <tr>
+                <td><h2 style="margin:0; color: #0EA5E9;">#{{ appt.queue_number }}</h2></td>
+                <td><strong>{{ appt.patient_name }}</strong><br><small style="color:#6B7280;">{{ appt.time }}</small></td>
+                <td>{{ appt.gender }}<br><small style="color:#6B7280;">DOB: {{ appt.dob }}</small></td>
+                <td>
+                    <form action="/staff/queue/triage/{{ appt.id }}" method="POST" style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; margin: 0;">
+    <div>
+        <label style="font-size: 12px; font-weight: bold; color: #374151;">BP</label><br>
+        <input type="text" name="blood_pressure" class="vitals-input" required placeholder="120/80">
+    </div>
+    <div>
+        <label style="font-size: 12px; font-weight: bold; color: #374151;">Temp (°C)</label><br>
+        <input type="number" step="0.1" name="temperature" class="vitals-input" required placeholder="36.5">
+    </div>
+    <div>
+        <label style="font-size: 12px; font-weight: bold; color: #374151;">Wgt (kg)</label><br>
+        <input type="number" step="0.1" name="weight_kg" class="vitals-input" required placeholder="70.5">
+    </div>
+    <div>
+        <label style="font-size: 12px; font-weight: bold; color: #374151;">Hgt (cm)</label><br>
+        <input type="number" step="0.1" name="height_cm" class="vitals-input" required placeholder="175">
+    </div>
+    
+    <button type="submit" class="btn-submit" style="margin-bottom: 4px;">Submit Vitals</button>
+</form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>

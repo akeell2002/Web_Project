@@ -197,3 +197,58 @@ pub async fn doctor_daily_queue_page(
         Err(e) => HttpResponse::InternalServerError().body(format!("Rendering compilation error: {}", e)),
     }
 }
+
+/// Renders the Receptionist Dashboard
+pub async fn reception_desk_page(
+    pool: web::Data<sqlx::PgPool>,
+    session: actix_session::Session,
+    tmpl: web::Data<tera::Tera>,
+) -> impl actix_web::Responder {
+    // Only allow admins or receptionists
+    match session.get::<String>("role") {
+        Ok(Some(role)) if role == "receptionist" || role == "admin" => {},
+        _ => return actix_web::HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish(),
+    };
+
+    let schedule = crate::db::appointments::get_today_clinic_schedule(&pool).await.unwrap_or_default();
+    
+    let mut ctx = tera::Context::new();
+    ctx.insert("schedule", &schedule);
+    ctx.insert("date", &chrono::Local::now().format("%A, %B %d, %Y").to_string());
+
+    ctx.insert("specific_role", &session.get::<String>("role").unwrap_or_default().unwrap_or_default());
+
+    match tmpl.render("staff/reception.html", &ctx) {
+        Ok(html) => actix_web::HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
+        Err(e) => actix_web::HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
+    }
+}
+
+/// POST route to check a patient in, assign a queue number, and refresh the page
+pub async fn process_check_in(
+    pool: web::Data<sqlx::PgPool>,
+    session: actix_session::Session,
+    path: web::Path<uuid::Uuid>, 
+) -> impl actix_web::Responder {
+    
+    match session.get::<String>("role") {
+        Ok(Some(role)) if role == "receptionist" || role == "admin" => {}, 
+        _ => return actix_web::HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish(),
+    };
+
+    let appointment_id = path.into_inner();
+
+    match crate::db::appointments::check_in_patient(&pool, appointment_id).await {
+        Ok(_) => {
+            // Redirect back to the Receptionist dashboard so the page refreshes automatically!
+            actix_web::HttpResponse::SeeOther()
+                .append_header(("Location", "/staff/reception?success=checked_in"))
+                .finish()
+        }
+        Err(_) => {
+            actix_web::HttpResponse::SeeOther()
+                .append_header(("Location", "/staff/reception?error=check_in_failed"))
+                .finish()
+        }
+    }
+}

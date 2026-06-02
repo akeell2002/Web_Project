@@ -81,6 +81,10 @@ async fn main() -> std::io::Result<()> {
             .route("/staff/dashboard", web::get().to(handlers::auth::staff_dashboard))
             .route("/staff/patients", web::get().to(handlers::admin::patient_directory_page))
             .route("/staff/queue", web::get().to(handlers::appointments::doctor_daily_queue_page))
+            .route("/staff/reception", web::get().to(handlers::appointments::reception_desk_page))
+            .route("/staff/queue/check_in/{id}", web::post().to(handlers::appointments::process_check_in))
+            .route("/staff/triage", web::get().to(handlers::triage::nurse_triage_page))
+            .route("/staff/queue/triage/{id}", web::post().to(handlers::triage::submit_triage_vitals))
 
             // Patient interface routes
             .route("/patient/login", web::get().to(handlers::auth::patient_login))

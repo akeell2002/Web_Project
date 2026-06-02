@@ -6,9 +6,9 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ---
 -- Expanded to match your exact user personas
 CREATE TYPE user_role AS ENUM ('admin', 'doctor', 'nurse', 'receptionist', 'patient');
-CREATE TYPE appointment_status AS ENUM ('scheduled', 'checked_in', 'completed', 'cancelled', 'no_show');
 CREATE TYPE bill_status AS ENUM ('unpaid', 'paid', 'partially_paid', 'refunded');
 CREATE TYPE ticket_status AS ENUM ('open', 'in_progress', 'resolved');
+CREATE TYPE appointment_status AS ENUM ('scheduled', 'checked_in', 'vitals_taken', 'completed', 'cancelled', 'no_show');
 
 ---
 --- 1. USER SYSTEM
@@ -75,6 +75,17 @@ CREATE TABLE appointment (
     created_by UUID REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE triage_vitals (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    appointment_id UUID UNIQUE NOT NULL REFERENCES appointment(id) ON DELETE CASCADE,
+    nurse_id UUID NOT NULL REFERENCES staff(id),
+    blood_pressure VARCHAR(20),   -- e.g., '120/80'
+    temperature NUMERIC(4, 2),    -- e.g., 36.5
+    weight_kg NUMERIC(5, 2),      -- e.g., 70.5
+    height_cm NUMERIC(5, 2),      -- e.g., 175.0
+    recorded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 ---
