@@ -224,3 +224,99 @@ body {
 .switch-auth a:hover, a.link-primary:hover {
     text-decoration: underline;
 }
+
+/* ==========================================================================
+   LANDING GATEWAY EXTRA FEATURES (Full Screen & Radiant Glow)
+   ========================================================================== */
+
+/* Forces the container to expand 100% full screen */
+.fullscreen-gateway {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #F4F7F6;
+}
+
+/* This creates the radiant spotlight overlay using the coordinates from the JS script */
+.fullscreen-gateway::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        600px circle at var(--mouse-x, 0px) var(--mouse-y, 0px),
+        rgba(0, 169, 143, 0.1),
+        transparent 50%
+    );
+    z-index: 1;
+    pointer-events: none; /* Allows user clicks to pass right through the glow layer */
+}
+
+/* Blows up your original card system into a full bleed split screen */
+.fullscreen-gateway .portal-wrapper {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.fullscreen-gateway .brand-panel {
+    flex: 1;
+    height: 100vh;
+    padding: 60px;
+}
+
+.fullscreen-gateway .form-panel {
+    width: 50% !important;
+    height: 100vh;
+    padding: 60px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* The white box container with an aggressive, deep enterprise shadow */
+.fullscreen-gateway .gateway-inner-content {
+    width: 100%;
+    max-width: 450px;
+    padding: 50px 40px;
+    background: #ffffff; /* Crisp pure white box */
+    
+    /* Darker, solid border line */
+    border: 1px solid #cbd5e1; 
+    border-radius: 16px;
+    
+    /* Heavy duty layered shadows to force maximum contrast on white backgrounds */
+    box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+        0 20px 40px -5px rgba(0, 50, 100, 0.15),
+        0 10px 20px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Micro-interactions for the buttons on hover */
+.fullscreen-gateway .btn-submit {
+    transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Dynamic Button Transitions */
+.fullscreen-gateway .btn-submit {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Slide up and intensify shadow on hover */
+.fullscreen-gateway .btn-submit:hover {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.15), 
+                0 8px 10px -5px rgba(0, 0, 0, 0.1);
+    filter: brightness(1.1);
+}
