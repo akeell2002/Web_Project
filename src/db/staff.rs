@@ -185,7 +185,7 @@ pub async fn get_staff_directory(pool: &PgPool, role_filter: Option<UserRole>) -
                     'nurse'::user_role,
                     'receptionist'::user_role
                 )
-                ORDER BY u.role ASC, u.created_at DESC
+                ORDER BY u.created_at DESC
                 "#
             )
             .fetch_all(pool)
