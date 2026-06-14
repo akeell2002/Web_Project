@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor's Queue - HealthHub EHR</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .dashboard-container { width: 100%; max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+        .card { background: #fff; padding: 30px; border-radius: 12px; border: 1px solid #E5E7EB; box-shadow: 0 4px 6px rgba(0,0,0,0.03); }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 15px; border-bottom: 1px solid #E5E7EB; }
+        th { background-color: #F3F4F6; color: #374151; }
+        .vitals-box { background: #F8FAFC; padding: 8px; border-radius: 6px; font-size: 13px; border: 1px solid #E2E8F0; display: inline-block;}
+        .btn-consult { background-color: #10B981; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none;}
+        .btn-consult:hover { background-color: #059669; }
+    </style>
+</head>
+<body>
+
+{% include "staff/navbar.html" %}
+
+<div class="dashboard-container">
+    <h1 style="color: #111827; margin-bottom: 5px;">My Daily Consultations</h1>
+    <p style="color: #6B7280; margin-bottom: 30px;">Date: {{ date }}</p>
+
+    <div class="card">
+        {% if queue | length == 0 %}
+            <p style="text-align: center; color: #6B7280;">You have no patients waiting in your queue.</p>
+        {% else %}
+        <table>
+            <tr>
+                <th>Queue #</th>
+                <th>Time</th>
+                <th>Patient Name</th>
+                <th>Nurse Vitals</th>
+                <th>Action</th>
+            </tr>
+            {% for appt in queue %}
+            <tr>
+                <td><h2 style="margin:0; color: #005999;">#{{ appt.queue_number }}</h2></td>
+                <td>{{ appt.time }}</td>
+                <td><strong>{{ appt.patient_name }}</strong><br><small>{{ appt.gender }} | DOB: {{ appt.dob }}</small></td>
+                <td>
+                    {% if appt.status == "vitals_taken" %}
+                        <div class="vitals-box">
+                            <strong>BP:</strong> {{ appt.bp }} <br>
+                            <strong>Temp:</strong> {{ appt.temp }}°C <br>
+                            <strong>Wgt:</strong> {{ appt.weight }}kg
+                        </div>
+                    {% else %}
+                        <span style="color: #F59E0B;">🟡 Waiting on Nurse</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if appt.status == "vitals_taken" %}
+                        <a href="/staff/consultation/{{ appt.id }}" class="btn-consult">Start Consultation</a>
+                    {% else %}
+                        <i style="color: #9CA3AF;">Not Ready</i>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>
