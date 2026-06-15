@@ -101,10 +101,8 @@ async fn main() -> std::io::Result<()> {
             .route("/staff/receptionist/support/reply", web::post().to(handlers::receptionist::submit_reply))
 
             // Patient interface routes
-            .route("/patients/add", web::get().to(handlers::admin::show_add_patient_page))
-            .route("/patients/add", web::post().to(handlers::admin::process_add_patient))
             .route("/patient/login", web::get().to(handlers::auth::patient_login))
-            .route("/patient/login", web::post().to(handlers::auth::login))
+            .route("/patient/login", web::post().to(handlers::auth::login)) // Binds patient login form submission here
             .route("/patient/register", web::get().to(handlers::auth::show_register))
             .route("/patient/register", web::post().to(handlers::auth::register))
             .route("/patient/dashboard", web::get().to(handlers::auth::patient_dashboard))
