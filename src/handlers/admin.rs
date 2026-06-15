@@ -229,3 +229,23 @@ pub async fn patient_directory_page(
         Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
     }
 }
+
+pub async fn show_add_patient_page(
+    session: actix_session::Session, 
+    tmpl: web::Data<tera::Tera>
+) -> impl Responder {
+    // Re-use your existing staff protective wall check
+    if let Err(response) = staff_only(&session) {
+        return response;
+    }
+
+    let mut ctx = tera::Context::new();
+    // This makes sure your navbar headers keep tracking the user's role smoothly
+    ctx.insert("specific_role", &session.get::<String>("role").unwrap_or_default().unwrap_or_default());
+
+    // This matches the location of your file: templates/patient/add.html
+    match tmpl.render("patient/add.html", &ctx) {
+        Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
+        Err(e) => HttpResponse::InternalServerError().body(format!("Form layout load error: {}", e)),
+    }
+}

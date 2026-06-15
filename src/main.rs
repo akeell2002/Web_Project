@@ -84,6 +84,8 @@ async fn main() -> std::io::Result<()> {
             .route("/staff/login", web::post().to(handlers::auth::login))
             .route("/staff/dashboard", web::get().to(handlers::auth::staff_dashboard))
             .route("/staff/patients", web::get().to(handlers::admin::patient_directory_page))
+            .route("/staff/patients/add", web::get().to(handlers::patients::show_add_patient_page))
+            .route("/staff/patients/add", web::post().to(handlers::patients::process_add_patient))
 
             // --- Doctor Routes ---
             .route("/staff/doctor/queue", web::get().to(handlers::appointments::doctor_daily_queue_page))
@@ -96,7 +98,6 @@ async fn main() -> std::io::Result<()> {
             // --- Receptionist Routes ---
             .route("/staff/receptionist/reception", web::get().to(handlers::appointments::reception_desk_page))
             .route("/staff/receptionist/queue/check_in/{id}", web::post().to(handlers::appointments::process_check_in))
-            // New support ticketing dashboard for receptionists
             .route("/staff/receptionist/support", web::get().to(handlers::receptionist::support_dashboard))
             .route("/staff/receptionist/support/reply", web::post().to(handlers::receptionist::submit_reply))
 

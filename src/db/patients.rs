@@ -1,12 +1,13 @@
+// src/db/patients.rs
 use sqlx::{PgPool, Postgres, Transaction};
 use crate::models::user::{User, UserRole};
 use crate::models::patient::CreatePatientProfile;
-use crate::db::users::create_user;
 use serde_json::json;
 use uuid::Uuid;
 use sqlx::Row;
+use chrono::NaiveDate;
 
-// Registers a new patient user account and profile atomically using a transaction
+/// Registers a new patient user account and profile atomically using a transaction
 pub async fn register_patient(
     pool: &PgPool,
     email: &str,
@@ -63,7 +64,7 @@ pub async fn register_patient(
     Ok(user)
 }
 
-// Retrieve a simplified patient directory suitable for staff listing
+/// Retrieve a simplified patient directory suitable for staff listing
 pub async fn get_patient_directory(pool: &PgPool) -> Result<Vec<serde_json::Value>, String> {
     let rows = sqlx::query(
         r#"
@@ -100,4 +101,26 @@ pub async fn get_patient_directory(pool: &PgPool) -> Result<Vec<serde_json::Valu
     }
 
     Ok(out)
+}
+
+/// Legacy fallback function to keep older handler references happy if they call it
+pub async fn create_patient_profile(
+    pool: &PgPool,
+    first_name: &str,
+    last_name: &str,
+    date_of_birth: NaiveDate,
+    gender: &str,
+    phone_number: Option<&str>,
+    email: &str,
+) -> Result<(), String> {
+    let profile = CreatePatientProfile {
+        first_name: first_name.to_string(),
+        last_name: last_name.to_string(),
+        date_of_birth,
+        gender: Some(gender.to_string()),
+        phone_number: phone_number.map(|s| s.to_string()),
+        emergency_contact_name: None,
+        emergency_contact_phone: None,
+    };
+    register_patient(pool, email, "TemporaryPassword123!", profile).await.map(|_| ())
 }

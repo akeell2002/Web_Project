@@ -12,7 +12,7 @@
         <div class="navbar-brand">⚕️ HealthHub Clinical Portal</div>
         <div class="navbar-links">
             <a href="/dashboard">Dashboard</a>
-            <a href="/patients">Patient Directory</a>
+            <a href="/staff/patients">Patient Directory</a>
             <a href="/logout" style="background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px;">Secure Logout</a>
         </div>
     </nav>
@@ -39,7 +39,7 @@
                 <p>Enter core identity and biological parameters.</p>
             </div>
             
-            <form method="POST" action="/patients/add">
+            <form method="POST" action="/staff/patients/add">
                 
                 <div style="display: flex; gap: 15px;">
                     <div class="input-field" style="flex: 1;">
@@ -89,7 +89,7 @@
             </form>
 
             <div class="switch-auth" style="margin-top: 20px;">
-                <p><a href="/patients" style="color: #6B7280;">Cancel Intake & Return</a></p>
+                <p><a href="/staff/patients" style="color: #6B7280;">Cancel Intake & Return</a></p>
             </div>
         </div>
 
