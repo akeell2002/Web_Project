@@ -23,7 +23,6 @@ struct DoctorDropdownItem {
     last_name: String,
 }
 
-
 pub async fn show_booking_form(
     tmpl: web::Data<Tera>,
     pool: web::Data<PgPool>,
@@ -192,7 +191,8 @@ pub async fn doctor_daily_queue_page(
     ctx.insert("queue_count", &appointments.len());
     ctx.insert("current_view", filter_mode); // Pass view to template to toggle active tab states
 
-    match tmpl.render("staff/doctor_queue.html", &ctx) {
+    // UPDATED: Now looks inside templates/staff/doctor/ folder layout
+    match tmpl.render("staff/doctor/doctor_queue.html", &ctx) {
         Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
         Err(e) => HttpResponse::InternalServerError().body(format!("Rendering compilation error: {}", e)),
     }
@@ -218,7 +218,8 @@ pub async fn reception_desk_page(
 
     ctx.insert("specific_role", &session.get::<String>("role").unwrap_or_default().unwrap_or_default());
 
-    match tmpl.render("staff/reception.html", &ctx) {
+    // UPDATED: Now looks inside templates/staff/receptionist/ folder layout
+    match tmpl.render("staff/receptionist/reception.html", &ctx) {
         Ok(html) => actix_web::HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
         Err(e) => actix_web::HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
     }
@@ -242,12 +243,12 @@ pub async fn process_check_in(
         Ok(_) => {
             // Redirect back to the Receptionist dashboard so the page refreshes automatically!
             actix_web::HttpResponse::SeeOther()
-                .append_header(("Location", "/staff/reception?success=checked_in"))
+                .append_header(("Location", "/staff/receptionist/reception?success=checked_in"))
                 .finish()
         }
         Err(_) => {
             actix_web::HttpResponse::SeeOther()
-                .append_header(("Location", "/staff/reception?error=check_in_failed"))
+                .append_header(("Location", "/staff/receptionist/reception?error=check_in_failed"))
                 .finish()
         }
     }

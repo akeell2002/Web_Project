@@ -88,7 +88,7 @@ If you prefer to inspect the schema first, see [migrations/01_schema_init.sql](m
 ### 3. Run the app
 
 ```bash
-cargo run
+cargo watch -x run
 ```
 
 The app starts on `http://127.0.0.1:8080`.

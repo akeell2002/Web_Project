@@ -75,20 +75,36 @@ async fn main() -> std::io::Result<()> {
             .route("/admin/staff/onboard", web::post().to(handlers::admin::onboard_staff_submit))
             .route("/admin/staff", web::get().to(handlers::admin::staff_directory_page))
 
-            // Staff interface routes
+            // === PUBLIC INDEX ROUTES ===
+            .route("/support", web::get().to(handlers::support::support_form_page))
+            .route("/support/submit", web::post().to(handlers::support::submit_support_ticket))
+
+            // === STAFF INTERFACE ROUTES ===
             .route("/staff/login", web::get().to(handlers::auth::staff_login))
             .route("/staff/login", web::post().to(handlers::auth::login))
             .route("/staff/dashboard", web::get().to(handlers::auth::staff_dashboard))
             .route("/staff/patients", web::get().to(handlers::admin::patient_directory_page))
-            .route("/staff/queue", web::get().to(handlers::appointments::doctor_daily_queue_page))
-            .route("/staff/reception", web::get().to(handlers::appointments::reception_desk_page))
-            .route("/staff/queue/check_in/{id}", web::post().to(handlers::appointments::process_check_in))
-            .route("/staff/triage", web::get().to(handlers::triage::nurse_triage_page))
-            .route("/staff/queue/triage/{id}", web::post().to(handlers::triage::submit_triage_vitals))
+
+            // --- Doctor Routes ---
+            .route("/staff/doctor/queue", web::get().to(handlers::appointments::doctor_daily_queue_page))
+            .route("/staff/doctor/patients", web::get().to(handlers::appointments::doctor_daily_queue_page))
+
+            // --- Nurse Routes ---
+            .route("/staff/nurse/triage", web::get().to(handlers::triage::nurse_triage_page))
+            .route("/staff/nurse/queue/triage/{id}", web::post().to(handlers::triage::submit_triage_vitals))
+
+            // --- Receptionist Routes ---
+            .route("/staff/receptionist/reception", web::get().to(handlers::appointments::reception_desk_page))
+            .route("/staff/receptionist/queue/check_in/{id}", web::post().to(handlers::appointments::process_check_in))
+            // New support ticketing dashboard for receptionists
+            .route("/staff/receptionist/support", web::get().to(handlers::receptionist::support_dashboard))
+            .route("/staff/receptionist/support/reply", web::post().to(handlers::receptionist::submit_reply))
 
             // Patient interface routes
+            .route("/patients/add", web::get().to(handlers::admin::show_add_patient_page))
+            .route("/patients/add", web::post().to(handlers::admin::process_add_patient))
             .route("/patient/login", web::get().to(handlers::auth::patient_login))
-            .route("/patient/login", web::post().to(handlers::auth::login)) // Binds patient login form submission here
+            .route("/patient/login", web::post().to(handlers::auth::login))
             .route("/patient/register", web::get().to(handlers::auth::show_register))
             .route("/patient/register", web::post().to(handlers::auth::register))
             .route("/patient/dashboard", web::get().to(handlers::auth::patient_dashboard))

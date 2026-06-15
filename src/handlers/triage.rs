@@ -34,7 +34,8 @@ pub async fn nurse_triage_page(
 
     ctx.insert("specific_role", &session.get::<String>("role").unwrap_or_default().unwrap_or_default());
 
-    match tmpl.render("staff/nurse_triage.html", &ctx) {
+    // UPDATED: Now targeting the staff/nurse/ folder structure layout
+    match tmpl.render("staff/nurse/nurse_triage.html", &ctx) {
         Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
         Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
     }
@@ -56,9 +57,20 @@ pub async fn submit_triage_vitals(
     let appointment_id = path.into_inner();
 
     match crate::db::triage::record_patient_vitals(
-        &pool, appointment_id, nurse_id, form.blood_pressure.clone(), form.temperature.clone(), form.weight_kg.clone(), form.height_cm.clone()
+        &pool, 
+        appointment_id, 
+        nurse_id, 
+        form.blood_pressure.clone(), 
+        form.temperature.clone(), 
+        form.weight_kg.clone(), 
+        form.height_cm.clone()
     ).await {
-        Ok(_) => HttpResponse::SeeOther().append_header(("Location", "/staff/triage?success=vitals_saved")).finish(),
+        Ok(_) => {
+            // UPDATED: Dynamic redirection match with main.rs path mapping setup
+            HttpResponse::SeeOther()
+                .append_header(("Location", "/staff/nurse/triage?success=vitals_saved"))
+                .finish()
+        },
         Err(e) => HttpResponse::BadRequest().body(e),
     }
 }

@@ -42,7 +42,7 @@
                 <tbody>
                     {% for p in patients %}
                     <tr style="transition: background 0.15s;" onmouseover="this.style.backgroundColor='#F9FAFB'" onmouseout="this.style.backgroundColor='transparent'">
-                        <td style="font-weight: bold; color: #64748B;">#{{ p.id | truncate(end=8, suffix="") }}</td>
+                        <td style="font-weight: bold; color: #64748B;">#{{ p.id | truncate(length=8, end="") }}</td>
                         <td>
                             <a href="/patients/{{ p.id }}" style="color: #005999; font-weight: 600; text-decoration: none;">
                                 {{ p.first_name }} {{ p.last_name }}

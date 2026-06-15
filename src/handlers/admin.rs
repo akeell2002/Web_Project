@@ -217,8 +217,12 @@ pub async fn patient_directory_page(
         Err(err_msg) => return HttpResponse::InternalServerError().body(format!("Failed to load patients: {}", err_msg)),
     };
 
+    // Get the role string from the session safely
+    let current_role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
+
     let mut ctx = Context::new();
     ctx.insert("patients", &patients);
+    ctx.insert("specific_role", &current_role); // <-- ADD THIS LINE SO THE NAVBAR WORKS
 
     match tmpl.render("staff/patient_directory.html", &ctx) {
         Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),

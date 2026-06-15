@@ -92,102 +92,6 @@
         }
     </style>
 </head>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Dashboard - HealthHub EHR</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-
-    <style>
-        .dashboard-container {
-            width: 100%;
-            max-width: 1100px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        .welcome-banner {
-            background: linear-gradient(135deg, #005999 0%, #0084D6 100%);
-            color: white;
-            padding: 40px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 25px rgba(0, 89, 153, 0.2);
-        }
-
-        .welcome-banner h2 { font-size: 32px; margin-bottom: 8px; }
-        .welcome-banner p { color: #E6F0F9; }
-
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-        }
-
-        .action-card {
-            background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid #E5E7EB;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.03);
-            display: flex;
-            flex-direction: column;
-            transition: 0.3s;
-        }
-
-        .action-card:hover {
-            transform: translateY(-5px);
-            border-color: #005999;
-        }
-
-        .action-icon {
-            font-size: 34px;
-            margin-bottom: 15px;
-        }
-
-        .action-card h3 {
-            margin-bottom: 10px;
-            color: #111827;
-        }
-
-        .action-card p {
-            color: #6B7280;
-            font-size: 14px;
-            flex-grow: 1;
-            line-height: 1.6;
-        }
-
-        .module-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 6px 10px;
-            border-radius: 999px;
-            background: #E0F2FE;
-            color: #075985;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            margin-bottom: 12px;
-            width: fit-content;
-        }
-
-        .action-link {
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 14px;
-        }
-
-        .action-link.disabled {
-            pointer-events: none;
-            opacity: 0.6;
-        }
-    </style>
-</head>
-
 <body>
 
 {% include "staff/navbar.html" %}
@@ -196,7 +100,7 @@
 
     <div class="welcome-banner">
         <h2>Welcome, {{ staff_name }}</h2>
-        <p>Role: {{ specific_role }} | System Access: Authorized Healthcare Provider</p>
+        <p>Role: {{ specific_role | capitalize }} | System Access: Authorized Healthcare Provider</p>
     </div>
 
     <div class="action-grid">
@@ -207,7 +111,7 @@
             <div class="action-icon">🩺</div>
             <h3>Consult Patients</h3>
             <p>Review assigned patient records and capture consultation notes for active visits.</p>
-            <a href="/staff/queue" class="btn-submit action-link" style="text-decoration:none;">Open Consultations</a>
+            <a href="/staff/doctor/queue" class="btn-submit action-link" style="text-decoration:none;">Open Consultations</a>
         </div>
 
         <div class="action-card">
@@ -233,7 +137,7 @@
             <div class="action-icon">🩹</div>
             <h3>Nurse Triage Station</h3>
             <p>Record vital checks, patient weight, height, and blood pressure for arriving patients.</p>
-            <a href="/staff/triage" class="btn-submit action-link" style="text-decoration:none; background:#0EA5E9;">Open Triage Desk</a>
+            <a href="/staff/nurse/triage" class="btn-submit action-link" style="text-decoration:none; background:#0EA5E9;">Open Triage Desk</a>
         </div>
 
         <div class="action-card">
@@ -241,7 +145,7 @@
             <div class="action-icon">🩹</div>
             <h3>Update Patient Care</h3>
             <p>Record vital checks, nursing notes, and bedside updates during patient care.</p>
-            <a href="/patients" class="btn-submit action-link" style="text-decoration:none; background:#0EA5E9;">Open Care Charts</a>
+            <a href="/staff/patients" class="btn-submit action-link" style="text-decoration:none; background:#0EA5E9;">Open Care Charts</a>
         </div>
 
         <div class="action-card">
@@ -259,7 +163,7 @@
             <div class="action-icon">📅</div>
             <h3>Manage Appointments / Queue</h3>
             <p>View today's schedule, check in arriving patients, and manage the clinic queue.</p>
-            <a href="/staff/reception" class="btn-submit action-link" style="text-decoration:none; background:#0EA5E9;">Open Reception Desk</a>
+            <a href="/staff/receptionist/reception" class="btn-submit action-link" style="text-decoration:none; background:#0EA5E9;">Open Reception Desk</a>
         </div>
 
         <div class="action-card">
@@ -267,7 +171,15 @@
             <div class="action-icon">➕</div>
             <h3>Register Patient</h3>
             <p>Create new patient profiles and capture the details needed for front desk processing.</p>
-            <a href="/patients/add" class="btn-submit action-link" style="text-decoration:none; background:#005999;">New Registration</a>
+            <a href="/staff/patients" class="btn-submit action-link" style="text-decoration:none; background:#005999;">New Registration</a>
+        </div>
+
+        <div class="action-card">
+            <div class="module-badge">Reception Module</div>
+            <div class="action-icon">📩</div>
+            <h3>System Support Tickets</h3>
+            <p>Review questions submitted from the public index page and send back replies.</p>
+            <a href="/staff/receptionist/support" class="btn-submit action-link" style="text-decoration:none; background:#005999;">Open Ticket Desk</a>
         </div>
 
         <div class="action-card">
@@ -284,5 +196,4 @@
 </div>
 
 </body>
-</html>
 </html>
