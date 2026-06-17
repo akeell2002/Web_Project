@@ -7,6 +7,7 @@ pub mod security;
 pub mod users;
 pub mod appointments;
 pub mod triage;
+pub mod billing;
 pub mod consultation;
 
 

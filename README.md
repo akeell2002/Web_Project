@@ -89,13 +89,15 @@ If you prefer to inspect the schema first, see [migrations/01_schema_init.sql](m
 
 ```bash
 cargo watch -x run
+or
+cargo run
 ```
 
 The app starts on `http://127.0.0.1:8080`.
 
 ## Routes
 
-- `/` renders the login page
+- `/` renders the index page
 - `/login` handles authentication
 - `/register` handles account creation
 - `/dashboard` renders the authenticated landing page

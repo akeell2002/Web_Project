@@ -90,8 +90,8 @@ async fn main() -> std::io::Result<()> {
             // --- Doctor Routes ---
             .route("/staff/doctor/queue", web::get().to(handlers::appointments::doctor_daily_queue_page))
             .route("/staff/doctor/patients", web::get().to(handlers::appointments::doctor_daily_queue_page))
-            .route("/staff/doctor/consultation/{id}", web::post().to(handlers::consultation::submit_consultation))
             .route("/staff/doctor/consultation/{id}", web::get().to(handlers::consultation::show_consultation_form))
+            .route("/staff/doctor/consultation/{id}", web::post().to(handlers::consultation::submit_consultation))
 
             // --- Nurse Routes ---
             .route("/staff/nurse/triage", web::get().to(handlers::triage::nurse_triage_page))
@@ -100,6 +100,8 @@ async fn main() -> std::io::Result<()> {
             // --- Receptionist Routes ---
             .route("/staff/receptionist/reception", web::get().to(handlers::appointments::reception_desk_page))
             .route("/staff/receptionist/queue/check_in/{id}", web::post().to(handlers::appointments::process_check_in))
+            .route("/staff/receptionist/billing", web::get().to(handlers::billing::show_billing_dashboard))
+            .route("/staff/receptionist/billing/checkout", web::post().to(handlers::billing::checkout_bill_submit))
             .route("/staff/receptionist/support", web::get().to(handlers::receptionist::support_dashboard))
             .route("/staff/receptionist/support/reply", web::post().to(handlers::receptionist::submit_reply))
 

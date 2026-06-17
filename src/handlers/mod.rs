@@ -6,3 +6,4 @@ pub mod support;
 pub mod receptionist;
 pub mod patients;
 pub mod consultation;
+pub mod billing;
