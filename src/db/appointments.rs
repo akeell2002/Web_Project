@@ -170,13 +170,17 @@ pub async fn get_doctor_daily_appointments(
     let today_date = chrono::Local::now().date_naive();
 
     if filter_mode == "today" {
-        // CHANGED: Swapped CURRENT_DATE out for an explicit bind variable ($2)
         let rows = sqlx::query!(
             r#"
             SELECT a.id, a.date, a.start_time, a.end_time, a.status::text as "status!", a.queue_number,
-                   p.first_name, p.last_name, p.date_of_birth, p.gender
+                   p.first_name, p.last_name, p.date_of_birth, p.gender,
+                   tv.blood_pressure, 
+                   tv.temperature::FLOAT8 as "temperature?", 
+                   tv.weight_kg::FLOAT8 as "weight_kg?", 
+                   tv.height_cm::FLOAT8 as "height_cm?"
             FROM appointment a
             JOIN patient p ON a.patient_id = p.id
+            LEFT JOIN triage_vitals tv ON a.id = tv.appointment_id
             WHERE a.doctor_id = $1 AND a.date = $2
             ORDER BY 
                 CASE WHEN a.status = 'checked_in' THEN 1 WHEN a.status = 'scheduled' THEN 2 ELSE 3 END ASC,
@@ -190,6 +194,12 @@ pub async fn get_doctor_daily_appointments(
         .map_err(|e| format!("Failed to query daily clinical queue: {}", e))?;
 
         for row in rows {
+            // Format vitals safely, defaulting to "--" if the nurse hasn't entered them yet
+            let bp = row.blood_pressure.unwrap_or_else(|| "--".to_string());
+            let temp = row.temperature.map(|t| format!("{:.1} °C", t)).unwrap_or_else(|| "--".to_string());
+            let weight = row.weight_kg.map(|w| format!("{:.1} kg", w)).unwrap_or_else(|| "--".to_string());
+            let height = row.height_cm.map(|h| format!("{:.1} cm", h)).unwrap_or_else(|| "--".to_string());
+
             list.push(serde_json::json!({
                 "id": row.id,
                 "appointment_date": row.date.format("%A, %b %d, %Y").to_string(),
@@ -200,17 +210,26 @@ pub async fn get_doctor_daily_appointments(
                 "queue_number": row.queue_number,
                 "patient_name": format!("{} {}", row.first_name, row.last_name),
                 "patient_dob": row.date_of_birth.to_string(),
-                "patient_gender": row.gender.unwrap_or_else(|| "Undisclosed".to_string())
+                "patient_gender": row.gender.unwrap_or_else(|| "Undisclosed".to_string()),
+                // Pass the formatted vitals to the template
+                "blood_pressure": bp,
+                "temperature": temp,
+                "weight": weight,
+                "height": height
             }));
         }
     } else {
-        // CHANGED: Swapped CURRENT_DATE out for an explicit bind variable ($2)
         let rows = sqlx::query!(
             r#"
             SELECT a.id, a.date, a.start_time, a.end_time, a.status::text as "status!", a.queue_number,
-                   p.first_name, p.last_name, p.date_of_birth, p.gender
+                   p.first_name, p.last_name, p.date_of_birth, p.gender,
+                   tv.blood_pressure, 
+                   tv.temperature::FLOAT8 as "temperature?", 
+                   tv.weight_kg::FLOAT8 as "weight_kg?", 
+                   tv.height_cm::FLOAT8 as "height_cm?"
             FROM appointment a
             JOIN patient p ON a.patient_id = p.id
+            LEFT JOIN triage_vitals tv ON a.id = tv.appointment_id
             WHERE a.doctor_id = $1 AND a.date >= $2
             ORDER BY a.date ASC, a.start_time ASC
             "#,
@@ -222,6 +241,11 @@ pub async fn get_doctor_daily_appointments(
         .map_err(|e| format!("Failed to query upcoming clinical caseload: {}", e))?;
 
         for row in rows {
+            let bp = row.blood_pressure.unwrap_or_else(|| "--".to_string());
+            let temp = row.temperature.map(|t| format!("{:.1} °C", t)).unwrap_or_else(|| "--".to_string());
+            let weight = row.weight_kg.map(|w| format!("{:.1} kg", w)).unwrap_or_else(|| "--".to_string());
+            let height = row.height_cm.map(|h| format!("{:.1} cm", h)).unwrap_or_else(|| "--".to_string());
+
             list.push(serde_json::json!({
                 "id": row.id,
                 "appointment_date": row.date.format("%A, %b %d, %Y").to_string(),
@@ -232,7 +256,12 @@ pub async fn get_doctor_daily_appointments(
                 "queue_number": row.queue_number,
                 "patient_name": format!("{} {}", row.first_name, row.last_name),
                 "patient_dob": row.date_of_birth.to_string(),
-                "patient_gender": row.gender.unwrap_or_else(|| "Undisclosed".to_string())
+                "patient_gender": row.gender.unwrap_or_else(|| "Undisclosed".to_string()),
+                // Pass the formatted vitals to the template
+                "blood_pressure": bp,
+                "temperature": temp,
+                "weight": weight,
+                "height": height
             }));
         }
     }

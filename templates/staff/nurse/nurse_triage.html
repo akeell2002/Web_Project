@@ -40,7 +40,7 @@
                 <td><strong>{{ appt.patient_name }}</strong><br><small style="color:#6B7280;">{{ appt.time }}</small></td>
                 <td>{{ appt.gender }}<br><small style="color:#6B7280;">DOB: {{ appt.dob }}</small></td>
                 <td>
-                    <form action="/staff/queue/triage/{{ appt.id }}" method="POST" style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; margin: 0;">
+                    <form action="/staff/nurse/queue/triage/{{ appt.id }}" method="POST" style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; margin: 0;">
     <div>
         <label style="font-size: 12px; font-weight: bold; color: #374151;">BP</label><br>
         <input type="text" name="blood_pressure" class="vitals-input" required placeholder="120/80">

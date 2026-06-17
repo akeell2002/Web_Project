@@ -90,6 +90,8 @@ async fn main() -> std::io::Result<()> {
             // --- Doctor Routes ---
             .route("/staff/doctor/queue", web::get().to(handlers::appointments::doctor_daily_queue_page))
             .route("/staff/doctor/patients", web::get().to(handlers::appointments::doctor_daily_queue_page))
+            .route("/staff/doctor/consultation/{id}", web::post().to(handlers::consultation::submit_consultation))
+            .route("/staff/doctor/consultation/{id}", web::get().to(handlers::consultation::show_consultation_form))
 
             // --- Nurse Routes ---
             .route("/staff/nurse/triage", web::get().to(handlers::triage::nurse_triage_page))

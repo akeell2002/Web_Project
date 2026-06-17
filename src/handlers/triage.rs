@@ -23,7 +23,7 @@ pub async fn nurse_triage_page(
     // Only allow nurses (and admins)
     match session.get::<String>("role") {
         Ok(Some(role)) if role == "nurse" || role == "admin" => {},
-        _ => return HttpResponse::SeeOther().append_header(("Location", "/staff/dashboard")).finish(),
+        _ => return HttpResponse::SeeOther().append_header(("Location", "/staff/nurse/triage?success=true")).finish(),
     };
 
     let queue = crate::db::triage::get_triage_queue(&pool).await.unwrap_or_default();

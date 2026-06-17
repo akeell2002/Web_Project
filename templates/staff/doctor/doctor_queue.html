@@ -165,8 +165,8 @@
                         {% endif %}
                     </td>
                     <td style="padding: 16px 12px; text-align: right;">
-                        {% if item.status == 'checked_in' %}
-                            <a href="/staff/encounter/{{ item.id }}" class="action-btn-encounter">Commence Visit</a>
+                        {% if item.status == 'checked_in' or item.status == 'vitals_taken' %}
+                            <a href="/staff/doctor/consultation/{{ item.id }}" class="action-btn-encounter">Begin Consultation</a>
                         {% elif item.status == 'completed' %}
                             <a href="#" class="action-btn-disabled">Completed</a>
                         {% else %}
