@@ -150,19 +150,21 @@ pub async fn register(
 
 // Explicit Dashboard Gatekeepers
 pub async fn patient_dashboard(
-    session: actix_session::Session, 
-    pool: web::Data<sqlx::PgPool>, 
+    session: actix_session::Session,
+    pool: web::Data<sqlx::PgPool>,
     tera: web::Data<tera::Tera>
 ) -> impl Responder {
     if let Ok(Some(role)) = session.get::<String>("role") {
         if role == "patient" {
             let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
             let patient_id = session.get::<uuid::Uuid>("user_id").unwrap_or_default().unwrap_or_default();
-            
+            let staff_name = email.split('@').next().unwrap_or("Patient").to_string();
+
             let mut ctx = tera::Context::new();
             ctx.insert("email", &email);
+            ctx.insert("specific_role", "patient");
+            ctx.insert("staff_name", &staff_name);
 
-            // Fetch the dynamic active and past tracking records from the database layer
             let appointments = match crate::db::appointments::get_patient_appointments(&pool, patient_id).await {
                 Ok(list) => list,
                 Err(e) => {
@@ -171,14 +173,13 @@ pub async fn patient_dashboard(
                 }
             };
 
-            // Filter into two clear timeline slices based on our helper identifier flag
             let upcoming: Vec<_> = appointments.iter().filter(|a| a["is_upcoming"].as_bool().unwrap_or(false)).collect();
             let historical: Vec<_> = appointments.iter().filter(|a| !a["is_upcoming"].as_bool().unwrap_or(false)).collect();
 
             ctx.insert("upcoming_appointments", &upcoming);
             ctx.insert("historical_appointments", &historical);
 
-            return match tera.render("patient/dashboard.html", &ctx) {
+            return match tera.render("dashboard.html", &ctx) {
                 Ok(html) => HttpResponse::Ok()
                     .content_type("text/html")
                     .append_header(("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"))
@@ -194,15 +195,14 @@ pub async fn staff_dashboard(session: Session, tera: web::Data<Tera>) -> impl Re
     if let Ok(Some(role)) = session.get::<String>("role") {
         if role == "doctor" || role == "nurse" || role == "receptionist" {
             let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+            let display_name = email.split('@').next().unwrap_or("Staff Member").to_string();
+
             let mut ctx = Context::new();
             ctx.insert("email", &email);
-
-            // Split the email prefix as a quick substitute for their name string display
-            let display_name = email.split('@').next().unwrap_or("Staff Member");
-            ctx.insert("staff_name", display_name); 
+            ctx.insert("staff_name", &display_name);
             ctx.insert("specific_role", &role);
-            
-            return match tera.render("staff/dashboard.html", &ctx) {
+
+            return match tera.render("dashboard.html", &ctx) {
                 Ok(html) => HttpResponse::Ok()
                     .content_type("text/html")
                     .append_header(("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"))
@@ -219,8 +219,12 @@ pub async fn admin_dashboard(session: Session, pool: web::Data<PgPool>, tera: we
     if let Ok(Some(role)) = session.get::<String>("role") {
         if role == "admin" {
             let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+            let display_name = email.split('@').next().unwrap_or("Admin").to_string();
+
             let mut ctx = Context::new();
             ctx.insert("email", &email);
+            ctx.insert("specific_role", "admin");
+            ctx.insert("staff_name", &display_name);
 
             let counts = match get_staff_dashboard_counts(&pool).await {
                 Ok(counts) => counts,
@@ -230,8 +234,8 @@ pub async fn admin_dashboard(session: Session, pool: web::Data<PgPool>, tera: we
             };
 
             ctx.insert("staff_counts", &counts);
-            
-            return match tera.render("admin/dashboard.html", &ctx) {
+
+            return match tera.render("dashboard.html", &ctx) {
                 Ok(html) => HttpResponse::Ok()
                     .content_type("text/html")
                     .append_header(("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"))

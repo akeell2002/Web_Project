@@ -70,7 +70,14 @@ pub async fn onboard_staff_page(tmpl: web::Data<Tera>, session: Session) -> impl
         return response;
     }
 
-    let ctx = Context::new();
+    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let staff_name = email.split('@').next().unwrap_or("Admin").to_string();
+
+    let mut ctx = Context::new();
+    ctx.insert("specific_role", "admin");
+    ctx.insert("email", &email);
+    ctx.insert("staff_name", &staff_name);
+
     match tmpl.render("admin/onboard_staff.html", &ctx) {
         Ok(html) => HttpResponse::Ok()
             .content_type("text/html; charset=utf-8")
@@ -144,7 +151,13 @@ pub async fn security_monitoring_page(
         }
     };
 
+    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let staff_name = email.split('@').next().unwrap_or("Admin").to_string();
+
     let mut ctx = Context::new();
+    ctx.insert("specific_role", "admin");
+    ctx.insert("email", &email);
+    ctx.insert("staff_name", &staff_name);
     ctx.insert("access_logs", &access_logs);
     ctx.insert("log_count", &access_logs.len());
 
@@ -180,7 +193,14 @@ pub async fn staff_directory_page(
     };
 
     let (title, role_label) = staff_role_title(role_filter.as_ref());
+
+    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let staff_name = email.split('@').next().unwrap_or("Admin").to_string();
+
     let mut ctx = Context::new();
+    ctx.insert("specific_role", "admin");
+    ctx.insert("email", &email);
+    ctx.insert("staff_name", &staff_name);
     ctx.insert("directory_title", &title);
     ctx.insert("selected_role", &role_label);
     ctx.insert("staff_members", &staff_members);
@@ -217,12 +237,15 @@ pub async fn patient_directory_page(
         Err(err_msg) => return HttpResponse::InternalServerError().body(format!("Failed to load patients: {}", err_msg)),
     };
 
-    // Get the role string from the session safely
     let current_role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
+    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let staff_name = email.split('@').next().unwrap_or("Staff").to_string();
 
     let mut ctx = Context::new();
     ctx.insert("patients", &patients);
-    ctx.insert("specific_role", &current_role); // <-- ADD THIS LINE SO THE NAVBAR WORKS
+    ctx.insert("specific_role", &current_role);
+    ctx.insert("email", &email);
+    ctx.insert("staff_name", &staff_name);
 
     match tmpl.render("staff/patient_directory.html", &ctx) {
         Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
@@ -239,11 +262,15 @@ pub async fn show_add_patient_page(
         return response;
     }
 
-    let mut ctx = tera::Context::new();
-    // This makes sure your navbar headers keep tracking the user's role smoothly
-    ctx.insert("specific_role", &session.get::<String>("role").unwrap_or_default().unwrap_or_default());
+    let current_role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
+    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let staff_name = email.split('@').next().unwrap_or("Staff").to_string();
 
-    // This matches the location of your file: templates/patient/add.html
+    let mut ctx = tera::Context::new();
+    ctx.insert("specific_role", &current_role);
+    ctx.insert("email", &email);
+    ctx.insert("staff_name", &staff_name);
+
     match tmpl.render("patient/add.html", &ctx) {
         Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
         Err(e) => HttpResponse::InternalServerError().body(format!("Form layout load error: {}", e)),

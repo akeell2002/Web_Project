@@ -1,0 +1,328 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard - HealthHub{% endblock %}
+
+{% block page_title %}
+    {% if specific_role == "admin" %}Administrator Dashboard
+    {% elif specific_role == "doctor" %}Doctor Dashboard
+    {% elif specific_role == "nurse" %}Nurse Dashboard
+    {% elif specific_role == "receptionist" %}Receptionist Dashboard
+    {% elif specific_role == "patient" %}Patient Dashboard
+    {% endif %}
+{% endblock %}
+
+{# Mark the "Overview / Home" nav item active for each role #}
+{% block nav_admin_overview %}class="active"{% endblock %}
+{% block nav_doctor_overview %}class="active"{% endblock %}
+{% block nav_nurse_overview %}class="active"{% endblock %}
+{% block nav_recep_overview %}class="active"{% endblock %}
+{% block nav_patient_home %}class="active"{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ── WELCOME BANNER ── */
+    .welcome-banner {
+        background: linear-gradient(135deg, #0f172a 0%, #005999 100%);
+        color: white;
+        padding: 30px 36px;
+        border-radius: 12px;
+        margin-bottom: 28px;
+    }
+    .welcome-banner h2 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+    .welcome-banner p { color: #93c5fd; font-size: 14px; }
+    .welcome-banner.patient-theme { background: linear-gradient(135deg, #064e3b 0%, #047857 100%); }
+    .welcome-banner.patient-theme p { color: #a7f3d0; }
+
+    /* ── STATS GRID ── */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+    .stat-card {
+        background: white; border-radius: 10px; padding: 20px;
+        border: 1px solid #E5E7EB; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        text-decoration: none; color: inherit; display: block;
+        transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.07); border-color: #005999; }
+    .stat-card h3 { font-size: 11px; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .stat-card .value { font-size: 28px; font-weight: 700; color: #111827; }
+
+    /* ── ACTION GRID ── */
+    .action-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 18px; }
+    .action-card {
+        background: white; padding: 24px; border-radius: 12px;
+        border: 1px solid #E5E7EB; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        display: flex; flex-direction: column; transition: transform 0.2s, border-color 0.2s;
+    }
+    .action-card:hover { transform: translateY(-4px); border-color: #005999; }
+    .action-icon { font-size: 28px; margin-bottom: 12px; }
+    .action-card h3 { font-size: 15px; font-weight: 600; color: #111827; margin-bottom: 6px; }
+    .action-card p { color: #6B7280; font-size: 13px; line-height: 1.6; flex-grow: 1; margin-bottom: 16px; }
+    .module-badge {
+        display: inline-block; padding: 3px 10px; border-radius: 999px;
+        background: #E0F2FE; color: #075985; font-size: 11px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 12px;
+    }
+
+    /* ── CONTENT CARDS (patient tables) ── */
+    .content-card {
+        background: white; border-radius: 12px; border: 1px solid #E5E7EB;
+        padding: 26px; margin-bottom: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .content-card h2 {
+        font-size: 15px; font-weight: 600; color: #111827;
+        border-bottom: 2px solid #E5E7EB; padding-bottom: 12px; margin-bottom: 18px;
+    }
+    .content-card h2.green-accent { border-bottom-color: #047857; }
+    .empty-state {
+        text-align: center; padding: 28px; color: #9CA3AF; font-style: italic;
+        background: #F9FAFB; border-radius: 8px; border: 1px dashed #E5E7EB;
+    }
+
+    /* ── BUTTONS ── */
+    .action-btn {
+        display: inline-block; text-decoration: none; padding: 10px 18px;
+        border-radius: 7px; font-size: 13px; font-weight: 600; color: white;
+        background: #005999; transition: filter 0.15s; text-align: center;
+        border: none; cursor: pointer;
+    }
+    .action-btn:hover { filter: brightness(1.1); }
+    .action-btn.green  { background: #047857; }
+    .action-btn.red    { background: #DC2626; }
+    .action-btn.sky    { background: #0EA5E9; }
+    .action-btn.disabled { opacity: 0.5; pointer-events: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+    <!-- Welcome Banner -->
+    <div class="welcome-banner {% if specific_role == "patient" %}patient-theme{% endif %}">
+        <h2>Welcome back, {{ staff_name }}</h2>
+        <p>
+            {% if specific_role == "admin" %}Full system oversight — staff, security, and clinical operations.
+            {% elif specific_role == "doctor" %}Your clinical queue and patient records are ready.
+            {% elif specific_role == "nurse" %}Triage station and patient care tools are available.
+            {% elif specific_role == "receptionist" %}Reception desk, billing, and front-of-house tools.
+            {% elif specific_role == "patient" %}Manage your appointments and view your visit history below.
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- ── ADMIN ── -->
+    {% if specific_role == "admin" %}
+
+    <div class="stats-grid">
+        <a href="/admin/staff" class="stat-card">
+            <h3>Total Staff</h3>
+            <div class="value">{{ staff_counts.total_staff }}</div>
+        </a>
+        <a href="/admin/staff?role=doctor" class="stat-card">
+            <h3>Doctors</h3>
+            <div class="value">{{ staff_counts.doctors }}</div>
+        </a>
+        <a href="/admin/staff?role=nurse" class="stat-card">
+            <h3>Nurses</h3>
+            <div class="value">{{ staff_counts.nurses }}</div>
+        </a>
+        <a href="/admin/staff?role=receptionist" class="stat-card">
+            <h3>Receptionists</h3>
+            <div class="value">{{ staff_counts.receptionists }}</div>
+        </a>
+        <a href="/admin/staff?role=admin" class="stat-card">
+            <h3>Admins</h3>
+            <div class="value">{{ staff_counts.admins }}</div>
+        </a>
+    </div>
+
+    <div class="action-grid">
+        <div class="action-card">
+            <div class="action-icon">🧑‍⚕️</div>
+            <h3>Onboard Staff</h3>
+            <p>Create doctor, nurse, receptionist, or admin accounts from a single controlled onboarding flow.</p>
+            <a href="/admin/staff/onboard" class="action-btn">Onboard Staff</a>
+        </div>
+        <div class="action-card">
+            <div class="action-icon">🛡️</div>
+            <h3>Security Monitoring</h3>
+            <p>Review login activity, detect anomalies, and monitor system access logs for compliance auditing.</p>
+            <a href="/admin/security" class="action-btn red">View Security Logs</a>
+        </div>
+        <div class="action-card">
+            <div class="action-icon">📊</div>
+            <h3>System Analytics</h3>
+            <p>View usage metrics including appointments, patient volume, staff activity, and operational trends.</p>
+            <a href="/admin/analytics" class="action-btn sky">View Analytics</a>
+        </div>
+    </div>
+
+    {% endif %}
+
+    <!-- ── DOCTOR ── -->
+    {% if specific_role == "doctor" %}
+
+    <div class="action-grid">
+        <div class="action-card">
+            <div class="module-badge">Doctor Module</div>
+            <div class="action-icon">🩺</div>
+            <h3>Consult Patients</h3>
+            <p>Review assigned patient records and capture consultation notes for active visits.</p>
+            <a href="/staff/doctor/queue" class="action-btn">Open Consultations</a>
+        </div>
+        <div class="action-card">
+            <div class="module-badge">Doctor Module</div>
+            <div class="action-icon">💊</div>
+            <h3>Prescribe Medication</h3>
+            <p>Create prescription plans and document treatment instructions tied to a patient visit.</p>
+            <a href="/staff/patients" class="action-btn">Write Prescription</a>
+        </div>
+        <div class="action-card">
+            <div class="module-badge">Doctor Module</div>
+            <div class="action-icon">📁</div>
+            <h3>Patient Records</h3>
+            <p>View the full electronic health record history, including diagnoses and visit summaries.</p>
+            <a href="/staff/patients" class="action-btn sky">Open Records</a>
+        </div>
+    </div>
+
+    {% endif %}
+
+    <!-- ── NURSE ── -->
+    {% if specific_role == "nurse" %}
+
+    <div class="action-grid">
+        <div class="action-card">
+            <div class="module-badge">Nurse Module</div>
+            <div class="action-icon">🩹</div>
+            <h3>Nurse Triage Station</h3>
+            <p>Record vital checks, patient weight, height, and blood pressure for arriving patients.</p>
+            <a href="/staff/nurse/triage" class="action-btn sky">Open Triage Desk</a>
+        </div>
+        <div class="action-card">
+            <div class="module-badge">Nurse Module</div>
+            <div class="action-icon">📋</div>
+            <h3>Medication Administration</h3>
+            <p>Document administered medication and track patient response after treatment.</p>
+            <span class="action-btn disabled">Administration Log</span>
+        </div>
+    </div>
+
+    {% endif %}
+
+    <!-- ── RECEPTIONIST ── -->
+    {% if specific_role == "receptionist" %}
+
+    <div class="action-grid">
+        <div class="action-card">
+            <div class="module-badge">Reception Module</div>
+            <div class="action-icon">📅</div>
+            <h3>Manage Appointments</h3>
+            <p>View today's schedule, check in arriving patients, and manage the clinic queue.</p>
+            <a href="/staff/receptionist/reception" class="action-btn sky">Open Reception Desk</a>
+        </div>
+        <div class="action-card">
+            <div class="module-badge">Reception Module</div>
+            <div class="action-icon">➕</div>
+            <h3>Register Patient</h3>
+            <p>Create new patient profiles and capture details needed for front desk processing.</p>
+            <a href="/staff/patients" class="action-btn">New Registration</a>
+        </div>
+        <div class="action-card">
+            <div class="module-badge">Reception Module</div>
+            <div class="action-icon">🧾</div>
+            <h3>Manage Bills</h3>
+            <p>Prepare and track billing records for appointments and front desk transactions.</p>
+            <a href="/staff/receptionist/billing" class="action-btn">Billing Desk</a>
+        </div>
+        <div class="action-card">
+            <div class="module-badge">Reception Module</div>
+            <div class="action-icon">📩</div>
+            <h3>Support Tickets</h3>
+            <p>Review questions submitted from the public page and send replies.</p>
+            <a href="/staff/receptionist/support" class="action-btn">Open Ticket Desk</a>
+        </div>
+    </div>
+
+    {% endif %}
+
+    <!-- ── PATIENT ── -->
+    {% if specific_role == "patient" %}
+
+    <div class="content-card">
+        <h2 class="green-accent">🗓️ Upcoming Appointments</h2>
+        {% if upcoming_appointments %}
+            <table class="clinical-table">
+                <thead>
+                    <tr>
+                        <th>Practitioner</th>
+                        <th>Date</th>
+                        <th>Time Slot</th>
+                        <th>Room</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in upcoming_appointments %}
+                    <tr>
+                        <td style="font-weight:600;">{{ app.doctor_name }}</td>
+                        <td>{{ app.formatted_date }}</td>
+                        <td>
+                            <span style="background:#EFF6FF;color:#1E40AF;padding:3px 8px;border-radius:4px;font-size:12px;font-weight:bold;">
+                                {{ app.start_time }} – {{ app.end_time }}
+                            </span>
+                        </td>
+                        <td style="color:#047857;font-weight:bold;">{{ app.room }}</td>
+                        <td>
+                            <span style="background:#D1FAE5;color:#065F46;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;text-transform:uppercase;">
+                                {{ app.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state">No upcoming appointments scheduled.</div>
+        {% endif %}
+    </div>
+
+    <div class="content-card">
+        <h2>📜 Past Visits</h2>
+        {% if historical_appointments %}
+            <table class="clinical-table">
+                <thead>
+                    <tr>
+                        <th>Practitioner</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in historical_appointments %}
+                    <tr>
+                        <td style="font-weight:500;">{{ app.doctor_name }}</td>
+                        <td>{{ app.formatted_date }}</td>
+                        <td>{{ app.start_time }}</td>
+                        <td>
+                            <span style="background:#E5E7EB;color:#374151;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;text-transform:uppercase;">
+                                {{ app.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state">No past visit records found.</div>
+        {% endif %}
+    </div>
+
+    <a href="/patient/appointments/book" class="action-btn green">📅 Book New Appointment</a>
+
+    {% endif %}
+
+{% endblock %}

@@ -1,191 +1,141 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Daily Consultation Queue - HealthHub EHR</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <style>
-        .queue-container {
-            width: 100%;
-            max-width: 1300px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-        .queue-header-banner {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .queue-header-banner h2 { font-size: 26px; margin: 0; }
-        .queue-header-banner p { color: #94a3b8; margin: 5px 0 0 0; font-size: 14px; }
-        .count-badge {
-            background: #0ea5e9;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        
-        /* Fixed VS Code compatibility: Standardized Filter Button Themes */
-        .tab-btn {
-            text-decoration: none; 
-            padding: 10px 20px; 
-            border-radius: 6px; 
-            font-weight: 600; 
-            font-size: 14px; 
-            transition: all 0.2s;
-            background: white; 
-            color: #4B5563; 
-            border: 1px solid #D1D5DB;
-        }
-        .tab-btn.active {
-            background: #005999; 
-            color: white; 
-            border: 1px solid #005999;
-        }
+{% extends "layout.html" %}
 
-        .status-pill {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .status-scheduled { background-color: #fef3c7; color: #d97706; }
-        .status-checked_in { background-color: #d1fae5; color: #065f46; animation: pulse 2s infinite; }
-        .status-completed { background-color: #e5e7eb; color: #374151; }
-        .action-btn-encounter {
-            background: #005999;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .action-btn-encounter:hover { background: #004070; }
-        .action-btn-disabled {
-            background: #e5e7eb;
-            color: #9ca3af;
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            text-decoration: none;
-            pointer-events: none;
-        }
-    </style>
-</head>
-<body>
-<nav class="navbar">
-    <div class="navbar-brand"> HealthHub Staff Portal</div>
-    <div class="navbar-links">
-        <a href="/staff/dashboard">Overview</a>
-        <a href="/staff/queue">My Daily Queue</a>
-        <a href="/staff/patients">Patients Registry</a>
-        <a href="/logout" style="background: rgba(255,255,255,0.2); padding:8px 15px; border-radius:20px;">Logout</a>
+{% block title %}My Daily Queue - HealthHub EHR{% endblock %}
+{% block page_title %}Clinical Consultation Queue{% endblock %}
+{% block nav_doctor_queue %}class="active"{% endblock %}
+
+{% block extra_head %}
+<style>
+    .queue-header-banner {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .queue-header-banner h2 { font-size: 22px; margin: 0; }
+    .queue-header-banner p { color: #94a3b8; margin: 5px 0 0 0; font-size: 14px; }
+    .count-badge {
+        background: #0ea5e9; color: white;
+        padding: 8px 16px; border-radius: 20px;
+        font-size: 14px; font-weight: bold;
+    }
+    .tab-btn {
+        text-decoration: none; padding: 10px 20px; border-radius: 6px;
+        font-weight: 600; font-size: 14px; transition: all 0.2s;
+        background: white; color: #4B5563; border: 1px solid #D1D5DB;
+    }
+    .tab-btn.active { background: #005999; color: white; border: 1px solid #005999; }
+    .status-pill {
+        display: inline-block; padding: 4px 10px; border-radius: 12px;
+        font-size: 12px; font-weight: bold; text-transform: uppercase;
+    }
+    .status-scheduled { background-color: #fef3c7; color: #d97706; }
+    .status-checked_in { background-color: #d1fae5; color: #065f46; }
+    .status-completed { background-color: #e5e7eb; color: #374151; }
+    .action-btn-encounter {
+        background: #005999; color: white; border: none;
+        padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600;
+        text-decoration: none; cursor: pointer; transition: background 0.2s;
+    }
+    .action-btn-encounter:hover { background: #004070; }
+    .action-btn-disabled {
+        background: #e5e7eb; color: #9ca3af; padding: 8px 14px;
+        border-radius: 6px; font-size: 13px; font-weight: 600;
+        text-decoration: none; pointer-events: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="queue-header-banner">
+    <div>
+        <h2>My Clinical Consultation Dashboard</h2>
+        <p>{{ formatted_date }} | Practitioner Identity: Verified</p>
     </div>
-</nav>
-
-<div class="queue-container">
-    <div class="queue-header-banner">
-        <div>
-            <h2>My Clinical Consultation Dashboard</h2>
-            <p>System Clock: {{ formatted_date }} | Practitioner Identity Check: Verified</p>
-        </div>
-        <div class="count-badge">
-            {% if current_view == "today" %}
-                Today's Active Workload: {{ queue_count }}
-            {% else %}
-                Total Upcoming Caseload: {{ queue_count }}
-            {% endif %}
-        </div>
-    </div>
-
-    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-        <a href="/staff/queue?view=today" class="tab-btn {% if current_view == 'today' %}active{% endif %}">
-            🗓️ Today's Active Queue
-        </a>
-        <a href="/staff/queue?view=all" class="tab-btn {% if current_view == 'all' %}active{% endif %}">
-            📋 View All Upcoming Bookings
-        </a>
-    </div>
-
-    <div style="background: white; border-radius: 12px; border: 1px solid #E5E7EB; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
-            <thead>
-                <tr style="background-color: #F9FAFB; color: #4B5563; font-weight: bold; border-bottom: 2px solid #E5E7EB;">
-                    <th style="padding: 14px 12px;">Queue Info</th>
-                    <th style="padding: 14px 12px;">Scheduled Interval</th>
-                    <th style="padding: 14px 12px;">Patient Parameters</th>
-                    <th style="padding: 14px 12px;">Birth Parameters</th>
-                    <th style="padding: 14px 12px;">Location</th>
-                    <th style="padding: 14px 12px;">Workflow Status</th>
-                    <th style="padding: 14px 12px; text-align: right;">Clinical Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in queue %}
-                <tr style="border-bottom: 1px solid #F3F4F6; transition: background 0.15s;" onmouseover="this.style.backgroundColor='#F9FAFB'" onmouseout="this.style.backgroundColor='transparent'">
-                    <td style="padding: 16px 12px; font-weight: bold; color: #111827;">
-                        {% if item.queue_number %}
-                            <span style="font-size: 16px; color: #005999;">#{{ item.queue_number }}</span>
-                        {% else %}
-                            <span style="color: #9CA3AF; font-style: italic;">Unassigned</span>
-                        {% endif %}
-                    </td>
-                    <td style="padding: 16px 12px; font-weight: 600; color: #374151;">
-                        {% if item.is_today %}
-                            <span style="display:inline-block; font-size:11px; background:#d1fae5; color:#065f46; padding:2px 6px; border-radius:4px; margin-bottom:4px; font-weight:bold;">TODAY</span>
-                        {% else %}
-                            <span style="display:block; font-size:13px; color:#005999;">{{ item.appointment_date }}</span>
-                        {% endif %}
-                        <span style="display:block; font-size:12px; color:#6B7280; font-weight:normal;">{{ item.start_time }} - {{ item.end_time }}</span>
-                    </td>
-                    <td style="padding: 16px 12px; font-weight: 600; color: #111827;">{{ item.patient_name }}</td>
-                    <td style="padding: 16px 12px; color: #4B5563;">{{ item.patient_dob }} <span style="font-size:12px; color:#6B7280;">({{ item.patient_gender }})</span></td>
-                    <td style="padding: 16px 12px; font-weight: bold; color: #0ea5e9;">{{ item.room }}</td>
-                    <td style="padding: 16px 12px;">
-                        {% if item.status == 'checked_in' %}
-                            <span class="status-pill status-checked_in">Ready Outside</span>
-                        {% elif item.status == 'scheduled' %}
-                            <span class="status-pill status-scheduled">Scheduled</span>
-                        {% else %}
-                            <span class="status-pill status-completed">Encounter Logged</span>
-                        {% endif %}
-                    </td>
-                    <td style="padding: 16px 12px; text-align: right;">
-                        {% if item.status == 'checked_in' or item.status == 'vitals_taken' %}
-                            <a href="/staff/doctor/consultation/{{ item.id }}" class="action-btn-encounter">Begin Consultation</a>
-                        {% elif item.status == 'completed' %}
-                            <a href="#" class="action-btn-disabled">Completed</a>
-                        {% else %}
-                            <span style="color:#6B7280; font-size:13px; font-style:italic; padding-right:10px;">Awaiting Arrival</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="7" style="text-align: center; padding: 40px; color: #9CA3AF; font-style: italic; background-color: #F9FAFB; border-radius: 8px;">
-                        No active clinical appointments match the selected filter tracking criteria.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="count-badge">
+        {% if current_view == "today" %}
+            Today's Active Workload: {{ queue_count }}
+        {% else %}
+            Total Upcoming Caseload: {{ queue_count }}
+        {% endif %}
     </div>
 </div>
-</body>
-</html>
+
+<div style="display: flex; gap: 10px; margin-bottom: 20px;">
+    <a href="/staff/doctor/queue?view=today" class="tab-btn {% if current_view == 'today' %}active{% endif %}">
+        🗓️ Today's Active Queue
+    </a>
+    <a href="/staff/doctor/queue?view=all" class="tab-btn {% if current_view == 'all' %}active{% endif %}">
+        📋 View All Upcoming Bookings
+    </a>
+</div>
+
+<div style="background: white; border-radius: 12px; border: 1px solid #E5E7EB; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+        <thead>
+            <tr style="background-color: #F9FAFB; color: #4B5563; font-weight: bold; border-bottom: 2px solid #E5E7EB;">
+                <th style="padding: 14px 12px;">Queue Info</th>
+                <th style="padding: 14px 12px;">Scheduled Interval</th>
+                <th style="padding: 14px 12px;">Patient</th>
+                <th style="padding: 14px 12px;">Date of Birth</th>
+                <th style="padding: 14px 12px;">Room</th>
+                <th style="padding: 14px 12px;">Status</th>
+                <th style="padding: 14px 12px; text-align: right;">Clinical Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in queue %}
+            <tr style="border-bottom: 1px solid #F3F4F6; transition: background 0.15s;" onmouseover="this.style.backgroundColor='#F9FAFB'" onmouseout="this.style.backgroundColor='transparent'">
+                <td style="padding: 16px 12px; font-weight: bold; color: #111827;">
+                    {% if item.queue_number %}
+                        <span style="font-size: 16px; color: #005999;">#{{ item.queue_number }}</span>
+                    {% else %}
+                        <span style="color: #9CA3AF; font-style: italic;">Unassigned</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 16px 12px; font-weight: 600; color: #374151;">
+                    {% if item.is_today %}
+                        <span style="display:inline-block; font-size:11px; background:#d1fae5; color:#065f46; padding:2px 6px; border-radius:4px; margin-bottom:4px; font-weight:bold;">TODAY</span>
+                    {% else %}
+                        <span style="display:block; font-size:13px; color:#005999;">{{ item.appointment_date }}</span>
+                    {% endif %}
+                    <span style="display:block; font-size:12px; color:#6B7280; font-weight:normal;">{{ item.start_time }} - {{ item.end_time }}</span>
+                </td>
+                <td style="padding: 16px 12px; font-weight: 600; color: #111827;">{{ item.patient_name }}</td>
+                <td style="padding: 16px 12px; color: #4B5563;">{{ item.patient_dob }} <span style="font-size:12px; color:#6B7280;">({{ item.patient_gender }})</span></td>
+                <td style="padding: 16px 12px; font-weight: bold; color: #0ea5e9;">{{ item.room }}</td>
+                <td style="padding: 16px 12px;">
+                    {% if item.status == 'checked_in' %}
+                        <span class="status-pill status-checked_in">Ready Outside</span>
+                    {% elif item.status == 'scheduled' %}
+                        <span class="status-pill status-scheduled">Scheduled</span>
+                    {% else %}
+                        <span class="status-pill status-completed">Encounter Logged</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 16px 12px; text-align: right;">
+                    {% if item.status == 'checked_in' or item.status == 'vitals_taken' %}
+                        <a href="/staff/doctor/consultation/{{ item.id }}" class="action-btn-encounter">Begin Consultation</a>
+                    {% elif item.status == 'completed' %}
+                        <a href="#" class="action-btn-disabled">Completed</a>
+                    {% else %}
+                        <span style="color:#6B7280; font-size:13px; font-style:italic; padding-right:10px;">Awaiting Arrival</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 40px; color: #9CA3AF; font-style: italic; background-color: #F9FAFB; border-radius: 8px;">
+                    No active clinical appointments match the selected filter.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

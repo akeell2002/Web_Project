@@ -1,72 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Active Consultation - HealthHub EHR</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <style>
-        body { background-color: #F3F4F6; font-family: sans-serif; margin: 0; }
-        .form-container { 
-            max-width: 800px; 
-            margin: 40px auto; 
-            background: white; 
-            padding: 40px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
-            border: 1px solid #E5E7EB;
-        }
-        .form-group { margin-bottom: 20px; }
-        label { font-weight: bold; display: block; margin-bottom: 8px; color: #374151; font-size: 14px;}
-        input[type="text"], textarea, select { 
-            width: 100%; 
-            padding: 12px; 
-            border: 1px solid #D1D5DB; 
-            border-radius: 6px; 
-            box-sizing: border-box; 
-            font-size: 14px;
-        }
-        input[type="text"]:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: #3B82F6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-        .btn-submit { 
-            background: #10B981; 
-            color: white; 
-            border: none; 
-            padding: 14px 24px; 
-            border-radius: 6px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            font-size: 16px; 
-            width: 100%; 
-            transition: 0.2s;
-            margin-top: 20px;
-        }
-        .btn-submit:hover { background: #059669; }
-        .section-title { 
-            border-bottom: 2px solid #F3F4F6; 
-            padding-bottom: 10px; 
-            margin-top: 35px; 
-            margin-bottom: 25px; 
-            color: #111827; 
-        }
-        .header-box {
-            background: #EFF6FF;
-            border: 1px solid #BFDBFE;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-        }
-    </style>
-</head>
-<body>
+{% extends "layout.html" %}
 
-<nav class="navbar" style="background: #0f172a; padding: 15px 30px; display: flex; justify-content: space-between; color: white;">
-    <div style="font-weight: bold; font-size: 18px;">HealthHub Clinical Encounter</div>
-    <div><a href="/staff/doctor/queue" style="color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px; font-size: 14px;">Cancel & Return to Queue</a></div>
-</nav>
+{% block title %}Active Consultation - HealthHub EHR{% endblock %}
+{% block page_title %}Active Medical Encounter{% endblock %}
+{% block nav_doctor_queue %}class="active"{% endblock %}
+
+{% block extra_head %}
+<style>
+    .form-container {
+        max-width: 760px;
+        background: white;
+        padding: 36px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        border: 1px solid #E5E7EB;
+    }
+    .form-group { margin-bottom: 20px; }
+    label { font-weight: bold; display: block; margin-bottom: 8px; color: #374151; font-size: 14px; }
+    input[type="text"], textarea, select {
+        width: 100%; padding: 12px; border: 1px solid #D1D5DB;
+        border-radius: 6px; box-sizing: border-box; font-size: 14px;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus {
+        outline: none; border-color: #3B82F6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    .btn-submit-encounter {
+        background: #10B981; color: white; border: none;
+        padding: 14px 24px; border-radius: 6px; font-weight: bold;
+        cursor: pointer; font-size: 16px; width: 100%;
+        transition: 0.2s; margin-top: 20px;
+    }
+    .btn-submit-encounter:hover { background: #059669; }
+    .section-title {
+        border-bottom: 2px solid #F3F4F6; padding-bottom: 10px;
+        margin-top: 35px; margin-bottom: 25px; color: #111827;
+    }
+    .header-box {
+        background: #EFF6FF; border: 1px solid #BFDBFE;
+        padding: 15px 20px; border-radius: 8px; margin-bottom: 30px;
+    }
+    .back-link {
+        display: inline-block; margin-bottom: 20px; font-size: 13px;
+        color: #6B7280; text-decoration: none;
+    }
+    .back-link:hover { color: #005999; }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="/staff/doctor/queue" class="back-link">← Back to Queue</a>
 
 <div class="form-container">
     <div class="header-box">
@@ -75,9 +57,9 @@
     </div>
 
     <form action="/staff/doctor/consultation/{{ appointment_id }}" method="POST">
-        
+
         <h3 class="section-title">1. Clinical Assessment</h3>
-        
+
         <div class="form-group">
             <label>Reported Symptoms</label>
             <textarea name="symptoms" rows="3" placeholder="E.g., Patient reports sore throat and mild fever...">{{ symptoms }}</textarea>
@@ -101,7 +83,9 @@
         </div>
 
         <h3 class="section-title">2. Prescription Details</h3>
-        <p style="font-size: 13px; color: #6B7280; margin-top: -15px; margin-bottom: 20px;"><i>Optional. Leave these fields blank if no medication is required today.</i></p>
+        <p style="font-size: 13px; color: #6B7280; margin-top: -15px; margin-bottom: 20px;">
+            <i>Optional. Leave blank if no medication is required today.</i>
+        </p>
 
         <div style="display: flex; gap: 15px;">
             <div class="form-group" style="flex: 1;">
@@ -130,9 +114,7 @@
             <textarea name="instructions" rows="2" placeholder="E.g., Take after meals">{{ instructions }}</textarea>
         </div>
 
-        <button type="submit" class="btn-submit">Sign Notes & Generate Bill</button>
+        <button type="submit" class="btn-submit-encounter">Sign Notes &amp; Generate Bill</button>
     </form>
 </div>
-
-</body>
-</html>
+{% endblock %}

@@ -1,61 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reception Desk - HealthHub EHR</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+{% extends "layout.html" %}
 
-    <style>
-        .dashboard-container {
-            width: 100%;
-            max-width: 1100px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-        .card {
-            background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid #E5E7EB;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.03);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-        th, td {
-            padding: 15px;
-            border-bottom: 1px solid #E5E7EB;
-        }
-        th {
-            background-color: #F3F4F6;
-            color: #374151;
-        }
-        .btn-check-in {
-            background-color: #10B981;
-            color: white;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.2s;
-        }
-        .btn-check-in:hover {
-            background-color: #059669;
-        }
-    </style>
-</head>
-<body>
-{% include "staff/navbar.html" %}
-<div class="dashboard-container">
-    <h1 style="color: #111827; margin-bottom: 5px;">Reception Desk Queue</h1>
-    <p style="color: #6B7280; margin-bottom: 30px;">Today's Date: {{ date }}</p>
+{% block title %}Reception Desk - HealthHub EHR{% endblock %}
+{% block page_title %}Reception Desk Queue{% endblock %}
+{% block nav_recep_desk %}class="active"{% endblock %}
 
-    <div class="card">
-        <table>
+{% block extra_head %}
+<style>
+    .reception-card {
+        background: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+    }
+    .reception-date { color: #6B7280; margin-bottom: 24px; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 15px; border-bottom: 1px solid #E5E7EB; }
+    th { background-color: #F3F4F6; color: #374151; font-size: 13px; }
+    .btn-check-in {
+        background-color: #10B981; color: white;
+        padding: 8px 16px; border: none; border-radius: 6px;
+        cursor: pointer; font-weight: 600; transition: 0.2s;
+    }
+    .btn-check-in:hover { background-color: #059669; }
+</style>
+{% endblock %}
+
+{% block content %}
+<p class="reception-date">Today's Date: {{ date }}</p>
+
+<div class="reception-card">
+    <table>
+        <thead>
             <tr>
                 <th>Time</th>
                 <th>Patient Name</th>
@@ -65,6 +41,8 @@
                 <th>Queue #</th>
                 <th>Action</th>
             </tr>
+        </thead>
+        <tbody>
             {% for appt in schedule %}
             <tr>
                 <td>{{ appt.time }}</td>
@@ -79,14 +57,14 @@
                     {% else %} {{ appt.status }} {% endif %}
                 </td>
                 <td>
-                    {% if appt.queue_number %} <h3 style="margin:0; color: #005999;">#{{ appt.queue_number }}</h3> {% else %} - {% endif %}
+                    {% if appt.queue_number %}
+                        <h3 style="margin:0; color: #005999;">#{{ appt.queue_number }}</h3>
+                    {% else %} - {% endif %}
                 </td>
                 <td>
                     {% if appt.status == "scheduled" %}
                     <form action="/staff/receptionist/queue/check_in/{{ appt.id }}" method="POST" style="margin: 0;">
-                        <button type="submit" class="btn-check-in">
-                            Check In
-                        </button>
+                        <button type="submit" class="btn-check-in">Check In</button>
                     </form>
                     {% else %}
                         <i style="color: #9CA3AF;">No actions</i>
@@ -94,9 +72,7 @@
                 </td>
             </tr>
             {% endfor %}
-        </table>
-    </div>
+        </tbody>
+    </table>
 </div>
-
-</body>
-</html>
+{% endblock %}

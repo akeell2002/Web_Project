@@ -33,8 +33,14 @@ pub async fn show_add_patient_page(
         return response;
     }
 
+    let current_role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
+    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let staff_name = email.split('@').next().unwrap_or("Staff").to_string();
+
     let mut ctx = Context::new();
-    ctx.insert("specific_role", &session.get::<String>("role").unwrap_or_default().unwrap_or_default());
+    ctx.insert("specific_role", &current_role);
+    ctx.insert("email", &email);
+    ctx.insert("staff_name", &staff_name);
 
     // UPDATED: Points to the secure staff directory template path
     match tmpl.render("staff/add.html", &ctx) {

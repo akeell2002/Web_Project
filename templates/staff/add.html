@@ -1,99 +1,109 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Intake - HealthHub EHR</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-</head>
-<body>
+{% extends "layout.html" %}
 
-    <nav class="navbar">
-        <div class="navbar-brand">⚕️ HealthHub Clinical Portal</div>
-        <div class="navbar-links">
-            <a href="/dashboard">Dashboard</a>
-            <a href="/staff/patients">Patient Directory</a>
-            <a href="/logout" style="background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px;">Secure Logout</a>
-        </div>
-    </nav>
+{% block title %}Register Patient - HealthHub EHR{% endblock %}
+{% block page_title %}New Patient Registration{% endblock %}
 
-    <div class="portal-wrapper" style="height: auto; min-height: 650px; max-width: 1000px; margin-top: 40px; margin-bottom: 40px;">
-        
-        <div class="brand-panel">
-            <div class="system-tag" style="color: #6EE7B7;">📋 PATIENT INTAKE PROTOCOL</div>
-            <div class="brand-message">
-                <h2>Registry<br>Entry.</h2>
-                <p>Ensure all demographic and contact data matches government-issued identification exactly. Accurate entry is critical for future diagnostic cross-referencing.</p>
-                
-                <div style="margin-top: 25px; padding: 12px; background: rgba(0,0,0,0.15); border-left: 3px solid #60A5FA; border-radius: 4px;">
-                    <p style="font-size: 11.5px; line-height: 1.4; color: #E6F0F9; margin: 0;">
-                        <strong>Data Integrity:</strong> Required fields (*) must be completed to generate a valid Medical Record Number (MRN) in the master database. 
-                    </p>
-                </div>
-            </div>
-        </div>
+{# Mark Patients nav active for whichever staff role is viewing #}
+{% block nav_admin_patients %}class="active"{% endblock %}
+{% block nav_doctor_patients %}class="active"{% endblock %}
+{% block nav_nurse_patients %}class="active"{% endblock %}
+{% block nav_recep_patients %}class="active"{% endblock %}
 
-        <div class="form-panel" style="width: 600px; padding: 40px 50px;">
-            <div class="form-header">
-                <h3 style="font-size: 22px;">New Patient Demographics</h3>
-                <p>Enter core identity and biological parameters.</p>
-            </div>
-            
-            <form method="POST" action="/staff/patients/add">
-                
-                <div style="display: flex; gap: 15px;">
-                    <div class="input-field" style="flex: 1;">
-                        <input type="text" name="first_name" placeholder="Legal First Name *" required>
-                    </div>
-                    <div class="input-field" style="flex: 1;">
-                        <input type="text" name="last_name" placeholder="Legal Last Name *" required>
-                    </div>
-                </div>
-                
-                <div style="display: flex; gap: 15px; align-items: flex-end;">
-                    <div class="input-field" style="flex: 1;">
-                        <p style="font-size: 12px; color: #6B7280; margin-bottom: 5px; font-weight: 600;">Date of Birth *</p>
-                        <input type="date" name="date_of_birth" required>
-                    </div>
-                    <div class="input-field" style="flex: 1;">
-                        <select name="gender" class="modern-select" required>
-                            <option value="" disabled selected>Select Biological Sex *</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other / Undisclosed</option>
-                        </select>
-                    </div>
-                </div>
+{% block extra_head %}
+<style>
+    .intake-card {
+        background: white;
+        border-radius: 16px;
+        padding: 36px;
+        max-width: 620px;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+        border: 1px solid #E5E7EB;
+    }
+    .intake-card h3 { font-size: 20px; font-weight: 700; color: #0F172A; margin-bottom: 6px; }
+    .intake-card > p { color: #64748B; font-size: 14px; margin-bottom: 24px; }
 
-                <div class="input-field">
-                    <input type="tel" name="phone" placeholder="Primary Contact Number *" required>
-                </div>
-                <div class="input-field">
-                    <input type="email" name="email" placeholder="Patient Email Address (Optional)">
-                </div>
-                <div class="input-field">
-                    <input type="text" name="address" placeholder="Current Residential Address (Optional)">
-                </div>
-                
-                <div class="input-field">
-                    <select name="blood_type" class="modern-select">
-                        <option value="" disabled selected>Known Blood Type (Optional)...</option>
-                        <option value="A+">A+</option><option value="A-">A-</option>
-                        <option value="B+">B+</option><option value="B-">B-</option>
-                        <option value="AB+">AB+</option><option value="AB-">AB-</option>
-                        <option value="O+">O+</option><option value="O-">O-</option>
-                    </select>
-                </div>
+    .notice-box {
+        background: #EFF6FF; border-left: 3px solid #60A5FA;
+        border-radius: 6px; padding: 12px 16px;
+        font-size: 12.5px; color: #1E40AF; line-height: 1.5; margin-bottom: 24px;
+    }
 
-                <button type="submit" class="btn-submit" style="background: #005999; margin-top: 10px;">Commit to Master Patient Index</button>
-            </form>
+    .input-row { display: flex; gap: 14px; margin-bottom: 0; }
+    .input-row .input-field { flex: 1; }
+    .input-field { margin-bottom: 14px; }
+    .input-field label { display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 5px; }
+    .input-field input, .input-field select {
+        width: 100%; padding: 11px 14px; border: 1px solid #D1D5DB;
+        border-radius: 8px; font-size: 14px; box-sizing: border-box; transition: border-color 0.15s;
+    }
+    .input-field input:focus, .input-field select:focus {
+        outline: none; border-color: #005999;
+        box-shadow: 0 0 0 3px rgba(0,89,153,0.1);
+    }
+    .btn-submit {
+        width: 100%; background: #005999; color: white; padding: 13px;
+        border: none; border-radius: 8px; font-size: 15px; font-weight: 700;
+        cursor: pointer; margin-top: 8px; transition: background 0.15s;
+    }
+    .btn-submit:hover { background: #004070; }
+    .cancel-link { margin-top: 16px; display: block; text-align: center; color: #6B7280; text-decoration: none; font-size: 14px; }
+    .cancel-link:hover { color: #005999; }
+</style>
+{% endblock %}
 
-            <div class="switch-auth" style="margin-top: 20px;">
-                <p><a href="/staff/patients" style="color: #6B7280;">Cancel Intake & Return</a></p>
-            </div>
-        </div>
+{% block content %}
+<div class="intake-card">
+    <h3>New Patient Demographics</h3>
+    <p>Enter core identity and contact parameters. Required fields (*) must be completed.</p>
 
+    <div class="notice-box">
+        <strong>Data Integrity:</strong>
+        All required fields must be completed to generate a valid Medical Record Number (MRN) in the master database.
+        Ensure data matches government-issued identification exactly.
     </div>
 
-</body>
-</html>
+    <form method="POST" action="/staff/patients/add">
+
+        <div class="input-row">
+            <div class="input-field">
+                <input type="text" name="first_name" placeholder="Legal First Name *" required>
+            </div>
+            <div class="input-field">
+                <input type="text" name="last_name" placeholder="Legal Last Name *" required>
+            </div>
+        </div>
+
+        <div class="input-row">
+            <div class="input-field">
+                <label>Date of Birth *</label>
+                <input type="date" name="date_of_birth" required>
+            </div>
+            <div class="input-field">
+                <label>Biological Sex *</label>
+                <select name="gender" required>
+                    <option value="" disabled selected>Select...</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other / Undisclosed</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="input-field">
+            <input type="tel" name="phone_number" placeholder="Primary Contact Number">
+        </div>
+
+        <div class="input-field">
+            <input type="email" name="email" placeholder="Patient Email Address *" required>
+        </div>
+
+        <div class="input-field">
+            <input type="password" name="raw_password" placeholder="Temporary Password *" required>
+        </div>
+
+        <button type="submit" class="btn-submit">Register Patient</button>
+    </form>
+
+    <a href="/staff/patients" class="cancel-link">← Cancel &amp; Return to Patient Directory</a>
+</div>
+{% endblock %}

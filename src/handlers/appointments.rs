@@ -91,15 +91,18 @@ pub async fn show_booking_form(
         }
     }
 
+    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let staff_name = email.split('@').next().unwrap_or("Patient").to_string();
+
     let mut ctx = Context::new();
+    ctx.insert("specific_role", "patient");
+    ctx.insert("email", &email);
+    ctx.insert("staff_name", &staff_name);
     ctx.insert("doctors", &doctors);
     ctx.insert("slots", &slots_grid);
     ctx.insert("selected_doctor_id", &selected_doctor_id);
     ctx.insert("selected_date", &selected_date.to_string());
     ctx.insert("selected_duration", &selected_duration);
-    
-    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-    ctx.insert("email", &email);
 
     match tmpl.render("patient/book_appointment.html", &ctx) {
         Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
@@ -177,21 +180,22 @@ pub async fn doctor_daily_queue_page(
 
     let today = chrono::Local::now().date_naive();
     let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let staff_name = email.split('@').next().unwrap_or("Doctor").to_string();
 
-    // Query our dynamically filtered clinical dataset slice
     let appointments = match crate::db::appointments::get_doctor_daily_appointments(&pool, doctor_id, filter_mode).await {
         Ok(data) => data,
         Err(err) => return HttpResponse::InternalServerError().body(format!("Clinical query tracking failure: {}", err)),
     };
 
     let mut ctx = Context::new();
+    ctx.insert("specific_role", "doctor");
     ctx.insert("email", &email);
+    ctx.insert("staff_name", &staff_name);
     ctx.insert("formatted_date", &today.format("%A, %B %d, %Y").to_string());
     ctx.insert("queue", &appointments);
     ctx.insert("queue_count", &appointments.len());
-    ctx.insert("current_view", filter_mode); // Pass view to template to toggle active tab states
+    ctx.insert("current_view", filter_mode);
 
-    // UPDATED: Now looks inside templates/staff/doctor/ folder layout
     match tmpl.render("staff/doctor/doctor_queue.html", &ctx) {
         Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
         Err(e) => HttpResponse::InternalServerError().body(format!("Rendering compilation error: {}", e)),
@@ -211,14 +215,17 @@ pub async fn reception_desk_page(
     };
 
     let schedule = crate::db::appointments::get_today_clinic_schedule(&pool).await.unwrap_or_default();
-    
+    let current_role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
+    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let staff_name = email.split('@').next().unwrap_or("Staff").to_string();
+
     let mut ctx = tera::Context::new();
+    ctx.insert("specific_role", &current_role);
+    ctx.insert("email", &email);
+    ctx.insert("staff_name", &staff_name);
     ctx.insert("schedule", &schedule);
     ctx.insert("date", &chrono::Local::now().format("%A, %B %d, %Y").to_string());
 
-    ctx.insert("specific_role", &session.get::<String>("role").unwrap_or_default().unwrap_or_default());
-
-    // UPDATED: Now looks inside templates/staff/receptionist/ folder layout
     match tmpl.render("staff/receptionist/reception.html", &ctx) {
         Ok(html) => actix_web::HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
         Err(e) => actix_web::HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
@@ -275,11 +282,16 @@ pub async fn nurse_triage_page(
     };
 
     let queue = crate::db::appointments::get_triage_queue(&pool).await.unwrap_or_default();
+    let current_role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
+    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let staff_name = email.split('@').next().unwrap_or("Nurse").to_string();
 
     let mut ctx = Context::new();
+    ctx.insert("specific_role", &current_role);
+    ctx.insert("email", &email);
+    ctx.insert("staff_name", &staff_name);
     ctx.insert("queue", &queue);
     ctx.insert("date", &chrono::Local::now().format("%A, %B %d, %Y").to_string());
-    ctx.insert("specific_role", &session.get::<String>("role").unwrap_or_default().unwrap_or_default());
 
     match tmpl.render("staff/nurse/nurse_triage.html", &ctx) {
         Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
@@ -348,8 +360,13 @@ pub async fn show_consultation_form(
     };
 
     let appointment_id = path.into_inner();
+    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let staff_name = email.split('@').next().unwrap_or("Doctor").to_string();
 
     let mut ctx = Context::new();
+    ctx.insert("specific_role", "doctor");
+    ctx.insert("email", &email);
+    ctx.insert("staff_name", &staff_name);
     ctx.insert("appointment_id", &appointment_id.to_string());
     ctx.insert("symptoms", "");
     ctx.insert("diagnosis", "");

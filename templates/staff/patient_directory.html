@@ -1,71 +1,88 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Directory - Staff Portal</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-</head>
-<body>
-    <!-- Standardized Master Header -->
-    <nav class="navbar">
-        <div class="navbar-brand"> HealthHub Staff Portal</div>
-        <div class="navbar-links">
-            <a href="/staff/dashboard">Overview</a>
-            <a href="/staff/queue">My Daily Queue</a>
-            <a href="/staff/patients">Patients Registry</a>
-            <a href="/logout" style="background: rgba(255,255,255,0.2); padding:8px 15px; border-radius:20px;">Logout</a>
-        </div>
-    </nav>
+{% extends "layout.html" %}
 
-    <div class="portal-wrapper" style="max-width: 1100px; height: auto; min-height: 550px; margin-top: 40px;">
-        <div class="form-panel" style="width: 100%; padding: 40px;">
-                         
-            <div class="form-header">
-                <h3>Patient Directory</h3>
-                <p>Central registry of all registered medical profiles within the infrastructure.</p>
-            </div>
-                         
-            <a href="/staff/patients/add" class="btn-submit" style="display: inline-block; width: auto; text-decoration: none; margin-bottom: 25px; text-align: center; background: #005999;">+ Register New Patient</a>
-                         
-            <table class="clinical-table">
-                <thead>
-                    <tr>
-                        <th>ID Parameters</th>
-                        <th>Legal Name</th>
-                        <th>Birth Parameters</th>
-                        <th>Biological Sex</th>
-                        <th>Primary Contact</th>
-                        <th>Secure Email Target</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for p in patients %}
-                    <tr style="transition: background 0.15s;" onmouseover="this.style.backgroundColor='#F9FAFB'" onmouseout="this.style.backgroundColor='transparent'">
-                        <td style="font-weight: bold; color: #64748B;">#{{ p.id | truncate(length=8, end="") }}</td>
-                        <td>
-                            <a href="/patients/{{ p.id }}" style="color: #005999; font-weight: 600; text-decoration: none;">
-                                {{ p.first_name }} {{ p.last_name }}
-                            </a>
-                        </td>
-                        <td>{{ p.date_of_birth }}</td>
-                        <td>{{ p.gender }}</td>
-                        <td>{% if p.phone %}{{ p.phone }}{% else %}<span style="color:#94a3b8;">-</span>{% endif %}</td>
-                        <td>{% if p.email %}{{ p.email }}{% else %}<span style="color:#94a3b8;">-</span>{% endif %}</td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" style="text-align: center; color: #94a3b8; padding: 30px; font-style: italic;">No patients registered inside the master system index yet.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            
-            <div class="switch-auth" style="margin-top: 30px; text-align: left;">
-                <p><a href="/staff/dashboard" style="color: #64748B;">← Return to Console Overview</a></p>
-            </div>
-                     
+{% block title %}Patient Directory - HealthHub{% endblock %}
+{% block page_title %}Patient Directory{% endblock %}
+
+{# Mark Patients nav active for whichever role is viewing #}
+{% block nav_admin_patients %}class="active"{% endblock %}
+{% block nav_doctor_patients %}class="active"{% endblock %}
+{% block nav_nurse_patients %}class="active"{% endblock %}
+{% block nav_recep_patients %}class="active"{% endblock %}
+
+{% block extra_head %}
+<style>
+    .directory-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        border: 1px solid #E5E7EB;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+    }
+    .directory-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .directory-card-header h3 { font-size: 18px; font-weight: 700; color: #111827; }
+    .directory-card-header p { color: #6B7280; font-size: 13px; margin-top: 4px; }
+    .btn-register {
+        background: #005999;
+        color: white;
+        text-decoration: none;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+    .btn-register:hover { background: #004070; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="directory-card">
+    <div class="directory-card-header">
+        <div>
+            <h3>Patient Registry</h3>
+            <p>Central registry of all registered medical profiles within the infrastructure.</p>
         </div>
+        <a href="/staff/patients/add" class="btn-register">+ Register New Patient</a>
     </div>
-</body>
-</html>
+
+    <table class="clinical-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Legal Name</th>
+                <th>Date of Birth</th>
+                <th>Gender</th>
+                <th>Phone</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in patients %}
+            <tr style="transition: background 0.15s;" onmouseover="this.style.backgroundColor='#F9FAFB'" onmouseout="this.style.backgroundColor='transparent'">
+                <td style="font-weight: bold; color: #64748B;">#{{ p.id | truncate(length=8, end="") }}</td>
+                <td>
+                    <a href="/patients/{{ p.id }}" style="color: #005999; font-weight: 600; text-decoration: none;">
+                        {{ p.first_name }} {{ p.last_name }}
+                    </a>
+                </td>
+                <td>{{ p.date_of_birth }}</td>
+                <td>{{ p.gender }}</td>
+                <td>{% if p.phone %}{{ p.phone }}{% else %}<span style="color:#94a3b8;">-</span>{% endif %}</td>
+                <td>{% if p.email %}{{ p.email }}{% else %}<span style="color:#94a3b8;">-</span>{% endif %}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; color: #94a3b8; padding: 30px; font-style: italic;">
+                    No patients registered inside the master system index yet.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
