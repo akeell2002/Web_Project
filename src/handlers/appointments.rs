@@ -509,11 +509,11 @@ pub async fn submit_prescription(
         pool.get_ref(),
         appointment_id,
         doctor_id,
-        form.medicine_name.clone(),
-        form.dosage.clone(),
-        form.frequency.clone(),
-        form.duration.clone(),
-        form.instructions.clone(),
+        &form.medicine_name,
+        &form.dosage,
+        &form.frequency,
+        &form.duration,
+        form.instructions.as_deref(),
     ).await {
         Ok(_) => {
             // Mock notification: log to console
