@@ -34,3 +34,20 @@ pub struct UIAppointmentSlot {
     pub raw_time: NaiveTime,  // Passed back to the form action
     pub is_available: bool,   // Controls if it's clickable or grayed out
 }
+
+// --- Moved from models/consultation.rs ---
+
+#[derive(Debug, Deserialize)]
+pub struct EncounterForm {
+    // Medical Record Fields
+    pub symptoms: Option<String>,
+    pub diagnosis: String,
+    pub treatment_notes: Option<String>,
+
+    // Prescription Fields
+    pub medicine_name: Option<String>,
+    pub dosage: Option<String>,
+    pub frequency: Option<String>,
+    pub duration: Option<String>,
+    pub instructions: Option<String>,
+}

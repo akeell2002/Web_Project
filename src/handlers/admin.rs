@@ -7,7 +7,7 @@ use uuid::Uuid;
 use serde::Deserialize;
 use crate::models::staff::{CreateStaffProfile, OnboardStaffForm};
 use crate::db::staff::{get_staff_directory, register_staff};
-use crate::db::security::get_access_logs;
+use crate::db::users::get_access_logs;
 
 fn admin_only(session: &Session) -> Result<(), HttpResponse> {
     match session.get::<String>("role") {
@@ -231,7 +231,7 @@ pub async fn patient_directory_page(
 }
 
 pub async fn show_add_patient_page(
-    session: actix_session::Session, 
+    session: actix_session::Session,
     tmpl: web::Data<tera::Tera>
 ) -> impl Responder {
     // Re-use your existing staff protective wall check
@@ -248,4 +248,24 @@ pub async fn show_add_patient_page(
         Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
         Err(e) => HttpResponse::InternalServerError().body(format!("Form layout load error: {}", e)),
     }
+}
+
+// --- Moved from handlers/receptionist.rs ---
+
+pub async fn support_dashboard() -> impl Responder {
+    HttpResponse::Ok().body("Support Dashboard Placeholder")
+}
+
+pub async fn submit_reply() -> impl Responder {
+    HttpResponse::Ok().body("Reply Submitted Placeholder")
+}
+
+// --- Moved from handlers/support.rs ---
+
+pub async fn support_form_page() -> impl Responder {
+    HttpResponse::Ok().body("Support Form Placeholder")
+}
+
+pub async fn submit_support_ticket() -> impl Responder {
+    HttpResponse::Ok().body("Ticket Submitted Placeholder")
 }

@@ -1,7 +1,6 @@
 use sqlx::PgPool;
 use uuid::Uuid;
-use chrono::{NaiveDate, NaiveTime, Duration};
-use crate::models::appointment::Appointment;
+use chrono::{NaiveDate, NaiveTime};
 
 /// Fetches all active start and end times for a specific doctor on a given day
 pub async fn get_doctor_busy_periods(
@@ -342,4 +341,200 @@ pub async fn check_in_patient(
         Some(row) => Ok(row.queue_number.unwrap_or(0)),
         None => Err("Check-in failed: Appointment not found or already checked in.".to_string()),
     }
+}
+
+// --- Moved from db/triage.rs ---
+
+pub async fn get_triage_queue(pool: &PgPool) -> Result<Vec<serde_json::Value>, String> {
+    let today_date = chrono::Local::now().date_naive();
+
+    let rows = sqlx::query!(
+        r#"
+        SELECT a.id, a.queue_number, a.start_time,
+               p.first_name, p.last_name, p.gender, p.date_of_birth,
+               r.room_name as "room_name?"
+        FROM appointment a
+        JOIN patient p ON a.patient_id = p.id
+        LEFT JOIN room r ON a.room_id = r.id
+        WHERE a.date = $1 AND a.status = 'checked_in'
+        ORDER BY a.queue_number ASC
+        "#,
+        today_date
+    )
+    .fetch_all(pool)
+    .await
+    .map_err(|e| format!("Failed to fetch triage queue: {}", e))?;
+
+    let mut list = Vec::new();
+    for row in rows {
+        list.push(serde_json::json!({
+            "id": row.id,
+            "time": row.start_time.format("%I:%M %p").to_string(),
+            "queue_number": row.queue_number.unwrap_or(0),
+            "patient_name": format!("{} {}", row.first_name, row.last_name),
+            "gender": row.gender.unwrap_or_else(|| "N/A".to_string()),
+            "dob": row.date_of_birth.to_string(),
+            "room": row.room_name.unwrap_or_else(|| "Triage Waiting".to_string()),
+        }));
+    }
+    Ok(list)
+}
+
+pub async fn record_patient_vitals(
+    pool: &PgPool,
+    appointment_id: Uuid,
+    nurse_id: Uuid,
+    bp: String,
+    temp: String,
+    weight: String,
+    height: String,
+) -> Result<(), String> {
+    let mut tx = pool.begin().await.map_err(|e| e.to_string())?;
+
+    sqlx::query!(
+        r#"
+        INSERT INTO triage_vitals (appointment_id, nurse_id, blood_pressure, temperature, weight_kg, height_cm)
+        VALUES ($1, $2, $3, $4::text::numeric, $5::text::numeric, $6::text::numeric)
+        "#,
+        appointment_id, nurse_id, bp, temp, weight, height
+    )
+    .execute(&mut *tx)
+    .await
+    .map_err(|e| format!("Failed to insert vitals: {}", e))?;
+
+    let assigned_room = sqlx::query!(
+        r#"
+        SELECT id FROM room
+        WHERE room_type = 'consultation'
+        AND id NOT IN (
+            SELECT DISTINCT room_id FROM appointment WHERE status = 'vitals_taken' AND room_id IS NOT NULL
+        )
+        LIMIT 1
+        "#
+    )
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(|e| format!("Failed checking available clinic space: {}", e))?;
+
+    if let Some(room) = assigned_room {
+        sqlx::query!(
+            r#"
+            UPDATE appointment
+            SET status = 'vitals_taken', room_id = $1, updated_at = NOW()
+            WHERE id = $2
+            "#,
+            room.id,
+            appointment_id
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|e| format!("Failed to assign room and update status: {}", e))?;
+    } else {
+        sqlx::query!(
+            "UPDATE appointment SET status = 'vitals_taken', updated_at = NOW() WHERE id = $1",
+            appointment_id
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|e| format!("Failed to update status: {}", e))?;
+    }
+
+    tx.commit().await.map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+// --- Moved from db/consultation.rs ---
+
+pub async fn finalize_consultation_and_bill(
+    pool: &PgPool,
+    appointment_id: Uuid,
+    form: crate::models::appointment::EncounterForm,
+) -> Result<(), sqlx::Error> {
+    let mut tx = pool.begin().await?;
+
+    let appointment = sqlx::query!(
+        r#"
+        SELECT patient_id, doctor_id
+        FROM appointment
+        WHERE id = $1
+        "#,
+        appointment_id
+    )
+    .fetch_one(&mut *tx)
+    .await?;
+
+    let patient_id = appointment.patient_id;
+    let doctor_id = appointment.doctor_id.expect("A doctor must be assigned to the appointment.");
+
+    sqlx::query!(
+        r#"
+        INSERT INTO medical_records (patient_id, appointment_id, doctor_id, symptoms, diagnosis, treatment_notes)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        "#,
+        patient_id,
+        appointment_id,
+        doctor_id,
+        form.symptoms,
+        form.diagnosis,
+        form.treatment_notes
+    )
+    .execute(&mut *tx)
+    .await?;
+
+    let mut medicine_fee: f64 = 0.00;
+    let consultation_fee: f64 = 50.00;
+
+    if let Some(medicine) = form.medicine_name {
+        if !medicine.trim().is_empty() {
+            sqlx::query!(
+                r#"
+                INSERT INTO prescription (appointment_id, prescribed_by_doctor_id, medicine_name, dosage, frequency, duration, instructions)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)
+                "#,
+                appointment_id,
+                doctor_id,
+                medicine,
+                form.dosage.unwrap_or_default(),
+                form.frequency.unwrap_or_default(),
+                form.duration.unwrap_or_default(),
+                form.instructions
+            )
+            .execute(&mut *tx)
+            .await?;
+
+            medicine_fee = 20.00;
+        }
+    }
+
+    let total_amount = consultation_fee + medicine_fee;
+
+    sqlx::query!(
+        r#"
+        INSERT INTO bills (patient_id, appointment_id, consultation_fee, medicine_fee, total_amount, payment_status)
+        VALUES ($1, $2, $3::FLOAT8, $4::FLOAT8, $5::FLOAT8, 'unpaid')
+        "#,
+        patient_id,
+        appointment_id,
+        consultation_fee,
+        medicine_fee,
+        total_amount
+    )
+    .execute(&mut *tx)
+    .await?;
+
+    sqlx::query!(
+        r#"
+        UPDATE appointment
+        SET status = 'completed'::appointment_status,
+            room_id = NULL,
+            updated_at = NOW()
+        WHERE id = $1
+        "#,
+        appointment_id
+    )
+    .execute(&mut *tx)
+    .await?;
+
+    tx.commit().await?;
+    Ok(())
 }

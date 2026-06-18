@@ -6,8 +6,8 @@ use tera::{Tera, Context};
 use chrono::{NaiveDate, NaiveTime, Duration};
 use serde::Deserialize;
 
-use crate::models::appointment::{BookAppointmentForm, UIAppointmentSlot};
-use crate::db::appointments::{get_doctor_busy_periods, get_patient_busy_periods, book_patient_appointment};
+use crate::models::appointment::UIAppointmentSlot;
+use crate::db::appointments::{get_doctor_busy_periods, get_patient_busy_periods};
 
 #[derive(Deserialize)]
 pub struct BookingQuery {
@@ -250,6 +250,121 @@ pub async fn process_check_in(
             actix_web::HttpResponse::SeeOther()
                 .append_header(("Location", "/staff/receptionist/reception?error=check_in_failed"))
                 .finish()
+        }
+    }
+}
+
+// --- Moved from handlers/triage.rs ---
+
+#[derive(serde::Deserialize)]
+pub struct SubmitVitalsForm {
+    pub blood_pressure: String,
+    pub temperature: String,
+    pub weight_kg: String,
+    pub height_cm: String,
+}
+
+pub async fn nurse_triage_page(
+    pool: web::Data<PgPool>,
+    session: Session,
+    tmpl: web::Data<Tera>,
+) -> impl Responder {
+    match session.get::<String>("role") {
+        Ok(Some(role)) if role == "nurse" || role == "admin" => {},
+        _ => return HttpResponse::SeeOther().append_header(("Location", "/staff/nurse/triage?success=true")).finish(),
+    };
+
+    let queue = crate::db::appointments::get_triage_queue(&pool).await.unwrap_or_default();
+
+    let mut ctx = Context::new();
+    ctx.insert("queue", &queue);
+    ctx.insert("date", &chrono::Local::now().format("%A, %B %d, %Y").to_string());
+    ctx.insert("specific_role", &session.get::<String>("role").unwrap_or_default().unwrap_or_default());
+
+    match tmpl.render("staff/nurse/nurse_triage.html", &ctx) {
+        Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
+        Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
+    }
+}
+
+pub async fn submit_triage_vitals(
+    pool: web::Data<PgPool>,
+    session: Session,
+    path: web::Path<Uuid>,
+    form: web::Form<SubmitVitalsForm>,
+) -> impl Responder {
+    let nurse_id = match session.get::<Uuid>("user_id") {
+        Ok(Some(id)) => id,
+        _ => return HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish(),
+    };
+
+    let appointment_id = path.into_inner();
+
+    match crate::db::appointments::record_patient_vitals(
+        &pool,
+        appointment_id,
+        nurse_id,
+        form.blood_pressure.clone(),
+        form.temperature.clone(),
+        form.weight_kg.clone(),
+        form.height_cm.clone()
+    ).await {
+        Ok(_) => HttpResponse::SeeOther()
+            .append_header(("Location", "/staff/nurse/triage?success=vitals_saved"))
+            .finish(),
+        Err(e) => HttpResponse::BadRequest().body(e),
+    }
+}
+
+// --- Moved from handlers/consultation.rs ---
+
+pub async fn submit_consultation(
+    pool: web::Data<PgPool>,
+    path: web::Path<Uuid>,
+    form: web::Form<crate::models::appointment::EncounterForm>,
+) -> impl Responder {
+    let appointment_id = path.into_inner();
+    let encounter_data = form.into_inner();
+
+    match crate::db::appointments::finalize_consultation_and_bill(&pool, appointment_id, encounter_data).await {
+        Ok(_) => HttpResponse::SeeOther()
+            .insert_header(("Location", "/staff/doctor/queue"))
+            .finish(),
+        Err(e) => {
+            eprintln!("Transaction Failed: {}", e);
+            HttpResponse::InternalServerError().body("Failed to finalize consultation and billing.")
+        }
+    }
+}
+
+pub async fn show_consultation_form(
+    session: Session,
+    tmpl: web::Data<Tera>,
+    path: web::Path<Uuid>,
+) -> impl Responder {
+    match session.get::<String>("role") {
+        Ok(Some(role)) if role == "doctor" => {},
+        _ => return HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish(),
+    };
+
+    let appointment_id = path.into_inner();
+
+    let mut ctx = Context::new();
+    ctx.insert("appointment_id", &appointment_id.to_string());
+    ctx.insert("symptoms", "");
+    ctx.insert("diagnosis", "");
+    ctx.insert("treatment_notes", "");
+    ctx.insert("medicine_name", "");
+    ctx.insert("dosage", "");
+    ctx.insert("frequency", "");
+    ctx.insert("duration", "");
+    ctx.insert("instructions", "");
+
+    match tmpl.render("staff/doctor/consultation.html", &ctx) {
+        Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
+        Err(e) => {
+            eprintln!("Template Compilation Error: {}", e);
+            HttpResponse::InternalServerError().body("Failed to load consultation form.")
         }
     }
 }

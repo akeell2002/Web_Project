@@ -81,8 +81,8 @@ async fn main() -> std::io::Result<()> {
             .route("/admin/staff", web::get().to(handlers::admin::staff_directory_page))
 
             // === PUBLIC INDEX ROUTES ===
-            .route("/support", web::get().to(handlers::support::support_form_page))
-            .route("/support/submit", web::post().to(handlers::support::submit_support_ticket))
+            .route("/support", web::get().to(handlers::admin::support_form_page))
+            .route("/support/submit", web::post().to(handlers::admin::submit_support_ticket))
 
             // === STAFF INTERFACE ROUTES ===
             .route("/staff/login", web::get().to(handlers::auth::staff_login))
@@ -95,20 +95,20 @@ async fn main() -> std::io::Result<()> {
             // --- Doctor Routes ---
             .route("/staff/doctor/queue", web::get().to(handlers::appointments::doctor_daily_queue_page))
             .route("/staff/doctor/patients", web::get().to(handlers::appointments::doctor_daily_queue_page))
-            .route("/staff/doctor/consultation/{id}", web::get().to(handlers::consultation::show_consultation_form))
-            .route("/staff/doctor/consultation/{id}", web::post().to(handlers::consultation::submit_consultation))
+            .route("/staff/doctor/consultation/{id}", web::get().to(handlers::appointments::show_consultation_form))
+            .route("/staff/doctor/consultation/{id}", web::post().to(handlers::appointments::submit_consultation))
 
             // --- Nurse Routes ---
-            .route("/staff/nurse/triage", web::get().to(handlers::triage::nurse_triage_page))
-            .route("/staff/nurse/queue/triage/{id}", web::post().to(handlers::triage::submit_triage_vitals))
+            .route("/staff/nurse/triage", web::get().to(handlers::appointments::nurse_triage_page))
+            .route("/staff/nurse/queue/triage/{id}", web::post().to(handlers::appointments::submit_triage_vitals))
 
             // --- Receptionist Routes ---
             .route("/staff/receptionist/reception", web::get().to(handlers::appointments::reception_desk_page))
             .route("/staff/receptionist/queue/check_in/{id}", web::post().to(handlers::appointments::process_check_in))
             .route("/staff/receptionist/billing", web::get().to(handlers::billing::show_billing_dashboard))
             .route("/staff/receptionist/billing/checkout", web::post().to(handlers::billing::checkout_bill_submit))
-            .route("/staff/receptionist/support", web::get().to(handlers::receptionist::support_dashboard))
-            .route("/staff/receptionist/support/reply", web::post().to(handlers::receptionist::submit_reply))
+            .route("/staff/receptionist/support", web::get().to(handlers::admin::support_dashboard))
+            .route("/staff/receptionist/support/reply", web::post().to(handlers::admin::submit_reply))
 
             // Patient interface routes
             .route("/patient/login", web::get().to(handlers::auth::patient_login))

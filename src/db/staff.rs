@@ -2,7 +2,7 @@ use sqlx::{PgPool, Postgres, Transaction};
 use uuid::Uuid;
 use crate::models::user::{User, UserRole};
 use crate::models::staff::{CreateStaffProfile, StaffDashboardCounts, StaffDirectoryRow};
-use crate::db::security::log_access_event;
+use crate::db::users::log_access_event;
 
 fn role_label(role: &UserRole) -> &'static str {
     match role {

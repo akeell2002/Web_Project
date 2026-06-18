@@ -5,10 +5,10 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::models::user::{LoginForm, PatientRegisterForm, UserRole};
-use crate::db::users::{authenticate_user, find_user_by_email};
+use crate::db::users::authenticate_user;
 use crate::db::staff::get_staff_dashboard_counts;
 use crate::db::patients::register_patient;
-use crate::db::security::log_access_event;
+use crate::db::users::log_access_event;
 
 // Staff login page rendering
 pub async fn staff_login(tera: web::Data<Tera>) -> impl Responder {

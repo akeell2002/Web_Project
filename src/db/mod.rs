@@ -3,12 +3,9 @@ use sqlx::PgPool;
 
 pub mod patients;
 pub mod staff;
-pub mod security;
 pub mod users;
 pub mod appointments;
-pub mod triage;
 pub mod billing;
-pub mod consultation;
 
 
 /// initializes the connection pool using the environment variable
