@@ -38,6 +38,7 @@
                             <th style="padding: 12px; border-bottom: 1px solid #E5E7EB;">Medical Practitioner</th>
                             <th style="padding: 12px; border-bottom: 1px solid #E5E7EB;">Date</th>
                             <th style="padding: 12px; border-bottom: 1px solid #E5E7EB;">Time Window Slot</th>
+                            <th style="padding: 12px; border-bottom: 1px solid #E5E7EB;">Consultation Room</th>
                             <th style="padding: 12px; border-bottom: 1px solid #E5E7EB;">Current Status</th>
                         </tr>
                     </thead>
@@ -47,6 +48,7 @@
                                 <td style="padding: 14px 12px; font-weight: 600; color: #111827;">{{ app.doctor_name }}</td>
                                 <td style="padding: 14px 12px; color: #4B5563;">{{ app.formatted_date }}</td>
                                 <td style="padding: 14px 12px; color: #4B5563;"><span style="background-color: #EFF6FF; color: #1E40AF; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">{{ app.start_time }} - {{ app.end_time }}</span></td>
+                                <td style="padding: 14px 12px; font-weight: bold; color: #047857;">{{ app.room }}</td>
                                 <td style="padding: 14px 12px;">
                                     <span style="background-color: #D1FAE5; color: #065F46; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase;">{{ app.status }}</span>
                                 </td>

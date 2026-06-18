@@ -97,8 +97,8 @@ pub async fn book_patient_appointment(
     }
 }
 
-/// Retrieve all appointments for a specific patient, enriched with doctor details
-/// Retrieve all appointments for a specific patient, enriched with doctor details
+
+// Retrieve all appointments for a specific patient, enriched with doctor details and room layout tracking
 pub async fn get_patient_appointments(
     pool: &sqlx::PgPool,
     patient_id: uuid::Uuid,
@@ -112,9 +112,11 @@ pub async fn get_patient_appointments(
             a.end_time,
             a.status::text as "status!",
             s.first_name as "doc_first?",
-            s.last_name as "doc_last?"
+            s.last_name as "doc_last?",
+            r.room_name as "room_name?"
         FROM appointment a
         LEFT JOIN staff s ON a.doctor_id = s.id
+        LEFT JOIN room r ON a.room_id = r.id   
         WHERE a.patient_id = $1
         ORDER BY a.date DESC, a.start_time DESC
         "#,
@@ -134,7 +136,6 @@ pub async fn get_patient_appointments(
             _ => "Assigned Practitioner".to_string(),
         };
 
-        // Classify timeline status context based on real current system clock parameters
         let is_upcoming = if row.date > now_date {
             true
         } else if row.date == now_date {
@@ -151,7 +152,8 @@ pub async fn get_patient_appointments(
             "end_time": row.end_time.format("%I:%M %p").to_string(),
             "status": row.status,
             "doctor_name": doc_name,
-            "is_upcoming": is_upcoming
+            "is_upcoming": is_upcoming,
+            "room": row.room_name.unwrap_or_else(|| "Waiting Area".to_string()) 
         }));
     }
 
@@ -165,7 +167,6 @@ pub async fn get_doctor_daily_appointments(
     doctor_id: uuid::Uuid,
     filter_mode: &str,
 ) -> Result<Vec<serde_json::Value>, String> {
-    
     let mut list = Vec::new();
     let today_date = chrono::Local::now().date_naive();
 
@@ -174,12 +175,14 @@ pub async fn get_doctor_daily_appointments(
             r#"
             SELECT a.id, a.date, a.start_time, a.end_time, a.status::text as "status!", a.queue_number,
                    p.first_name, p.last_name, p.date_of_birth, p.gender,
+                   r.room_name as "room_name?",
                    tv.blood_pressure, 
                    tv.temperature::FLOAT8 as "temperature?", 
                    tv.weight_kg::FLOAT8 as "weight_kg?", 
                    tv.height_cm::FLOAT8 as "height_cm?"
             FROM appointment a
             JOIN patient p ON a.patient_id = p.id
+            LEFT JOIN room r ON a.room_id = r.id
             LEFT JOIN triage_vitals tv ON a.id = tv.appointment_id
             WHERE a.doctor_id = $1 AND a.date = $2
             ORDER BY 
@@ -194,11 +197,11 @@ pub async fn get_doctor_daily_appointments(
         .map_err(|e| format!("Failed to query daily clinical queue: {}", e))?;
 
         for row in rows {
-            // Format vitals safely, defaulting to "--" if the nurse hasn't entered them yet
             let bp = row.blood_pressure.unwrap_or_else(|| "--".to_string());
             let temp = row.temperature.map(|t| format!("{:.1} °C", t)).unwrap_or_else(|| "--".to_string());
             let weight = row.weight_kg.map(|w| format!("{:.1} kg", w)).unwrap_or_else(|| "--".to_string());
             let height = row.height_cm.map(|h| format!("{:.1} cm", h)).unwrap_or_else(|| "--".to_string());
+            let room_display = row.room_name.unwrap_or_else(|| "Waiting Area".to_string());
 
             list.push(serde_json::json!({
                 "id": row.id,
@@ -211,7 +214,7 @@ pub async fn get_doctor_daily_appointments(
                 "patient_name": format!("{} {}", row.first_name, row.last_name),
                 "patient_dob": row.date_of_birth.to_string(),
                 "patient_gender": row.gender.unwrap_or_else(|| "Undisclosed".to_string()),
-                // Pass the formatted vitals to the template
+                "room": room_display,
                 "blood_pressure": bp,
                 "temperature": temp,
                 "weight": weight,
@@ -257,7 +260,6 @@ pub async fn get_doctor_daily_appointments(
                 "patient_name": format!("{} {}", row.first_name, row.last_name),
                 "patient_dob": row.date_of_birth.to_string(),
                 "patient_gender": row.gender.unwrap_or_else(|| "Undisclosed".to_string()),
-                // Pass the formatted vitals to the template
                 "blood_pressure": bp,
                 "temperature": temp,
                 "weight": weight,
@@ -280,10 +282,12 @@ pub async fn get_today_clinic_schedule(
         r#"
         SELECT a.id, a.start_time, a.status::text as "status!", a.queue_number,
                p.first_name as patient_first, p.last_name as patient_last,
-               s.first_name as doc_first, s.last_name as doc_last
+               s.first_name as doc_first, s.last_name as doc_last,
+               r.room_name as "room_name?"
         FROM appointment a
         JOIN patient p ON a.patient_id = p.id
         JOIN staff s ON a.doctor_id = s.id
+        LEFT JOIN room r ON a.room_id = r.id
         WHERE a.date = $1
         ORDER BY a.start_time ASC
         "#,
@@ -301,7 +305,8 @@ pub async fn get_today_clinic_schedule(
             "status": row.status,
             "queue_number": row.queue_number,
             "patient_name": format!("{} {}", row.patient_first, row.patient_last),
-            "doctor_name": format!("Dr. {}", row.doc_last)
+            "doctor_name": format!("Dr. {}", row.doc_last),
+            "room": row.room_name.unwrap_or_else(|| "Unassigned".to_string())
         }));
     }
     Ok(list)

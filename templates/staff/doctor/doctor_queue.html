@@ -8,7 +8,7 @@
     <style>
         .queue-container {
             width: 100%;
-            max-width: 1100px;
+            max-width: 1300px;
             margin: 40px auto;
             padding: 0 20px;
         }
@@ -131,6 +131,7 @@
                     <th style="padding: 14px 12px;">Scheduled Interval</th>
                     <th style="padding: 14px 12px;">Patient Parameters</th>
                     <th style="padding: 14px 12px;">Birth Parameters</th>
+                    <th style="padding: 14px 12px;">Location</th>
                     <th style="padding: 14px 12px;">Workflow Status</th>
                     <th style="padding: 14px 12px; text-align: right;">Clinical Action</th>
                 </tr>
@@ -155,6 +156,7 @@
                     </td>
                     <td style="padding: 16px 12px; font-weight: 600; color: #111827;">{{ item.patient_name }}</td>
                     <td style="padding: 16px 12px; color: #4B5563;">{{ item.patient_dob }} <span style="font-size:12px; color:#6B7280;">({{ item.patient_gender }})</span></td>
+                    <td style="padding: 16px 12px; font-weight: bold; color: #0ea5e9;">{{ item.room }}</td>
                     <td style="padding: 16px 12px;">
                         {% if item.status == 'checked_in' %}
                             <span class="status-pill status-checked_in">Ready Outside</span>
@@ -176,7 +178,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" style="text-align: center; padding: 40px; color: #9CA3AF; font-style: italic; background-color: #F9FAFB; border-radius: 8px;">
+                    <td colspan="7" style="text-align: center; padding: 40px; color: #9CA3AF; font-style: italic; background-color: #F9FAFB; border-radius: 8px;">
                         No active clinical appointments match the selected filter tracking criteria.
                     </td>
                 </tr>

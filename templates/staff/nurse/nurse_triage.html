@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/static/css/style.css">
 
     <style>
-        .dashboard-container { width: 100%; max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+        .dashboard-container { width: 100%; max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .card { background: #fff; padding: 30px; border-radius: 12px; border: 1px solid #E5E7EB; box-shadow: 0 4px 6px rgba(0,0,0,0.03); }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th, td { padding: 15px; border-bottom: 1px solid #E5E7EB; }
@@ -31,6 +31,7 @@
             <tr>
                 <th>Queue #</th>
                 <th>Patient Name</th>
+                <th>Room Location</th>
                 <th>Details</th>
                 <th>Record Vitals & Send to Doctor</th>
             </tr>
@@ -38,6 +39,7 @@
             <tr>
                 <td><h2 style="margin:0; color: #0EA5E9;">#{{ appt.queue_number }}</h2></td>
                 <td><strong>{{ appt.patient_name }}</strong><br><small style="color:#6B7280;">{{ appt.time }}</small></td>
+                <td><span style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #374151;">{{ appt.room }}</span></td>
                 <td>{{ appt.gender }}<br><small style="color:#6B7280;">DOB: {{ appt.dob }}</small></td>
                 <td>
                     <form action="/staff/nurse/queue/triage/{{ appt.id }}" method="POST" style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; margin: 0;">

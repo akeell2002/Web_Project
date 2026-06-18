@@ -47,8 +47,13 @@ async fn main() -> std::io::Result<()> {
 
     let tera = Tera::new("templates/**/*.html").expect("Failed to load templates");
     
-    //to encrypt session cookies
-    let secret_key = Key::generate();
+    //to encrypt session cookies, use it after testing is done
+    //let secret_key = Key::generate();
+
+    // For development, we can use a static key
+    let session_secret = std::env::var("SESSION_SECRET")
+        .unwrap_or_else(|_| "a_very_long_and_secure_static_64_byte_secret_for_dev_testing_purposes!!".to_string());
+    let secret_key = Key::from(session_secret.as_bytes());
 
     println!("Server running at http://127.0.0.1:8080");
 

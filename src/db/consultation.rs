@@ -88,7 +88,9 @@ pub async fn finalize_consultation_and_bill(
     sqlx::query!(
         r#"
         UPDATE appointment 
-        SET status = 'completed'::appointment_status 
+        SET status = 'completed'::appointment_status,
+            room_id = NULL, 
+            updated_at = NOW() 
         WHERE id = $1
         "#,
         appointment_id

@@ -161,3 +161,19 @@ CREATE INDEX idx_appointment_date ON appointment(date);
 CREATE INDEX idx_appointment_queue ON appointment(status, queue_number);
 CREATE INDEX idx_med_records_patient ON medical_records(patient_id);
 CREATE INDEX idx_tickets_status ON support_tickets(status);
+
+-- Seed Triage Rooms (Nurses)
+INSERT INTO room (room_name, room_type, location) VALUES
+('Triage Station 1', 'triage', 'Level 1 Lobby'),
+('Triage Station 2', 'triage', 'Level 1 Lobby');
+
+-- Seed Consultation Rooms (Doctors)
+INSERT INTO room (room_name, room_type, location) VALUES
+('Room 101', 'consultation', 'Clinic Wing A'),
+('Room 102', 'consultation', 'Clinic Wing A'),
+('Room 103', 'consultation', 'Clinic Wing A'),
+('Room 104', 'consultation', 'Clinic Wing B'),
+('Room 105', 'consultation', 'Clinic Wing B'),
+('Room 106', 'consultation', 'Clinic Wing B'),
+('Room 107', 'consultation', 'Clinic Wing C'),
+('Room 108', 'consultation', 'Clinic Wing C');

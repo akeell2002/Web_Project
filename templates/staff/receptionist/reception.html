@@ -60,6 +60,7 @@
                 <th>Time</th>
                 <th>Patient Name</th>
                 <th>Assigned Doctor</th>
+                <th>Room</th>
                 <th>Status</th>
                 <th>Queue #</th>
                 <th>Action</th>
@@ -69,6 +70,7 @@
                 <td>{{ appt.time }}</td>
                 <td><strong>{{ appt.patient_name }}</strong></td>
                 <td>{{ appt.doctor_name }}</td>
+                <td style="font-weight: 600; color: #4B5563;">🏢 {{ appt.room }}</td>
                 <td>
                     {% if appt.status == "scheduled" %} 🟡 Scheduled
                     {% elif appt.status == "checked_in" %} 🟠 Waiting for Nurse
