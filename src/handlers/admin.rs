@@ -293,13 +293,13 @@ pub async fn analytics_page(
 
     // Total revenue (all paid bills)
     let total_revenue: f64 = sqlx::query_scalar(
-        "SELECT COALESCE(SUM(total_amount), 0) FROM bills WHERE payment_status = 'paid'"
+        "SELECT COALESCE(SUM(total_amount), 0)::float8 FROM bills WHERE payment_status = 'paid'"
     )
     .fetch_one(pool.get_ref()).await.unwrap_or(0.0_f64);
 
     // Revenue this month
     let revenue_this_month: f64 = sqlx::query_scalar(
-        "SELECT COALESCE(SUM(total_amount), 0) FROM bills WHERE payment_status = 'paid' AND date_trunc('month', created_at) = date_trunc('month', $1::timestamptz)"
+        "SELECT COALESCE(SUM(total_amount), 0)::float8 FROM bills WHERE payment_status = 'paid' AND date_trunc('month', created_at) = date_trunc('month', $1::timestamptz)"
     )
     .bind(chrono::Local::now())
     .fetch_one(pool.get_ref()).await.unwrap_or(0.0_f64);

@@ -14,15 +14,13 @@
         box-shadow: 0 4px 6px rgba(0,0,0,0.03);
     }
     .reception-date { color: #6B7280; margin-bottom: 24px; font-size: 14px; }
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th, td { padding: 15px; border-bottom: 1px solid #E5E7EB; }
-    th { background-color: #F3F4F6; color: #374151; font-size: 14px; }
     .btn-check-in {
         background-color: #10B981; color: white;
         padding: 8px 16px; border: none; border-radius: 6px;
-        cursor: pointer; font-weight: 600; transition: 0.2s;
+        cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s;
     }
     .btn-check-in:hover { background-color: #059669; }
+    .queue-num { font-size: 16px; font-weight: 700; color: #005999; }
 </style>
 {% endblock %}
 
@@ -30,7 +28,7 @@
 <p class="reception-date">Today's Date: {{ date }}</p>
 
 <div class="reception-card">
-    <table>
+    <table class="clinical-table">
         <thead>
             <tr>
                 <th>Time</th>
@@ -58,7 +56,7 @@
                 </td>
                 <td>
                     {% if appt.queue_number %}
-                        <h3 style="margin:0; color: #005999;">#{{ appt.queue_number }}</h3>
+                        <span class="queue-num">#{{ appt.queue_number }}</span>
                     {% else %} - {% endif %}
                 </td>
                 <td>
@@ -67,7 +65,7 @@
                         <button type="submit" class="btn-check-in">Check In</button>
                     </form>
                     {% else %}
-                        <i style="color: #9CA3AF;">No actions</i>
+                        <span style="color: #9CA3AF; font-size: 13px; font-style: italic;">No actions</span>
                     {% endif %}
                 </td>
             </tr>
