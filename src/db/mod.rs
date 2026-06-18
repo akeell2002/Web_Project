@@ -6,6 +6,7 @@ pub mod staff;
 pub mod users;
 pub mod appointments;
 pub mod billing;
+pub mod support;
 
 
 /// initializes the connection pool using the environment variable

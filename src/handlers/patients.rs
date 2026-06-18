@@ -18,19 +18,12 @@ pub struct AddPatientForm {
     pub raw_password: String,
 }
 
-fn staff_only(session: &Session) -> Result<(), HttpResponse> {
-    match session.get::<String>("role") {
-        Ok(Some(role)) if (role == "doctor" || role == "nurse" || role == "receptionist" || role == "admin") => Ok(()),
-        Ok(Some(_)) => Err(HttpResponse::Forbidden().body("Access Denied: Staff access required.")),
-        _ => Err(HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish()),
-    }
-}
 
 pub async fn show_add_patient_page(
     session: Session, 
     tmpl: web::Data<Tera>
 ) -> impl Responder {
-    if let Err(response) = staff_only(&session) {
+    if let Err(response) = super::staff_only(&session) {
         return response;
     }
 
@@ -56,7 +49,7 @@ pub async fn patient_detail_page(
     tmpl: web::Data<Tera>,
     path: web::Path<Uuid>,
 ) -> impl Responder {
-    if let Err(response) = staff_only(&session) {
+    if let Err(response) = super::staff_only(&session) {
         return response;
     }
 
@@ -89,7 +82,7 @@ pub async fn patient_report_page(
     tmpl: web::Data<Tera>,
     path: web::Path<Uuid>,
 ) -> impl Responder {
-    if let Err(response) = staff_only(&session) {
+    if let Err(response) = super::staff_only(&session) {
         return response;
     }
 
@@ -117,7 +110,7 @@ pub async fn process_add_patient(
     session: Session,
     form: web::Form<AddPatientForm>,
 ) -> impl Responder {
-    if let Err(response) = staff_only(&session) {
+    if let Err(response) = super::staff_only(&session) {
         return response;
     }
 

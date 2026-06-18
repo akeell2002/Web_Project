@@ -119,8 +119,8 @@ async fn main() -> std::io::Result<()> {
             .route("/staff/receptionist/queue/check_in/{id}", web::post().to(handlers::appointments::process_check_in))
             .route("/staff/receptionist/billing", web::get().to(handlers::billing::show_billing_dashboard))
             .route("/staff/receptionist/billing/checkout", web::post().to(handlers::billing::checkout_bill_submit))
-            .route("/staff/receptionist/support", web::get().to(handlers::admin::support_dashboard))
-            .route("/staff/receptionist/support/reply", web::post().to(handlers::admin::submit_reply))
+            .route("/admin/support", web::get().to(handlers::admin::support_dashboard))
+            .route("/admin/support/reply", web::post().to(handlers::admin::submit_reply))
 
             // Patient interface routes
             .route("/patient/login", web::get().to(handlers::auth::patient_login))

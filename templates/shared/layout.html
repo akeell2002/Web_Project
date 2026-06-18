@@ -217,6 +217,7 @@
             <a href="/admin/security" {% block nav_admin_security %}{% endblock %}>🛡️ Security Logs</a>
             <a href="/staff/patients" {% block nav_admin_patients %}{% endblock %}>🗂️ Patient Directory</a>
             <a href="/admin/analytics" {% block nav_admin_analytics %}{% endblock %}>📊 Analytics</a>
+            <a href="/admin/support" {% block nav_admin_support %}{% endblock %}>📩 Support Tickets</a>
 
         {% elif specific_role == "doctor" %}
             <a href="/staff/dashboard" {% block nav_doctor_overview %}{% endblock %}>📊 Overview</a>
@@ -235,7 +236,7 @@
             <a href="/staff/receptionist/reception" {% block nav_recep_desk %}{% endblock %}>📅 Reception Desk</a>
             <a href="/staff/receptionist/billing" {% block nav_recep_billing %}{% endblock %}>🧾 Billing</a>
             <a href="/staff/patients" {% block nav_recep_patients %}{% endblock %}>🗂️ Patients</a>
-            <a href="/staff/receptionist/support" {% block nav_recep_support %}{% endblock %}>📩 Support Tickets</a>
+
 
         {% elif specific_role == "patient" %}
             <a href="/patient/dashboard" {% block nav_patient_home %}{% endblock %}>🏠 My Dashboard</a>

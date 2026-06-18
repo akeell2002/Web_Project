@@ -19,14 +19,6 @@ pub struct Appointment {
     pub updated_at: Option<DateTime<Utc>>,
 }
 
-/// Represents the data sent when the patient clicks a specific available slot card
-#[derive(Debug, Deserialize)]
-pub struct BookAppointmentForm {
-    pub doctor_id: Uuid,
-    pub date: NaiveDate,
-    pub start_time: NaiveTime,
-}
-
 /// Represents a single 15-minute block calculated by the backend for the front-end grid
 #[derive(Debug, Serialize)]
 pub struct UIAppointmentSlot {

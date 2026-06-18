@@ -26,14 +26,6 @@ pub struct User {
     pub updated_at: DateTime<Utc>,
 }
 
-// Struct for handling user registration data
-#[derive(Debug, Deserialize)]
-pub struct RegisterRequest {
-    pub email: String,
-    pub password: String, // Plain text password from the user to be hashed later
-    pub role: UserRole,
-}
-
 #[derive(Debug, serde::Deserialize)]
 pub struct PatientRegisterForm {
     pub email: String,
@@ -48,24 +40,10 @@ pub struct PatientRegisterForm {
     pub emergency_contact_phone: Option<String>,
 }
 
-// Struct for handling login attempts
-#[derive(Debug, Deserialize)]
-pub struct LoginRequest {
-    pub email: String,
-    pub password: String,
-}
-
 #[derive(Debug, serde::Deserialize)]
 pub struct LoginForm {
     pub email: String,
     pub password: String,
-}
-
-// Simple JSON structure to communicate authorization responses to client pages if needed
-#[derive(Debug, serde::Serialize)]
-pub struct LoginResponse {
-    pub success: bool,
-    pub message: String,
 }
 
 // --- Moved from models/access_log.rs ---
