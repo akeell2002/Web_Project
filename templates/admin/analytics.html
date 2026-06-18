@@ -1,0 +1,215 @@
+{% extends "shared/layout.html" %}
+
+{% block title %}System Analytics - HealthHub{% endblock %}
+{% block page_title %}System Analytics{% endblock %}
+
+{% block nav_admin_overview %}class="active"{% endblock %}
+
+{% block extra_head %}
+<style>
+    .analytics-header {
+        background: linear-gradient(135deg, #0f172a 0%, #005999 100%);
+        color: white; border-radius: 14px; padding: 24px 32px;
+        margin-bottom: 28px; box-shadow: 0 10px 28px rgba(15,23,42,0.15);
+    }
+    .analytics-header h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .analytics-header p { color: #93c5fd; font-size: 14px; }
+
+    .section-title {
+        font-size: 12px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.8px; color: #6B7280; margin: 28px 0 14px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        gap: 14px;
+        margin-bottom: 8px;
+    }
+    .stat-card {
+        background: white; border-radius: 12px; padding: 20px 22px;
+        border: 1px solid #E5E7EB; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .stat-card .label {
+        font-size: 11px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.5px; color: #9CA3AF; margin-bottom: 10px;
+    }
+    .stat-card .value {
+        font-size: 30px; font-weight: 700; color: #111827; line-height: 1;
+    }
+    .stat-card .value.green  { color: #059669; }
+    .stat-card .value.blue   { color: #2563EB; }
+    .stat-card .value.orange { color: #D97706; }
+    .stat-card .value.red    { color: #DC2626; }
+    .stat-card .sub {
+        font-size: 12px; color: #9CA3AF; margin-top: 6px;
+    }
+
+    .progress-card {
+        background: white; border-radius: 12px; padding: 22px 24px;
+        border: 1px solid #E5E7EB; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        margin-bottom: 14px;
+    }
+    .progress-card h3 {
+        font-size: 14px; font-weight: 700; color: #374151; margin-bottom: 16px;
+        padding-bottom: 10px; border-bottom: 1px solid #F3F4F6;
+    }
+    .progress-row { margin-bottom: 14px; }
+    .progress-row:last-child { margin-bottom: 0; }
+    .progress-label {
+        display: flex; justify-content: space-between;
+        font-size: 14px; color: #374151; margin-bottom: 5px;
+    }
+    .progress-bar-bg {
+        height: 8px; background: #F3F4F6; border-radius: 999px; overflow: hidden;
+    }
+    .progress-bar-fill {
+        height: 100%; border-radius: 999px; transition: width 0.6s ease;
+    }
+    .fill-blue   { background: #3B82F6; }
+    .fill-green  { background: #10B981; }
+    .fill-orange { background: #F59E0B; }
+    .fill-red    { background: #EF4444; }
+    .fill-purple { background: #8B5CF6; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="analytics-header">
+    <h2>📊 System Analytics</h2>
+    <p>Live operational metrics across patients, appointments, billing, and staff.</p>
+</div>
+
+<div class="section-title">Patients & Appointments</div>
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="label">Total Patients</div>
+        <div class="value blue">{{ total_patients }}</div>
+        <div class="sub">registered profiles</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Today's Appointments</div>
+        <div class="value">{{ appts_today }}</div>
+        <div class="sub">scheduled for today</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">This Month</div>
+        <div class="value blue">{{ appts_this_month }}</div>
+        <div class="sub">appointments</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Total All-Time</div>
+        <div class="value">{{ total_appointments }}</div>
+        <div class="sub">appointments</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Completed</div>
+        <div class="value green">{{ appts_completed }}</div>
+        <div class="sub">consultations done</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Cancelled / No-Show</div>
+        <div class="value red">{{ appts_cancelled }}</div>
+        <div class="sub">lost appointments</div>
+    </div>
+</div>
+
+<div class="section-title">Billing & Revenue</div>
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="label">Total Revenue</div>
+        <div class="value green">SGD {{ total_revenue }}</div>
+        <div class="sub">all-time paid</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">This Month</div>
+        <div class="value green">SGD {{ revenue_this_month }}</div>
+        <div class="sub">revenue collected</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Outstanding Bills</div>
+        <div class="value orange">{{ outstanding_bills }}</div>
+        <div class="sub">unpaid invoices</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Prescriptions</div>
+        <div class="value">{{ total_prescriptions }}</div>
+        <div class="sub">total issued</div>
+    </div>
+</div>
+
+<div class="section-title">Staff Breakdown</div>
+<div class="progress-card">
+    <h3>Staff by Role</h3>
+    {% set total_staff = total_doctors + total_nurses + total_receptionists %}
+    {% if total_staff > 0 %}
+    <div class="progress-row">
+        <div class="progress-label">
+            <span>🩺 Doctors</span>
+            <span>{{ total_doctors }}</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill fill-blue" style="width: {{ total_doctors * 100 / total_staff }}%"></div>
+        </div>
+    </div>
+    <div class="progress-row">
+        <div class="progress-label">
+            <span>🩹 Nurses</span>
+            <span>{{ total_nurses }}</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill fill-green" style="width: {{ total_nurses * 100 / total_staff }}%"></div>
+        </div>
+    </div>
+    <div class="progress-row">
+        <div class="progress-label">
+            <span>📅 Receptionists</span>
+            <span>{{ total_receptionists }}</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill fill-purple" style="width: {{ total_receptionists * 100 / total_staff }}%"></div>
+        </div>
+    </div>
+    {% else %}
+    <p style="color:#9CA3AF; font-style:italic; font-size: 14px;">No staff registered yet.</p>
+    {% endif %}
+</div>
+
+<div class="progress-card">
+    <h3>Appointment Outcomes</h3>
+    {% if total_appointments > 0 %}
+    <div class="progress-row">
+        <div class="progress-label">
+            <span>✅ Completed</span>
+            <span>{{ appts_completed }}</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill fill-green" style="width: {{ appts_completed * 100 / total_appointments }}%"></div>
+        </div>
+    </div>
+    <div class="progress-row">
+        <div class="progress-label">
+            <span>❌ Cancelled / No-Show</span>
+            <span>{{ appts_cancelled }}</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill fill-red" style="width: {{ appts_cancelled * 100 / total_appointments }}%"></div>
+        </div>
+    </div>
+    {% set appts_active = total_appointments - appts_completed - appts_cancelled %}
+    <div class="progress-row">
+        <div class="progress-label">
+            <span>⏳ Active / Scheduled</span>
+            <span>{{ appts_active }}</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill fill-blue" style="width: {{ appts_active * 100 / total_appointments }}%"></div>
+        </div>
+    </div>
+    {% else %}
+    <p style="color:#9CA3AF; font-style:italic; font-size: 14px;">No appointments recorded yet.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

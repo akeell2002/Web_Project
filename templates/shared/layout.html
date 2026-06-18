@@ -56,7 +56,7 @@
 
         .sidebar-nav-label {
             color: #475569;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1.2px;
@@ -73,7 +73,7 @@
             text-decoration: none;
             padding: 9px 12px;
             border-radius: 7px;
-            font-size: 13.5px;
+            font-size: 14px;
             font-weight: 500;
             margin-bottom: 2px;
             transition: background 0.15s, color 0.15s;
@@ -113,13 +113,13 @@
             justify-content: center;
             color: white;
             font-weight: 700;
-            font-size: 13px;
+            font-size: 14px;
             flex-shrink: 0;
         }
 
         .role-badge-name {
             color: #e2e8f0;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
@@ -155,7 +155,7 @@
         }
 
         .topbar-title {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             color: #111827;
         }
@@ -167,7 +167,7 @@
         }
 
         .topbar-email {
-            font-size: 13px;
+            font-size: 14px;
             color: #6B7280;
         }
 
@@ -177,7 +177,7 @@
             text-decoration: none;
             padding: 7px 16px;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
             transition: background 0.15s;
         }
@@ -216,15 +216,18 @@
             <a href="/admin/staff/onboard" {% block nav_admin_onboard %}{% endblock %}>➕ Onboard Staff</a>
             <a href="/admin/security" {% block nav_admin_security %}{% endblock %}>🛡️ Security Logs</a>
             <a href="/staff/patients" {% block nav_admin_patients %}{% endblock %}>🗂️ Patient Directory</a>
+            <a href="/admin/analytics" {% block nav_admin_analytics %}{% endblock %}>📊 Analytics</a>
 
         {% elif specific_role == "doctor" %}
             <a href="/staff/dashboard" {% block nav_doctor_overview %}{% endblock %}>📊 Overview</a>
             <a href="/staff/doctor/queue" {% block nav_doctor_queue %}{% endblock %}>🩺 My Queue</a>
             <a href="/staff/patients" {% block nav_doctor_patients %}{% endblock %}>🗂️ Patients</a>
+            <a href="/staff/doctor/prescribe" {% block nav_doctor_prescribe %}{% endblock %}>💊 Prescribe</a>
 
         {% elif specific_role == "nurse" %}
             <a href="/staff/dashboard" {% block nav_nurse_overview %}{% endblock %}>📊 Overview</a>
             <a href="/staff/nurse/triage" {% block nav_nurse_triage %}{% endblock %}>🩹 Triage</a>
+            <a href="/staff/nurse/medications" {% block nav_nurse_medications %}{% endblock %}>💉 Medications</a>
             <a href="/staff/patients" {% block nav_nurse_patients %}{% endblock %}>🗂️ Patients</a>
 
         {% elif specific_role == "receptionist" %}
@@ -259,8 +262,7 @@
             <span class="topbar-email">{{ email }}</span>
             <a href="/logout" class="topbar-logout">Logout</a>
         </div>
-    </div>
-
+    </div>                                                                                                              
     <div class="page-content">
         {% block content %}{% endblock %}
     </div>

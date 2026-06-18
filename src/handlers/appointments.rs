@@ -133,14 +133,23 @@ pub async fn submit_appointment(
 
     // Call database booking engine using the specific calculated layout boundary
     match crate::db::appointments::book_patient_appointment(
-        &pool, 
-        patient_id, 
-        form.doctor_id, 
-        form.date, 
+        &pool,
+        patient_id,
+        form.doctor_id,
+        form.date,
         form.start_time,
         computed_end_time
     ).await {
-        Ok(_) => {
+        Ok(appt) => {
+            // Mock notification: log to console
+            let patient_email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+            eprintln!(
+                "\n[MOCK EMAIL NOTIFICATION]\nTo: {}\nSubject: Appointment Confirmed\nBody: Your appointment on {} at {} has been confirmed. Appointment ID: {}\n",
+                patient_email,
+                form.date,
+                form.start_time.format("%I:%M %p"),
+                appt.id
+            );
             HttpResponse::SeeOther()
                 .append_header(("Location", "/patient/dashboard?success=booked"))
                 .finish()
@@ -346,6 +355,177 @@ pub async fn submit_consultation(
             eprintln!("Transaction Failed: {}", e);
             HttpResponse::InternalServerError().body("Failed to finalize consultation and billing.")
         }
+    }
+}
+
+pub async fn medication_administration_page(
+    pool: web::Data<PgPool>,
+    session: Session,
+    tmpl: web::Data<Tera>,
+) -> impl Responder {
+    match session.get::<String>("role") {
+        Ok(Some(role)) if role == "nurse" || role == "admin" => {},
+        _ => return HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish(),
+    };
+
+    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let staff_name = email.split('@').next().unwrap_or("Nurse").to_string();
+    let current_role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
+
+    let prescriptions = match crate::db::appointments::get_active_prescriptions_for_nurse(pool.get_ref()).await {
+        Ok(list) => list,
+        Err(e) => return HttpResponse::InternalServerError().body(format!("DB error: {}", e)),
+    };
+
+    let mut ctx = Context::new();
+    ctx.insert("specific_role", &current_role);
+    ctx.insert("email", &email);
+    ctx.insert("staff_name", &staff_name);
+    ctx.insert("prescriptions", &prescriptions);
+
+    match tmpl.render("staff/nurse/medications.html", &ctx) {
+        Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
+        Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
+    }
+}
+
+#[derive(serde::Deserialize)]
+pub struct AdminLogForm {
+    pub remarks: Option<String>,
+}
+
+pub async fn submit_medication_administration(
+    pool: web::Data<PgPool>,
+    session: Session,
+    path: web::Path<Uuid>,
+    form: web::Form<AdminLogForm>,
+) -> impl Responder {
+    let nurse_id = match session.get::<Uuid>("user_id") {
+        Ok(Some(id)) => id,
+        _ => return HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish(),
+    };
+
+    let prescription_id = path.into_inner();
+
+    match crate::db::appointments::log_medication_administration(
+        pool.get_ref(), prescription_id, nurse_id, form.remarks.clone()
+    ).await {
+        Ok(_) => HttpResponse::SeeOther()
+            .append_header(("Location", "/staff/nurse/medications?success=logged"))
+            .finish(),
+        Err(e) => HttpResponse::InternalServerError().body(format!("Failed: {}", e)),
+    }
+}
+
+pub async fn cancel_appointment(
+    pool: web::Data<PgPool>,
+    session: Session,
+    path: web::Path<Uuid>,
+) -> impl Responder {
+    let patient_id = match session.get::<Uuid>("user_id") {
+        Ok(Some(id)) => id,
+        _ => return HttpResponse::SeeOther().append_header(("Location", "/patient/login")).finish(),
+    };
+
+    // Verify patient role
+    match session.get::<String>("role") {
+        Ok(Some(role)) if role == "patient" => {},
+        _ => return HttpResponse::Forbidden().body("Only patients can cancel their own appointments."),
+    }
+
+    let appointment_id = path.into_inner();
+
+    match crate::db::appointments::cancel_patient_appointment(pool.get_ref(), appointment_id, patient_id).await {
+        Ok(_) => HttpResponse::SeeOther()
+            .append_header(("Location", "/patient/dashboard?success=cancelled"))
+            .finish(),
+        Err(_) => HttpResponse::SeeOther()
+            .append_header(("Location", "/patient/dashboard?error=cancel_failed"))
+            .finish(),
+    }
+}
+
+#[derive(serde::Deserialize)]
+pub struct PrescribeForm {
+    pub medicine_name: String,
+    pub dosage: String,
+    pub frequency: String,
+    pub duration: String,
+    pub instructions: Option<String>,
+}
+
+pub async fn prescribe_medication_page(
+    pool: web::Data<PgPool>,
+    session: Session,
+    tmpl: web::Data<Tera>,
+) -> impl Responder {
+    match session.get::<String>("role") {
+        Ok(Some(role)) if role == "doctor" => {},
+        _ => return HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish(),
+    };
+
+    let doctor_id = match session.get::<Uuid>("user_id") {
+        Ok(Some(id)) => id,
+        _ => return HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish(),
+    };
+
+    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let staff_name = email.split('@').next().unwrap_or("Doctor").to_string();
+
+    let appointments = match crate::db::appointments::get_doctor_prescribable_appointments(pool.get_ref(), doctor_id).await {
+        Ok(list) => list,
+        Err(e) => return HttpResponse::InternalServerError().body(format!("DB error: {}", e)),
+    };
+
+    let mut ctx = Context::new();
+    ctx.insert("specific_role", "doctor");
+    ctx.insert("email", &email);
+    ctx.insert("staff_name", &staff_name);
+    ctx.insert("appointments", &appointments);
+
+    let success = false; // placeholder; flash messages handled via query params
+    ctx.insert("success", &success);
+
+    match tmpl.render("staff/doctor/prescribe.html", &ctx) {
+        Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
+        Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
+    }
+}
+
+pub async fn submit_prescription(
+    pool: web::Data<PgPool>,
+    session: Session,
+    path: web::Path<Uuid>,
+    form: web::Form<PrescribeForm>,
+) -> impl Responder {
+    let doctor_id = match session.get::<Uuid>("user_id") {
+        Ok(Some(id)) => id,
+        _ => return HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish(),
+    };
+
+    let appointment_id = path.into_inner();
+
+    match crate::db::appointments::insert_prescription(
+        pool.get_ref(),
+        appointment_id,
+        doctor_id,
+        form.medicine_name.clone(),
+        form.dosage.clone(),
+        form.frequency.clone(),
+        form.duration.clone(),
+        form.instructions.clone(),
+    ).await {
+        Ok(_) => {
+            // Mock notification: log to console
+            eprintln!(
+                "\n[MOCK EMAIL NOTIFICATION]\nSubject: New Prescription Issued\nBody: A prescription for {} ({} × {} for {}) has been issued for appointment {}.\n",
+                form.medicine_name, form.dosage, form.frequency, form.duration, appointment_id
+            );
+            HttpResponse::SeeOther()
+                .append_header(("Location", "/staff/doctor/prescribe?success=1"))
+                .finish()
+        }
+        Err(e) => HttpResponse::InternalServerError().body(format!("Failed to save prescription: {}", e)),
     }
 }
 

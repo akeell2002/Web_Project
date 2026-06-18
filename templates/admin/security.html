@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "shared/layout.html" %}
 
 {% block title %}Security Monitoring - HealthHub Admin{% endblock %}
 {% block page_title %}Security Monitoring{% endblock %}
@@ -70,7 +70,7 @@
                 <td>{% if log.actor_email %}{{ log.actor_email }}{% else %}System{% endif %}</td>
                 <td>
                     {{ log.target_email }}<br>
-                    <span style="color:#64748B; font-size:12px;">{{ log.target_role }}</span>
+                    <span style="color:#64748B; font-size: 12px;">{{ log.target_role }}</span>
                 </td>
                 <td>{{ log.details }}</td>
             </tr>

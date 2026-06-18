@@ -28,7 +28,7 @@ body {
 }
 
 .navbar-brand {
-    font-size: 1.25rem;
+    font-size: 20px;
     font-weight: 600;
     letter-spacing: 0.5px;
 }
@@ -102,7 +102,7 @@ body {
 }
 
 .brand-message h2 {
-    font-size: 2.25rem;
+    font-size: 40px;
     font-weight: 600;
     line-height: 1.3;
     margin-bottom: 15px;
@@ -110,7 +110,7 @@ body {
 
 .brand-message p {
     color: #E6F0F9;
-    font-size: 15px;
+    font-size: 14px;
     line-height: 1.6;
 }
 
@@ -129,14 +129,14 @@ body {
 }
 
 .form-header h3 {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 600;
     color: #111827;
 }
 
 .form-header p {
     color: #6B7280;
-    font-size: 15px;
+    font-size: 14px;
     margin-top: 8px;
 }
 
@@ -152,7 +152,7 @@ body {
     border: 1px solid #D1D5DB;
     border-radius: 8px;
     color: #111827;
-    font-size: 15px;
+    font-size: 14px;
     outline: none;
     transition: all 0.2s ease;
 }
@@ -171,7 +171,7 @@ body {
     border: none;
     border-radius: 8px;
     padding: 14px;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s ease;
@@ -303,20 +303,4 @@ body {
 
 /* Micro-interactions for the buttons on hover */
 .fullscreen-gateway .btn-submit {
-    transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
-}
-
-/* Dynamic Button Transitions */
-.fullscreen-gateway .btn-submit {
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Slide up and intensify shadow on hover */
-.fullscreen-gateway .btn-submit:hover {
-    transform: translateY(-3px) scale(1.01);
-    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.15), 
-                0 8px 10px -5px rgba(0, 0, 0, 0.1);
-    filter: brightness(1.1);
-}
+    transition: transfor

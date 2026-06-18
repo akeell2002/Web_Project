@@ -7,6 +7,9 @@ use actix_web::{App, HttpServer, HttpResponse, Responder, web};
 use actix_session::{SessionMiddleware, storage::CookieSessionStore};
 use actix_web::cookie::Key;
 use tera::{Context, Tera};
+use std::sync::{Arc, Mutex};
+use std::collections::HashMap;
+use handlers::auth::ResetTokenStore;
 
 // Index.html
 async fn home_page(tera: web::Data<Tera>) -> impl Responder {
@@ -46,6 +49,7 @@ async fn main() -> std::io::Result<()> {
     }
 
     let tera = Tera::new("templates/**/*.html").expect("Failed to load templates");
+    let reset_token_store: ResetTokenStore = Arc::new(Mutex::new(HashMap::new()));
     
     //to encrypt session cookies, use it after testing is done
     //let secret_key = Key::generate();
@@ -66,6 +70,7 @@ async fn main() -> std::io::Result<()> {
             // Then all the shared data, database pool and template engine
             .app_data(web::Data::new(db_pool.clone()))
             .app_data(web::Data::new(tera.clone()))
+            .app_data(web::Data::new(reset_token_store.clone()))
             
             // Static files
             .service(actix_files::Files::new("/static", "./static").show_files_listing()) 
@@ -76,6 +81,7 @@ async fn main() -> std::io::Result<()> {
             // Admin interface routes
             .route("/admin/dashboard", web::get().to(handlers::auth::admin_dashboard))
             .route("/admin/security", web::get().to(handlers::admin::security_monitoring_page))
+            .route("/admin/analytics", web::get().to(handlers::admin::analytics_page))
             .route("/admin/staff/onboard", web::get().to(handlers::admin::onboard_staff_page))
             .route("/admin/staff/onboard", web::post().to(handlers::admin::onboard_staff_submit))
             .route("/admin/staff", web::get().to(handlers::admin::staff_directory_page))
@@ -91,16 +97,22 @@ async fn main() -> std::io::Result<()> {
             .route("/staff/patients", web::get().to(handlers::admin::patient_directory_page))
             .route("/staff/patients/add", web::get().to(handlers::patients::show_add_patient_page))
             .route("/staff/patients/add", web::post().to(handlers::patients::process_add_patient))
+            .route("/staff/patients/{id}", web::get().to(handlers::patients::patient_detail_page))
+            .route("/staff/patients/{id}/report", web::get().to(handlers::patients::patient_report_page))
 
             // --- Doctor Routes ---
             .route("/staff/doctor/queue", web::get().to(handlers::appointments::doctor_daily_queue_page))
             .route("/staff/doctor/patients", web::get().to(handlers::appointments::doctor_daily_queue_page))
+            .route("/staff/doctor/prescribe", web::get().to(handlers::appointments::prescribe_medication_page))
+            .route("/staff/doctor/prescribe/{id}", web::post().to(handlers::appointments::submit_prescription))
             .route("/staff/doctor/consultation/{id}", web::get().to(handlers::appointments::show_consultation_form))
             .route("/staff/doctor/consultation/{id}", web::post().to(handlers::appointments::submit_consultation))
 
             // --- Nurse Routes ---
             .route("/staff/nurse/triage", web::get().to(handlers::appointments::nurse_triage_page))
             .route("/staff/nurse/queue/triage/{id}", web::post().to(handlers::appointments::submit_triage_vitals))
+            .route("/staff/nurse/medications", web::get().to(handlers::appointments::medication_administration_page))
+            .route("/staff/nurse/medications/{id}/administer", web::post().to(handlers::appointments::submit_medication_administration))
 
             // --- Receptionist Routes ---
             .route("/staff/receptionist/reception", web::get().to(handlers::appointments::reception_desk_page))
@@ -120,6 +132,13 @@ async fn main() -> std::io::Result<()> {
             // Patient appointment scheduling endpoints
             .route("/patient/appointments/book", web::get().to(handlers::appointments::show_booking_form))
             .route("/patient/appointments/create", web::post().to(handlers::appointments::submit_appointment))
+            .route("/patient/appointments/{id}/cancel", web::post().to(handlers::appointments::cancel_appointment))
+
+            // Password reset routes
+            .route("/forgot-password", web::get().to(handlers::auth::forgot_password_page))
+            .route("/forgot-password", web::post().to(handlers::auth::submit_forgot_password))
+            .route("/reset-password", web::get().to(handlers::auth::reset_password_page))
+            .route("/reset-password", web::post().to(handlers::auth::submit_reset_password))
 
             // Logout route
             .route("/logout", web::get().to(handlers::auth::logout))

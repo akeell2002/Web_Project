@@ -267,6 +267,21 @@ pub async fn seed_default_staff_users(pool: &PgPool) -> Result<(), String> {
     Ok(())
 }
 
+/// Update a user's password by email (used by password reset flow)
+pub async fn update_user_password(pool: &PgPool, email: &str, new_raw_password: &str) -> Result<bool, String> {
+    let hashed = hash_password(new_raw_password)?;
+    let result = sqlx::query!(
+        "UPDATE users SET password = $1, updated_at = NOW() WHERE LOWER(email) = LOWER($2)",
+        hashed,
+        email
+    )
+    .execute(pool)
+    .await
+    .map_err(|e| format!("DB error updating password: {}", e))?;
+
+    Ok(result.rows_affected() > 0)
+}
+
 // --- Moved from db/security.rs ---
 
 pub async fn log_access_event<'e, E>(

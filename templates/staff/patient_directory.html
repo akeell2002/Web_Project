@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "shared/layout.html" %}
 
 {% block title %}Patient Directory - HealthHub{% endblock %}
 {% block page_title %}Patient Directory{% endblock %}
@@ -24,8 +24,8 @@
         align-items: center;
         margin-bottom: 24px;
     }
-    .directory-card-header h3 { font-size: 18px; font-weight: 700; color: #111827; }
-    .directory-card-header p { color: #6B7280; font-size: 13px; margin-top: 4px; }
+    .directory-card-header h3 { font-size: 20px; font-weight: 700; color: #111827; }
+    .directory-card-header p { color: #6B7280; font-size: 14px; margin-top: 4px; }
     .btn-register {
         background: #005999;
         color: white;
@@ -37,6 +37,15 @@
         white-space: nowrap;
     }
     .btn-register:hover { background: #004070; }
+    .search-wrap input {
+        width: 100%; padding: 10px 16px; border: 1px solid #D1D5DB;
+        border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .search-wrap input:focus {
+        border-color: #005999; box-shadow: 0 0 0 3px rgba(0,89,153,0.1);
+    }
+    #no-results { display: none; text-align: center; color: #94a3b8; padding: 24px; font-style: italic; }
 </style>
 {% endblock %}
 
@@ -50,7 +59,11 @@
         <a href="/staff/patients/add" class="btn-register">+ Register New Patient</a>
     </div>
 
-    <table class="clinical-table">
+    <div class="search-wrap" style="margin-bottom: 18px;">
+        <input type="text" id="patient-search" placeholder="🔍  Search by name, email, or phone..." oninput="filterPatients(this.value)">
+    </div>
+
+    <table class="clinical-table" id="patient-table">
         <thead>
             <tr>
                 <th>ID</th>
@@ -63,10 +76,10 @@
         </thead>
         <tbody>
             {% for p in patients %}
-            <tr style="transition: background 0.15s;" onmouseover="this.style.backgroundColor='#F9FAFB'" onmouseout="this.style.backgroundColor='transparent'">
+            <tr data-searchable="{{ p.first_name | lower }} {{ p.last_name | lower }} {{ p.email | lower }} {{ p.phone | lower }}" style="transition: background 0.15s;" onmouseover="this.style.backgroundColor='#F9FAFB'" onmouseout="this.style.backgroundColor='transparent'">
                 <td style="font-weight: bold; color: #64748B;">#{{ p.id | truncate(length=8, end="") }}</td>
                 <td>
-                    <a href="/patients/{{ p.id }}" style="color: #005999; font-weight: 600; text-decoration: none;">
+                    <a href="/staff/patients/{{ p.id }}" style="color: #005999; font-weight: 600; text-decoration: none;">
                         {{ p.first_name }} {{ p.last_name }}
                     </a>
                 </td>
@@ -84,5 +97,20 @@
             {% endfor %}
         </tbody>
     </table>
+    <div id="no-results">No patients match your search.</div>
 </div>
+
+<script>
+function filterPatients(query) {
+    const q = query.toLowerCase();
+    const rows = document.querySelectorAll('#patient-table tbody tr[data-searchable]');
+    let visible = 0;
+    rows.forEach(row => {
+        const text = row.getAttribute('data-searchable');
+        if (text.includes(q)) { row.style.display = ''; visible++; }
+        else { row.style.display = 'none'; }
+    });
+    document.getElementById('no-results').style.display = (visible === 0 && q.length > 0) ? 'block' : 'none';
+}
+</script>
 {% endblock %}

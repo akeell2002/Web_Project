@@ -538,3 +538,206 @@ pub async fn finalize_consultation_and_bill(
     tx.commit().await?;
     Ok(())
 }
+
+/// Fetch active prescriptions for the medication administration log (nurse)
+pub async fn get_active_prescriptions_for_nurse(
+    pool: &PgPool,
+) -> Result<Vec<serde_json::Value>, String> {
+    let today_date = chrono::Local::now().date_naive();
+
+    let rows = sqlx::query(
+        r#"
+        SELECT
+            pr.id,
+            pr.medicine_name,
+            pr.dosage,
+            pr.frequency,
+            pr.duration,
+            pr.instructions,
+            pr.created_at,
+            p.first_name AS patient_first,
+            p.last_name  AS patient_last,
+            s.first_name AS doctor_first,
+            s.last_name  AS doctor_last,
+            a.date       AS appt_date,
+            (SELECT COUNT(*) FROM medication_administration_log mal WHERE mal.prescription_id = pr.id) AS admin_count
+        FROM prescription pr
+        JOIN appointment a ON pr.appointment_id = a.id
+        JOIN patient p ON a.patient_id = p.id
+        JOIN staff s ON pr.prescribed_by_doctor_id = s.id
+        WHERE a.date >= ($1::date - INTERVAL '3 days')
+        ORDER BY a.date DESC, pr.created_at DESC
+        "#,
+    )
+    .bind(today_date)
+    .fetch_all(pool)
+    .await
+    .map_err(|e| format!("DB error fetching prescriptions for nurse: {}", e))?;
+
+    use sqlx::Row;
+    let mut list = Vec::new();
+    for row in rows {
+        let id: uuid::Uuid                  = row.get("id");
+        let medicine: String                = row.get("medicine_name");
+        let dosage: String                  = row.get("dosage");
+        let frequency: String               = row.get("frequency");
+        let duration: String                = row.get("duration");
+        let instructions: Option<String>    = row.get("instructions");
+        let patient_first: String           = row.get("patient_first");
+        let patient_last: String            = row.get("patient_last");
+        let doctor_first: String            = row.get("doctor_first");
+        let doctor_last: String             = row.get("doctor_last");
+        let appt_date: chrono::NaiveDate    = row.get("appt_date");
+        let admin_count: i64                = row.get("admin_count");
+
+        list.push(serde_json::json!({
+            "id": id.to_string(),
+            "medicine_name": medicine,
+            "dosage": dosage,
+            "frequency": frequency,
+            "duration": duration,
+            "instructions": instructions,
+            "patient_name": format!("{} {}", patient_first, patient_last),
+            "doctor_name": format!("Dr. {} {}", doctor_first, doctor_last),
+            "appt_date": appt_date.format("%d %b %Y").to_string(),
+            "admin_count": admin_count,
+        }));
+    }
+    Ok(list)
+}
+
+/// Log a medication administration
+pub async fn log_medication_administration(
+    pool: &PgPool,
+    prescription_id: Uuid,
+    nurse_id: Uuid,
+    remarks: Option<String>,
+) -> Result<(), String> {
+    sqlx::query!(
+        r#"
+        INSERT INTO medication_administration_log (prescription_id, administered_by_nurse_id, remarks)
+        VALUES ($1, $2, $3)
+        "#,
+        prescription_id,
+        nurse_id,
+        remarks
+    )
+    .execute(pool)
+    .await
+    .map_err(|e| format!("Failed to log administration: {}", e))?;
+    Ok(())
+}
+
+/// Cancel an appointment — only allowed if status is 'scheduled' and belongs to the patient
+pub async fn cancel_patient_appointment(
+    pool: &PgPool,
+    appointment_id: Uuid,
+    patient_id: Uuid,
+) -> Result<(), String> {
+    let result = sqlx::query!(
+        r#"
+        UPDATE appointment
+        SET status = 'cancelled'::appointment_status, updated_at = NOW()
+        WHERE id = $1 AND patient_id = $2 AND status = 'scheduled'
+        "#,
+        appointment_id,
+        patient_id
+    )
+    .execute(pool)
+    .await
+    .map_err(|e| format!("DB error cancelling appointment: {}", e))?;
+
+    if result.rows_affected() == 0 {
+        Err("Cannot cancel: appointment not found, already checked-in, or does not belong to you.".to_string())
+    } else {
+        Ok(())
+    }
+}
+
+/// Fetch doctor's appointments for the prescribe page (today + recent)
+pub async fn get_doctor_prescribable_appointments(
+    pool: &PgPool,
+    doctor_id: Uuid,
+) -> Result<Vec<serde_json::Value>, String> {
+    let today_date = chrono::Local::now().date_naive();
+
+    let rows = sqlx::query(
+        r#"
+        SELECT
+            a.id,
+            a.date,
+            a.start_time,
+            a.status::text AS status,
+            p.first_name,
+            p.last_name,
+            (
+                SELECT COUNT(*) FROM prescription pr WHERE pr.appointment_id = a.id
+            ) AS rx_count
+        FROM appointment a
+        JOIN patient p ON a.patient_id = p.id
+        WHERE a.doctor_id = $1
+          AND a.date >= ($2::date - INTERVAL '7 days')
+          AND a.status NOT IN ('cancelled', 'no_show')
+        ORDER BY a.date DESC, a.start_time DESC
+        "#,
+    )
+    .bind(doctor_id)
+    .bind(today_date)
+    .fetch_all(pool)
+    .await
+    .map_err(|e| format!("DB error fetching prescribable appointments: {}", e))?;
+
+    use sqlx::Row;
+    let mut list = Vec::new();
+    for row in rows {
+        let id: Uuid            = row.get("id");
+        let date: chrono::NaiveDate   = row.get("date");
+        let start: chrono::NaiveTime  = row.get("start_time");
+        let status: String            = row.get("status");
+        let first: String             = row.get("first_name");
+        let last: String              = row.get("last_name");
+        let rx_count: i64             = row.get("rx_count");
+
+        list.push(serde_json::json!({
+            "id": id.to_string(),
+            "appointment_date": date.format("%d %b %Y").to_string(),
+            "is_today": date == today_date,
+            "start_time": start.format("%I:%M %p").to_string(),
+            "status": status,
+            "patient_name": format!("{} {}", first, last),
+            "rx_count": rx_count,
+        }));
+    }
+    Ok(list)
+}
+
+/// Insert a single prescription for an appointment
+pub async fn insert_prescription(
+    pool: &PgPool,
+    appointment_id: Uuid,
+    doctor_id: Uuid,
+    medicine_name: String,
+    dosage: String,
+    frequency: String,
+    duration: String,
+    instructions: Option<String>,
+) -> Result<(), String> {
+    sqlx::query!(
+        r#"
+        INSERT INTO prescription (appointment_id, prescribed_by_doctor_id, medicine_name, dosage, frequency, duration, instructions)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        "#,
+        appointment_id,
+        doctor_id,
+        medicine_name,
+        dosage,
+        frequency,
+        duration,
+        instructions
+    )
+    .execute(pool)
+    .await
+    .map_err(|e| format!("Failed to insert prescription: {}", e))?;
+
+    Ok(())
+}

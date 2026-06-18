@@ -4,6 +4,7 @@ use actix_session::Session;
 use tera::{Tera, Context};
 use sqlx::PgPool;
 use serde::Deserialize;
+use uuid::Uuid;
 use crate::models::patient::CreatePatientProfile;
 
 #[derive(Deserialize)]
@@ -46,6 +47,68 @@ pub async fn show_add_patient_page(
     match tmpl.render("staff/add.html", &ctx) {
         Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
         Err(e) => HttpResponse::InternalServerError().body(format!("Form layout load error: {}", e)),
+    }
+}
+
+pub async fn patient_detail_page(
+    pool: web::Data<PgPool>,
+    session: Session,
+    tmpl: web::Data<Tera>,
+    path: web::Path<Uuid>,
+) -> impl Responder {
+    if let Err(response) = staff_only(&session) {
+        return response;
+    }
+
+    let patient_id = path.into_inner();
+    let current_role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
+    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let staff_name = email.split('@').next().unwrap_or("Staff").to_string();
+
+    match crate::db::patients::get_patient_detail(pool.get_ref(), patient_id).await {
+        Ok(Some(patient)) => {
+            let mut ctx = Context::new();
+            ctx.insert("specific_role", &current_role);
+            ctx.insert("email", &email);
+            ctx.insert("staff_name", &staff_name);
+            ctx.insert("patient", &patient);
+
+            match tmpl.render("staff/patient_detail.html", &ctx) {
+                Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
+                Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
+            }
+        }
+        Ok(None) => HttpResponse::NotFound().body("Patient not found."),
+        Err(e) => HttpResponse::InternalServerError().body(format!("DB error: {}", e)),
+    }
+}
+
+pub async fn patient_report_page(
+    pool: web::Data<PgPool>,
+    session: Session,
+    tmpl: web::Data<Tera>,
+    path: web::Path<Uuid>,
+) -> impl Responder {
+    if let Err(response) = staff_only(&session) {
+        return response;
+    }
+
+    let patient_id = path.into_inner();
+
+    match crate::db::patients::get_patient_detail(pool.get_ref(), patient_id).await {
+        Ok(Some(patient)) => {
+            let report_date = chrono::Local::now().format("%d %b %Y").to_string();
+            let mut ctx = Context::new();
+            ctx.insert("patient", &patient);
+            ctx.insert("report_date", &report_date);
+
+            match tmpl.render("staff/patient_report.html", &ctx) {
+                Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
+                Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
+            }
+        }
+        Ok(None) => HttpResponse::NotFound().body("Patient not found."),
+        Err(e) => HttpResponse::InternalServerError().body(format!("DB error: {}", e)),
     }
 }
 
