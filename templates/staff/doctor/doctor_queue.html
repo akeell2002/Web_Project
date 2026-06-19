@@ -97,6 +97,24 @@
                     {% else %}
                         <span style="color: #9CA3AF; font-style: italic;">Unassigned</span>
                     {% endif %}
+                    
+                    {% if item.is_today and item.priority_level %}
+                        <div style="margin-top: 8px;">
+                            {% if item.priority_level == 1 %}
+                                <span style="background: #dc2626; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">L1-EMERGENCY</span>
+                            {% elif item.priority_level == 2 %}
+                                <span style="background: #f59e0b; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">L2-URGENT</span>
+                            {% elif item.priority_level == 3 %}
+                                <span style="background: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">L3-SEMI-URGENT</span>
+                            {% endif %}
+                            
+                            {% if item.status == 'vitals_taken' %}
+                                <div style="font-size: 11px; color: #6B7280; margin-top: 4px;">
+                                    Acuity Score: <strong style="color: #0ea5e9;">{{ item.dynamic_score }}</strong>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 </td>
                 <td style="padding: 16px 12px; font-weight: 600; color: #374151;">
                     {% if item.is_today %}

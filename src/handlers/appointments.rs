@@ -278,6 +278,7 @@ pub struct SubmitVitalsForm {
     pub temperature: String,
     pub weight_kg: String,
     pub height_cm: String,
+    pub priority_level: i32,
 }
 
 pub async fn nurse_triage_page(
@@ -328,7 +329,8 @@ pub async fn submit_triage_vitals(
         form.blood_pressure.clone(),
         form.temperature.clone(),
         form.weight_kg.clone(),
-        form.height_cm.clone()
+        form.height_cm.clone(),
+        form.priority_level,
     ).await {
         Ok(_) => HttpResponse::SeeOther()
             .append_header(("Location", "/staff/nurse/triage?success=vitals_saved"))

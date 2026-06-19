@@ -173,6 +173,16 @@ pub async fn get_doctor_daily_appointments(
         let rows = sqlx::query!(
             r#"
             SELECT a.id, a.date, a.start_time, a.end_time, a.status::text as "status!", a.queue_number,
+                   a.priority_level,
+                   (
+                       CASE a.priority_level
+                           WHEN 1 THEN 1000.0
+                           WHEN 2 THEN 80.0 + (EXTRACT(EPOCH FROM (NOW() - COALESCE(a.check_in_time, NOW()))) / 60.0) * 2.0
+                           WHEN 3 THEN 50.0 + (EXTRACT(EPOCH FROM (NOW() - COALESCE(a.check_in_time, NOW()))) / 60.0) * 1.0
+                           WHEN 4 THEN 20.0 + (EXTRACT(EPOCH FROM (NOW() - COALESCE(a.check_in_time, NOW()))) / 60.0) * 0.5
+                           ELSE         0.0 + (EXTRACT(EPOCH FROM (NOW() - COALESCE(a.check_in_time, NOW()))) / 60.0) * 0.2
+                       END
+                   )::FLOAT8 as "dynamic_score?",
                    p.first_name, p.last_name, p.date_of_birth, p.gender,
                    r.room_name as "room_name?",
                    tv.blood_pressure, 
@@ -185,8 +195,9 @@ pub async fn get_doctor_daily_appointments(
             LEFT JOIN triage_vitals tv ON a.id = tv.appointment_id
             WHERE a.doctor_id = $1 AND a.date = $2
             ORDER BY 
-                CASE WHEN a.status = 'checked_in' THEN 1 WHEN a.status = 'scheduled' THEN 2 ELSE 3 END ASC,
-                a.queue_number ASC, a.start_time ASC
+                CASE WHEN a.status IN ('vitals_taken', 'checked_in') THEN 1 WHEN a.status = 'scheduled' THEN 2 ELSE 3 END ASC,
+                "dynamic_score?" DESC NULLS LAST, 
+                a.queue_number ASC
             "#,
             doctor_id,
             today_date
@@ -210,55 +221,12 @@ pub async fn get_doctor_daily_appointments(
                 "end_time": row.end_time.format("%I:%M %p").to_string(),
                 "status": row.status,
                 "queue_number": row.queue_number,
+                "priority_level": row.priority_level,
+                "dynamic_score": format!("{:.1}", row.dynamic_score.unwrap_or(0.0)),
                 "patient_name": format!("{} {}", row.first_name, row.last_name),
                 "patient_dob": row.date_of_birth.to_string(),
                 "patient_gender": row.gender.unwrap_or_else(|| "Undisclosed".to_string()),
                 "room": room_display,
-                "blood_pressure": bp,
-                "temperature": temp,
-                "weight": weight,
-                "height": height
-            }));
-        }
-    } else {
-        let rows = sqlx::query!(
-            r#"
-            SELECT a.id, a.date, a.start_time, a.end_time, a.status::text as "status!", a.queue_number,
-                   p.first_name, p.last_name, p.date_of_birth, p.gender,
-                   tv.blood_pressure, 
-                   tv.temperature::FLOAT8 as "temperature?", 
-                   tv.weight_kg::FLOAT8 as "weight_kg?", 
-                   tv.height_cm::FLOAT8 as "height_cm?"
-            FROM appointment a
-            JOIN patient p ON a.patient_id = p.id
-            LEFT JOIN triage_vitals tv ON a.id = tv.appointment_id
-            WHERE a.doctor_id = $1 AND a.date >= $2
-            ORDER BY a.date ASC, a.start_time ASC
-            "#,
-            doctor_id,
-            today_date
-        )
-        .fetch_all(pool)
-        .await
-        .map_err(|e| format!("Failed to query upcoming clinical caseload: {}", e))?;
-
-        for row in rows {
-            let bp = row.blood_pressure.unwrap_or_else(|| "--".to_string());
-            let temp = row.temperature.map(|t| format!("{:.1} °C", t)).unwrap_or_else(|| "--".to_string());
-            let weight = row.weight_kg.map(|w| format!("{:.1} kg", w)).unwrap_or_else(|| "--".to_string());
-            let height = row.height_cm.map(|h| format!("{:.1} cm", h)).unwrap_or_else(|| "--".to_string());
-
-            list.push(serde_json::json!({
-                "id": row.id,
-                "appointment_date": row.date.format("%A, %b %d, %Y").to_string(),
-                "is_today": row.date == today_date,
-                "start_time": row.start_time.format("%I:%M %p").to_string(),
-                "end_time": row.end_time.format("%I:%M %p").to_string(),
-                "status": row.status,
-                "queue_number": row.queue_number,
-                "patient_name": format!("{} {}", row.first_name, row.last_name),
-                "patient_dob": row.date_of_birth.to_string(),
-                "patient_gender": row.gender.unwrap_or_else(|| "Undisclosed".to_string()),
                 "blood_pressure": bp,
                 "temperature": temp,
                 "weight": weight,
@@ -388,6 +356,7 @@ pub async fn record_patient_vitals(
     temp: String,
     weight: String,
     height: String,
+    priority_level: i32, // <--- ADDED
 ) -> Result<(), String> {
     let mut tx = pool.begin().await.map_err(|e| e.to_string())?;
 
@@ -416,14 +385,16 @@ pub async fn record_patient_vitals(
     .await
     .map_err(|e| format!("Failed checking available clinic space: {}", e))?;
 
+    // UPDATED: Saving priority_level to the appointment table
     if let Some(room) = assigned_room {
         sqlx::query!(
             r#"
             UPDATE appointment
-            SET status = 'vitals_taken', room_id = $1, updated_at = NOW()
-            WHERE id = $2
+            SET status = 'vitals_taken', room_id = $1, priority_level = $2, updated_at = NOW()
+            WHERE id = $3
             "#,
             room.id,
+            priority_level,
             appointment_id
         )
         .execute(&mut *tx)
@@ -431,7 +402,8 @@ pub async fn record_patient_vitals(
         .map_err(|e| format!("Failed to assign room and update status: {}", e))?;
     } else {
         sqlx::query!(
-            "UPDATE appointment SET status = 'vitals_taken', updated_at = NOW() WHERE id = $1",
+            "UPDATE appointment SET status = 'vitals_taken', priority_level = $1, updated_at = NOW() WHERE id = $2",
+            priority_level,
             appointment_id
         )
         .execute(&mut *tx)

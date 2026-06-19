@@ -69,6 +69,16 @@
                     <form action="/staff/nurse/queue/triage/{{ appt.id }}" method="POST"
                           style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin: 0;">
                         <div>
+                            <label style="font-size: 12px; font-weight: bold; color: #374151;">Priority</label><br>
+                            <select name="priority_level" class="vitals-input" required style="width: 110px;">
+                                <option value="4" selected>4 - Routine</option>
+                                <option value="1">1 - Emergency</option>
+                                <option value="2">2 - Urgent</option>
+                                <option value="3">3 - Semi-Urgent</option>
+                                <option value="5">5 - Non-Urgent</option>
+                            </select>
+                        </div>
+                        <div>
                             <label style="font-size: 12px; font-weight: bold; color: #374151;">BP</label><br>
                             <input type="text" name="blood_pressure" class="vitals-input" required placeholder="120/80">
                         </div>
