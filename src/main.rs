@@ -48,6 +48,11 @@ async fn main() -> std::io::Result<()> {
         eprintln!("System initialization warning: Resetting seed failed: {}", e);
     }
 
+    // Seed 100 fake patients for testing (skips if already seeded)
+    if let Err(e) = crate::db::seed_test_data::seed_test_patients(&db_pool).await {
+        eprintln!("Test data seeding warning: {}", e);
+    }
+
     let tera = Tera::new("templates/**/*.html").expect("Failed to load templates");
     let reset_token_store: ResetTokenStore = Arc::new(Mutex::new(HashMap::new()));
     
@@ -107,6 +112,12 @@ async fn main() -> std::io::Result<()> {
             .route("/staff/doctor/prescribe/{id}", web::post().to(handlers::appointments::submit_prescription))
             .route("/staff/doctor/consultation/{id}", web::get().to(handlers::appointments::show_consultation_form))
             .route("/staff/doctor/consultation/{id}", web::post().to(handlers::appointments::submit_consultation))
+
+            // --- Shared Bed Management ---
+            .route("/staff/beds", web::get().to(handlers::beds::bed_management_page))
+            .route("/staff/beds/transfer/request", web::post().to(handlers::beds::request_transfer_handler))
+            .route("/staff/beds/transfer/{id}/approve", web::post().to(handlers::beds::approve_transfer_handler))
+            .route("/staff/beds/transfer/{id}/reject", web::post().to(handlers::beds::reject_transfer_handler))
 
             // --- Nurse Routes ---
             .route("/staff/nurse/triage", web::get().to(handlers::appointments::nurse_triage_page))

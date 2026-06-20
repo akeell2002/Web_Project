@@ -3,6 +3,7 @@ pub mod admin;
 pub mod appointments;
 pub mod patients;
 pub mod billing;
+pub mod beds;
 
 use actix_session::Session;
 use actix_web::HttpResponse;

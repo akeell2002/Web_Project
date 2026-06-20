@@ -7,6 +7,8 @@ pub mod users;
 pub mod appointments;
 pub mod billing;
 pub mod support;
+pub mod beds;
+pub mod seed_test_data;
 
 
 /// initializes the connection pool using the environment variable

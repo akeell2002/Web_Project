@@ -224,18 +224,21 @@
             <a href="/staff/doctor/queue" {% block nav_doctor_queue %}{% endblock %}>🩺 My Queue</a>
             <a href="/staff/patients" {% block nav_doctor_patients %}{% endblock %}>🗂️ Patients</a>
             <a href="/staff/doctor/prescribe" {% block nav_doctor_prescribe %}{% endblock %}>💊 Prescribe</a>
+            <a href="/staff/beds" {% block nav_doctor_beds %}{% endblock %}>🛏️ Beds</a>
 
         {% elif specific_role == "nurse" %}
             <a href="/staff/dashboard" {% block nav_nurse_overview %}{% endblock %}>📊 Overview</a>
             <a href="/staff/nurse/triage" {% block nav_nurse_triage %}{% endblock %}>🩹 Triage</a>
             <a href="/staff/nurse/medications" {% block nav_nurse_medications %}{% endblock %}>💉 Medications</a>
             <a href="/staff/patients" {% block nav_nurse_patients %}{% endblock %}>🗂️ Patients</a>
+            <a href="/staff/beds" {% block nav_nurse_beds %}{% endblock %}>🛏️ Beds</a>
 
         {% elif specific_role == "receptionist" %}
             <a href="/staff/dashboard" {% block nav_recep_overview %}{% endblock %}>📊 Overview</a>
             <a href="/staff/receptionist/reception" {% block nav_recep_desk %}{% endblock %}>📅 Reception Desk</a>
             <a href="/staff/receptionist/billing" {% block nav_recep_billing %}{% endblock %}>🧾 Billing</a>
             <a href="/staff/patients" {% block nav_recep_patients %}{% endblock %}>🗂️ Patients</a>
+            <a href="/staff/beds" {% block nav_recep_beds %}{% endblock %}>🛏️ Beds</a>
 
 
         {% elif specific_role == "patient" %}
