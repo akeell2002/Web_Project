@@ -129,6 +129,12 @@ async fn main() -> std::io::Result<()> {
             .route("/patient/register", web::post().to(handlers::auth::register))
             .route("/patient/dashboard", web::get().to(handlers::auth::patient_dashboard))
 
+            // Patient profile
+            .route("/patient/profile", web::get().to(handlers::auth::patient_profile_page))
+
+            // Staff profile
+            .route("/staff/profile", web::get().to(handlers::auth::staff_profile_page))
+
             // Patient appointment scheduling endpoints
             .route("/patient/appointments/book", web::get().to(handlers::appointments::show_booking_form))
             .route("/patient/appointments/create", web::post().to(handlers::appointments::submit_appointment))

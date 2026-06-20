@@ -1,0 +1,148 @@
+{% extends "shared/layout.html" %}
+
+{% block title %}My Profile - HealthHub{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+{% block nav_patient_home %}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .profile-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+        overflow: hidden;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    .profile-header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        padding: 32px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    .profile-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: #005999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 28px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .profile-header-name {
+        color: white;
+        font-size: 22px;
+        font-weight: 700;
+    }
+    .profile-header-sub {
+        color: #94a3b8;
+        font-size: 13px;
+        margin-top: 4px;
+    }
+    .profile-body {
+        padding: 32px;
+    }
+    .profile-section-title {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        color: #9CA3AF;
+        margin-bottom: 16px;
+    }
+    .profile-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 12px 0;
+        border-bottom: 1px solid #F3F4F6;
+        font-size: 14px;
+    }
+    .profile-row:last-child { border-bottom: none; }
+    .profile-label { color: #6B7280; font-weight: 500; min-width: 160px; }
+    .profile-value { color: #111827; font-weight: 600; text-align: right; }
+    .divider { border: none; border-top: 1px solid #F3F4F6; margin: 24px 0; }
+    .edit-link {
+        display: inline-block;
+        margin-top: 24px;
+        background: #005999;
+        color: white;
+        text-decoration: none;
+        padding: 10px 20px;
+        border-radius: 7px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+    .edit-link:hover { background: #004070; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-card">
+    <div class="profile-header">
+        <div class="profile-avatar">{{ profile.first_name | truncate(length=1, end="") | upper }}</div>
+        <div>
+            <div class="profile-header-name">{{ profile.first_name }} {{ profile.last_name }}</div>
+            <div class="profile-header-sub">Patient · HealthHub Portal</div>
+        </div>
+    </div>
+
+    <div class="profile-body">
+        <div class="profile-section-title">Personal Information</div>
+
+        <div class="profile-row">
+            <span class="profile-label">Full Name</span>
+            <span class="profile-value">{{ profile.first_name }} {{ profile.last_name }}</span>
+        </div>
+        <div class="profile-row">
+            <span class="profile-label">Date of Birth</span>
+            <span class="profile-value">{{ profile.date_of_birth }}</span>
+        </div>
+        <div class="profile-row">
+            <span class="profile-label">Gender</span>
+            <span class="profile-value">{% if profile.gender %}{{ profile.gender }}{% else %}Not provided{% endif %}</span>
+        </div>
+        <div class="profile-row">
+            <span class="profile-label">Blood Type</span>
+            <span class="profile-value">{% if profile.blood_type %}{{ profile.blood_type }}{% else %}Not on record{% endif %}</span>
+        </div>
+
+        <hr class="divider">
+        <div class="profile-section-title">Contact Details</div>
+
+        <div class="profile-row">
+            <span class="profile-label">Email</span>
+            <span class="profile-value">{{ profile.email | default(value="Not provided") }}</span>
+        </div>
+        <div class="profile-row">
+            <span class="profile-label">Phone</span>
+            <span class="profile-value">{% if profile.phone %}{{ profile.phone }}{% else %}Not provided{% endif %}</span>
+        </div>
+        <div class="profile-row">
+            <span class="profile-label">Address</span>
+            <span class="profile-value">{% if profile.address %}{{ profile.address }}{% else %}Not provided{% endif %}</span>
+        </div>
+
+        <hr class="divider">
+        <div class="profile-section-title">Emergency Contact</div>
+
+        <div class="profile-row">
+            <span class="profile-label">Contact Name</span>
+            <span class="profile-value">{% if profile.emergency_contact_name %}{{ profile.emergency_contact_name }}{% else %}Not provided{% endif %}</span>
+        </div>
+        <div class="profile-row">
+            <span class="profile-label">Contact Phone</span>
+            <span class="profile-value">{% if profile.emergency_contact_phone %}{{ profile.emergency_contact_phone }}{% else %}Not provided{% endif %}</span>
+        </div>
+
+        <a href="/patient/dashboard" class="edit-link">← Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

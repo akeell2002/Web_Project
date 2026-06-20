@@ -1,0 +1,148 @@
+{% extends "shared/layout.html" %}
+
+{% block title %}My Profile - HealthHub{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block extra_head %}
+<style>
+    .profile-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+        overflow: hidden;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    .profile-header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        padding: 32px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    .profile-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: #005999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 28px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .profile-header-name {
+        color: white;
+        font-size: 22px;
+        font-weight: 700;
+    }
+    .profile-header-sub {
+        color: #94a3b8;
+        font-size: 13px;
+        margin-top: 4px;
+    }
+    .role-chip {
+        display: inline-block;
+        margin-top: 8px;
+        background: #005999;
+        color: white;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: capitalize;
+        letter-spacing: 0.5px;
+    }
+    .profile-body {
+        padding: 32px;
+    }
+    .profile-section-title {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        color: #9CA3AF;
+        margin-bottom: 16px;
+    }
+    .profile-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 12px 0;
+        border-bottom: 1px solid #F3F4F6;
+        font-size: 14px;
+    }
+    .profile-row:last-child { border-bottom: none; }
+    .profile-label { color: #6B7280; font-weight: 500; min-width: 160px; }
+    .profile-value { color: #111827; font-weight: 600; text-align: right; }
+    .divider { border: none; border-top: 1px solid #F3F4F6; margin: 24px 0; }
+    .back-link {
+        display: inline-block;
+        margin-top: 24px;
+        background: #005999;
+        color: white;
+        text-decoration: none;
+        padding: 10px 20px;
+        border-radius: 7px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+    .back-link:hover { background: #004070; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-card">
+    <div class="profile-header">
+        <div class="profile-avatar">{{ profile.full_name | truncate(length=1, end="") | upper }}</div>
+        <div>
+            <div class="profile-header-name">{{ profile.full_name }}</div>
+            <div class="profile-header-sub">HealthHub Staff Portal</div>
+            <span class="role-chip">{{ profile.role }}</span>
+        </div>
+    </div>
+
+    <div class="profile-body">
+        <div class="profile-section-title">Account Information</div>
+
+        <div class="profile-row">
+            <span class="profile-label">Full Name</span>
+            <span class="profile-value">{{ profile.full_name }}</span>
+        </div>
+        <div class="profile-row">
+            <span class="profile-label">Email</span>
+            <span class="profile-value">{{ profile.email }}</span>
+        </div>
+        <div class="profile-row">
+            <span class="profile-label">Role</span>
+            <span class="profile-value" style="text-transform: capitalize;">{{ profile.role }}</span>
+        </div>
+        <div class="profile-row">
+            <span class="profile-label">Phone</span>
+            <span class="profile-value">{% if profile.phone %}{{ profile.phone }}{% else %}Not provided{% endif %}</span>
+        </div>
+
+        <hr class="divider">
+        <div class="profile-section-title">Account Details</div>
+
+        <div class="profile-row">
+            <span class="profile-label">Staff ID</span>
+            <span class="profile-value" style="font-family: monospace; font-size: 12px; color: #6B7280;">{{ profile.id }}</span>
+        </div>
+        <div class="profile-row">
+            <span class="profile-label">Member Since</span>
+            <span class="profile-value">{{ profile.joined }}</span>
+        </div>
+
+        {% if specific_role == "admin" %}
+        <a href="/admin/dashboard" class="back-link">← Back to Dashboard</a>
+        {% else %}
+        <a href="/staff/dashboard" class="back-link">← Back to Dashboard</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

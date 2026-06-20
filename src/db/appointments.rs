@@ -532,45 +532,70 @@ pub async fn cancel_patient_appointment(
     Ok(())
 }
 
-// ── Prescriptions the doctor can prescribe against (past 7 days) ───────────
+// ── One card per patient, all their appointments nested inside ────────────────
 pub async fn get_doctor_prescribable_appointments(
     pool: &PgPool,
     doctor_id: Uuid,
 ) -> Result<Vec<serde_json::Value>, String> {
-    let rows = sqlx::query!(
+    use sqlx::Row;
+
+    // Fetch every qualifying appointment row (all visits per patient)
+    let rows = sqlx::query(
         r#"
         SELECT
-            a.id,
-            a.date AS appointment_date,
+            a.patient_id,
+            a.id               AS appointment_id,
+            a.date             AS appointment_date,
             a.start_time,
-            a.status::TEXT AS status,
+            a.status::TEXT     AS status,
             p.first_name || ' ' || p.last_name AS patient_name,
             (a.date = CURRENT_DATE) AS is_today,
-            COUNT(rx.id)::INT AS rx_count
+            (SELECT COUNT(*)::INT FROM prescription rx WHERE rx.appointment_id = a.id) AS rx_count
         FROM appointment a
         JOIN patient p ON a.patient_id = p.id
-        LEFT JOIN prescription rx ON rx.appointment_id = a.id
         WHERE a.doctor_id = $1
           AND a.date >= CURRENT_DATE - INTERVAL '7 days'
           AND a.status NOT IN ('cancelled'::appointment_status, 'no_show'::appointment_status)
-        GROUP BY a.id, a.date, a.start_time, a.status, p.first_name, p.last_name
-        ORDER BY a.date DESC, a.start_time DESC
+        ORDER BY a.patient_id, a.date DESC, a.start_time DESC
         "#,
-        doctor_id,
     )
+    .bind(doctor_id)
     .fetch_all(pool)
     .await
     .map_err(|e| e.to_string())?;
 
-    Ok(rows.iter().map(|r| serde_json::json!({
-        "id":               r.id,
-        "appointment_date": r.appointment_date.to_string(),
-        "start_time":       r.start_time.to_string(),
-        "status":           r.status,
-        "patient_name":     r.patient_name,
-        "is_today":         r.is_today.unwrap_or(false),
-        "rx_count":         r.rx_count.unwrap_or(0),
-    })).collect())
+    // Group by patient_id, preserving insertion order
+    let mut patients: indexmap::IndexMap<Uuid, serde_json::Value> = indexmap::IndexMap::new();
+
+    for r in &rows {
+        let patient_id: Uuid            = r.get("patient_id");
+        let appt_id: Uuid               = r.get("appointment_id");
+        let date: chrono::NaiveDate     = r.get("appointment_date");
+        let start: chrono::NaiveTime    = r.get("start_time");
+        let status: Option<String>      = r.get("status");
+        let patient_name: Option<String>= r.get("patient_name");
+        let is_today: Option<bool>      = r.get("is_today");
+        let rx_count: Option<i32>       = r.get("rx_count");
+
+        let appt_entry = serde_json::json!({
+            "id":               appt_id,
+            "appointment_date": date.format("%d %b %Y").to_string(),
+            "start_time":       start.format("%I:%M %p").to_string(),
+            "status":           status.unwrap_or_default(),
+            "is_today":         is_today.unwrap_or(false),
+            "rx_count":         rx_count.unwrap_or(0),
+        });
+
+        let entry = patients.entry(patient_id).or_insert_with(|| serde_json::json!({
+            "patient_id":   patient_id,
+            "patient_name": patient_name.unwrap_or_default(),
+            "appointments": [],
+        }));
+
+        entry["appointments"].as_array_mut().unwrap().push(appt_entry);
+    }
+
+    Ok(patients.into_values().collect())
 }
 
 // ── Insert a new prescription ──────────────────────────────────────────────

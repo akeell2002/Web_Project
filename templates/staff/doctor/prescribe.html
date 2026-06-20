@@ -108,6 +108,32 @@
         padding: 48px 32px; text-align: center; color: #9CA3AF;
     }
     .empty-state p { font-size: 14px; margin-top: 8px; }
+
+    .search-bar {
+        position: relative; margin-bottom: 20px;
+    }
+    .search-bar input {
+        width: 100%; padding: 12px 16px 12px 42px;
+        border: 1px solid #D1D5DB; border-radius: 10px;
+        font-size: 14px; color: #111827; outline: none;
+        background: white; box-sizing: border-box;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .search-bar input:focus {
+        border-color: #005999;
+        box-shadow: 0 0 0 3px rgba(0,89,153,0.1);
+    }
+    .search-bar .search-icon {
+        position: absolute; left: 14px; top: 50%;
+        transform: translateY(-50%); color: #9CA3AF; font-size: 16px;
+        pointer-events: none;
+    }
+    .no-results {
+        background: white; border-radius: 12px; border: 1px dashed #D1D5DB;
+        padding: 40px 32px; text-align: center; color: #9CA3AF;
+        display: none;
+    }
+    .no-results p { font-size: 14px; margin-top: 8px; }
 </style>
 {% endblock %}
 
@@ -119,32 +145,55 @@
 
 <div class="prescribe-header">
     <h2>💊 Prescribe Medication</h2>
-    <p>Showing appointments from the past 7 days. Click any row to prescribe.</p>
+    <p>Patients seen in the past 7 days. Select a patient and visit to issue or add a prescription.</p>
 </div>
 
 {% if appointments %}
-<div class="appt-list">
-    {% for appt in appointments %}
-    <div class="appt-card" id="card-{{ appt.id }}">
-        <div class="appt-card-header" onclick="toggleCard('{{ appt.id }}')">
+<div class="search-bar">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="patient-search" placeholder="Search patient by name..." oninput="filterPatients()">
+</div>
+
+<div id="no-results" class="no-results">
+    <div style="font-size: 36px;">🔍</div>
+    <p>No patients match your search.</p>
+</div>
+
+<div class="appt-list" id="appt-list">
+    {% for patient in appointments %}
+    <div class="appt-card" id="card-{{ patient.patient_id }}">
+        <div class="appt-card-header" onclick="toggleCard('{{ patient.patient_id }}')">
             <div>
-                <div class="appt-patient">{{ appt.patient_name }}</div>
-                <div class="appt-meta">
-                    {{ appt.appointment_date }} &nbsp;·&nbsp; {{ appt.start_time }}
-                </div>
+                <div class="appt-patient">{{ patient.patient_name }}</div>
+                <div class="appt-meta">{{ patient.appointments | length }} visit(s) in the past 7 days</div>
             </div>
             <div class="appt-right">
-                {% if appt.is_today %}<span class="today-badge">TODAY</span>{% endif %}
-                <span class="status-pill status-{{ appt.status }}">{{ appt.status }}</span>
-                {% if appt.rx_count > 0 %}
-                <span class="rx-badge">{{ appt.rx_count }} Rx</span>
+                {% if patient.appointments | length > 1 %}
+                <span class="rx-badge">{{ patient.appointments | length }} visits</span>
                 {% endif %}
                 <span class="toggle-arrow">▾</span>
             </div>
         </div>
 
         <div class="rx-form">
-            <form method="POST" action="/staff/doctor/prescribe/{{ appt.id }}">
+            <form method="POST" action="/staff/doctor/prescribe/placeholder" id="form-{{ patient.patient_id }}"
+                  onsubmit="updateFormAction('{{ patient.patient_id }}'); return true;">
+
+                <div class="form-group full" style="margin-bottom: 16px;">
+                    <label>Select Visit *</label>
+                    <select name="appointment_select" id="appt-select-{{ patient.patient_id }}" required
+                            style="border: 1px solid #D1D5DB; border-radius: 8px; padding: 9px 13px; font-size: 14px; width: 100%; font-family: inherit;">
+                        {% for appt in patient.appointments %}
+                        <option value="{{ appt.id }}">
+                            {{ appt.appointment_date }} at {{ appt.start_time }}
+                            {% if appt.is_today %} — TODAY{% endif %}
+                            · {{ appt.status }}
+                            {% if appt.rx_count > 0 %} · {{ appt.rx_count }} Rx{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
                 <div class="form-grid">
                     <div class="form-group full">
                         <label>Medicine Name *</label>
@@ -184,6 +233,28 @@
 function toggleCard(id) {
     const card = document.getElementById('card-' + id);
     card.classList.toggle('open');
+}
+
+function updateFormAction(patientId) {
+    const select = document.getElementById('appt-select-' + patientId);
+    const form = document.getElementById('form-' + patientId);
+    const appointmentId = select.value;
+    form.action = '/staff/doctor/prescribe/' + appointmentId;
+}
+
+function filterPatients() {
+    const query = document.getElementById('patient-search').value.toLowerCase().trim();
+    const cards = document.querySelectorAll('#appt-list .appt-card');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+        const name = card.querySelector('.appt-patient').textContent.toLowerCase();
+        const match = name.includes(query);
+        card.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
+    });
+
+    document.getElementById('no-results').style.display = visibleCount === 0 ? 'block' : 'none';
 }
 </script>
 

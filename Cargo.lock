@@ -16,6 +16,7 @@ dependencies = [
  "chrono",
  "dotenv",
  "env_logger",
+ "indexmap",
  "rust_decimal",
  "serde",
  "serde_json",

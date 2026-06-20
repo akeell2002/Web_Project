@@ -211,3 +211,51 @@ pub async fn get_staff_directory(pool: &PgPool, role_filter: Option<UserRole>) -
 
     Ok(rows)
 }
+
+/// Fetch a single staff member's own profile for the /staff/profile page
+pub async fn get_staff_profile(pool: &PgPool, user_id: Uuid) -> Result<Option<serde_json::Value>, String> {
+    let row = sqlx::query(
+        r#"
+        SELECT u.id, u.email, u.role::text AS role, u.created_at,
+               s.first_name, s.last_name, s.phone_number
+        FROM users u
+        LEFT JOIN staff s ON s.id = u.id
+        WHERE u.id = $1
+        "#,
+    )
+    .bind(user_id)
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| format!("DB error fetching staff profile: {}", e))?;
+
+    let row = match row {
+        Some(r) => r,
+        None => return Ok(None),
+    };
+
+    use sqlx::Row;
+    let email: String                = row.get("email");
+    let role: String                 = row.get("role");
+    let created_at: chrono::DateTime<chrono::Utc> = row.get("created_at");
+    let first_name: Option<String>   = row.get("first_name");
+    let last_name: Option<String>    = row.get("last_name");
+    let phone: Option<String>        = row.get("phone_number");
+
+    let full_name = match (&first_name, &last_name) {
+        (Some(f), Some(l)) => format!("{} {}", f, l),
+        (Some(f), None)    => f.clone(),
+        (None, Some(l))    => l.clone(),
+        _                  => email.split('@').next().unwrap_or("Staff Member").to_string(),
+    };
+
+    Ok(Some(serde_json::json!({
+        "id": user_id.to_string(),
+        "email": email,
+        "role": role,
+        "full_name": full_name,
+        "first_name": first_name,
+        "last_name": last_name,
+        "phone": phone,
+        "joined": created_at.format("%d %b %Y").to_string(),
+    })))
+}
