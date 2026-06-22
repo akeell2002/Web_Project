@@ -1,65 +1,150 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Patient - Clinical Portal</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-</head>
-<body>
+{% extends "shared/layout.html" %}
 
-    <div class="portal-wrapper" style="height: auto; margin: 40px 0;">
-        
-        <div class="brand-panel">
-            <div class="system-tag">Data Modification</div>
-            <div class="brand-message">
-                <h2>Edit Chart<br>#{{ patient.id }}</h2>
-                <p>Ensure all updated demographic data is verified by the patient before saving to the central registry.</p>
-            </div>
-        </div>
+{% block title %}Edit Patient - Clinical Portal{% endblock %}
+{% block page_title %}Edit Patient{% endblock %}
 
-        <div class="form-panel">
-            <div class="form-header">
-                <h3>Update Demographics</h3>
-            </div>
-            
-            <form method="POST" action="/patients/{{ patient.id }}/edit">
-                <div class="input-field"><input type="text" name="first_name" value="{{ patient.first_name }}" required></div>
-                <div class="input-field"><input type="text" name="last_name" value="{{ patient.last_name }}" required></div>
-                
-                <p style="font-size: 12px; color: #94a3b8; margin-bottom: 5px;">Date of Birth:</p>
-                <div class="input-field"><input type="date" name="date_of_birth" value="{{ patient.date_of_birth }}" required></div>
-                
-                <div class="input-field">
-                    <select name="gender" class="modern-select" required>
-                        <option value="Male" {% if patient.gender == "Male" %}selected{% endif %}>Male</option>
-                        <option value="Female" {% if patient.gender == "Female" %}selected{% endif %}>Female</option>
-                        <option value="Other" {% if patient.gender == "Other" %}selected{% endif %}>Other</option>
-                    </select>
-                </div>
-                
-                <div class="input-field"><input type="tel" name="phone" value="{{ patient.phone }}" required></div>
-                <div class="input-field"><input type="email" name="email" value="{% if patient.email %}{{ patient.email }}{% endif %}"></div>
-                <div class="input-field"><input type="text" name="address" value="{% if patient.address %}{{ patient.address }}{% endif %}"></div>
-                
-                <div class="input-field">
-                    <select name="blood_type" class="modern-select">
-                        <option value="">Unknown...</option>
-                        <option value="A+" {% if patient.blood_type == "A+" %}selected{% endif %}>A+</option>
-                        <option value="B+" {% if patient.blood_type == "B+" %}selected{% endif %}>B+</option>
-                        <option value="O+" {% if patient.blood_type == "O+" %}selected{% endif %}>O+</option>
-                        </select>
-                </div>
+{% block nav_admin_patients %}class="active"{% endblock %}
+{% block nav_doctor_patients %}class="active"{% endblock %}
+{% block nav_nurse_patients %}class="active"{% endblock %}
+{% block nav_recep_patients %}class="active"{% endblock %}
 
-                <button type="submit" class="btn-submit">Update Record</button>
-            </form>
+{% block extra_head %}
+<style>
+    .edit-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+        max-width: 700px;
+        margin: 0 auto;
+        overflow: hidden;
+    }
+    .edit-card-header {
+        background: linear-gradient(135deg, #0f172a 0%, #005999 100%);
+        color: white;
+        padding: 28px 32px;
+    }
+    .edit-card-header h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .edit-card-header p  { color: #93c5fd; font-size: 13px; }
+    .edit-card-body  { padding: 32px; }
+    .form-section-title {
+        font-size: 11px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 1px; color: #9CA3AF; margin-bottom: 16px;
+        margin-top: 24px; padding-bottom: 8px;
+        border-bottom: 1px solid #F3F4F6;
+    }
+    .form-section-title:first-child { margin-top: 0; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+        display: block; font-size: 12px; font-weight: 600;
+        color: #374151; margin-bottom: 6px;
+    }
+    .form-group input, .form-group select {
+        width: 100%; padding: 10px 14px;
+        border: 1px solid #D1D5DB; border-radius: 8px;
+        font-size: 14px; color: #111827; box-sizing: border-box;
+        transition: border-color 0.15s;
+    }
+    .form-group input:focus, .form-group select:focus {
+        outline: none; border-color: #005999;
+        box-shadow: 0 0 0 3px rgba(0,89,153,0.1);
+    }
+    .form-actions {
+        display: flex; gap: 12px; margin-top: 28px;
+        padding-top: 24px; border-top: 1px solid #F3F4F6;
+    }
+    .btn-save {
+        background: #005999; color: white; border: none;
+        padding: 10px 24px; border-radius: 8px; font-size: 14px;
+        font-weight: 600; cursor: pointer;
+    }
+    .btn-save:hover { background: #004a7c; }
+    .btn-cancel {
+        background: white; color: #6B7280;
+        border: 1px solid #D1D5DB; padding: 10px 24px;
+        border-radius: 8px; font-size: 14px; font-weight: 600;
+        text-decoration: none; display: inline-block;
+    }
+    .btn-cancel:hover { background: #F9FAFB; }
+</style>
+{% endblock %}
 
-            <div class="switch-auth">
-                <p><a href="/patients/{{ patient.id }}">Cancel</a></p>
-            </div>
-        </div>
+{% block content %}
 
+<a href="/staff/patients/{{ patient.id }}" style="display:inline-flex;align-items:center;gap:6px;color:#64748B;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:20px;">
+    ← Back to Patient Profile
+</a>
+
+<div class="edit-card">
+    <div class="edit-card-header">
+        <h2>Edit Patient Record</h2>
+        <p>Update demographic data for {{ patient.full_name }}. All changes are saved immediately.</p>
     </div>
 
-</body>
-</html>
+    <div class="edit-card-body">
+        <form method="POST" action="/staff/patients/{{ patient.id }}/edit">
+
+            <div class="form-section-title">Personal Information</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="first_name">First Name</label>
+                    <input type="text" id="first_name" name="first_name"
+                           value="{{ patient.first_name }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="last_name">Last Name</label>
+                    <input type="text" id="last_name" name="last_name"
+                           value="{{ patient.last_name }}" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="date_of_birth">Date of Birth</label>
+                    <input type="date" id="date_of_birth" name="date_of_birth"
+                           value="{{ patient.date_of_birth_raw | default(value='') }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender">
+                        <option value="">Prefer not to say</option>
+                        <option value="Male"   {% if patient.gender == "Male"   %}selected{% endif %}>Male</option>
+                        <option value="Female" {% if patient.gender == "Female" %}selected{% endif %}>Female</option>
+                        <option value="Other"  {% if patient.gender == "Other"  %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="phone_number">Phone Number</label>
+                <input type="tel" id="phone_number" name="phone_number"
+                       value="{{ patient.phone | default(value='') }}">
+            </div>
+
+            <div class="form-section-title">Emergency Contact</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="emergency_contact_name">Contact Name</label>
+                    <input type="text" id="emergency_contact_name" name="emergency_contact_name"
+                           value="{{ patient.emergency_contact_name | default(value='') }}">
+                </div>
+                <div class="form-group">
+                    <label for="emergency_contact_phone">Contact Phone</label>
+                    <input type="tel" id="emergency_contact_phone" name="emergency_contact_phone"
+                           value="{{ patient.emergency_contact_phone | default(value='') }}">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-save">Save Changes</button>
+                <a href="/staff/patients/{{ patient.id }}" class="btn-cancel">Cancel</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+{% endblock %}

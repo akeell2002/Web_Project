@@ -138,6 +138,32 @@
             <span class="profile-value">{{ profile.joined }}</span>
         </div>
 
+        <hr class="divider">
+        <div class="profile-section-title">Update My Details</div>
+        <form method="POST" action="/staff/profile" style="margin-top:16px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:4px;">First Name</label>
+                    <input type="text" name="first_name" value="{{ profile.first_name | default(value='') }}" required
+                           style="width:100%; padding:9px 12px; border:1px solid #D1D5DB; border-radius:7px; font-size:14px; box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:4px;">Last Name</label>
+                    <input type="text" name="last_name" value="{{ profile.last_name | default(value='') }}" required
+                           style="width:100%; padding:9px 12px; border:1px solid #D1D5DB; border-radius:7px; font-size:14px; box-sizing:border-box;">
+                </div>
+            </div>
+            <div style="margin-bottom:20px;">
+                <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:4px;">Phone Number</label>
+                <input type="tel" name="phone_number" value="{{ profile.phone | default(value='') }}"
+                       style="width:100%; padding:9px 12px; border:1px solid #D1D5DB; border-radius:7px; font-size:14px; box-sizing:border-box;">
+            </div>
+            <button type="submit"
+                    style="background:#005999; color:white; border:none; padding:10px 22px; border-radius:7px; font-size:14px; font-weight:600; cursor:pointer;">
+                Save Changes
+            </button>
+        </form>
+
         {% if specific_role == "admin" %}
         <a href="/admin/dashboard" class="back-link">← Back to Dashboard</a>
         {% else %}

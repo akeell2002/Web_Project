@@ -222,6 +222,27 @@ pub async fn check_in_patient(pool: &PgPool, appointment_id: Uuid) -> Result<i32
     }
 }
 
+/// Mark an appointment as no_show (receptionist action, appointment must be scheduled/checked_in)
+pub async fn mark_appointment_no_show(
+    pool:           &PgPool,
+    appointment_id: Uuid,
+) -> Result<(), String> {
+    sqlx::query!(
+        r#"
+        UPDATE appointment
+        SET status     = 'no_show'::appointment_status,
+            updated_at = NOW()
+        WHERE id     = $1
+          AND status IN ('scheduled'::appointment_status, 'checked_in'::appointment_status)
+        "#,
+        appointment_id
+    )
+    .execute(pool)
+    .await
+    .map_err(|e| format!("Failed to mark no_show: {}", e))?;
+    Ok(())
+}
+
 /// Cancel a scheduled appointment (patient-owned, safety-checked)
 pub async fn cancel_patient_appointment(
     pool: &PgPool,

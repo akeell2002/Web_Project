@@ -103,6 +103,9 @@ async fn main() -> std::io::Result<()> {
             .route("/staff/patients/add", web::get().to(handlers::patients::show_add_patient_page))
             .route("/staff/patients/add", web::post().to(handlers::patients::process_add_patient))
             .route("/staff/patients/{id}", web::get().to(handlers::patients::patient_detail_page))
+            .route("/staff/patients/{id}/edit", web::get().to(handlers::patients::show_edit_patient_page))
+            .route("/staff/patients/{id}/edit", web::post().to(handlers::patients::process_edit_patient))
+            .route("/staff/patients/{id}/delete", web::post().to(handlers::patients::process_delete_patient))
             .route("/staff/patients/{id}/report", web::get().to(handlers::patients::patient_report_page))
 
             // --- Doctor Routes ---
@@ -128,6 +131,7 @@ async fn main() -> std::io::Result<()> {
             // --- Receptionist Routes ---
             .route("/staff/receptionist/reception", web::get().to(handlers::appointments::reception_desk_page))
             .route("/staff/receptionist/queue/check_in/{id}", web::post().to(handlers::appointments::process_check_in))
+            .route("/staff/receptionist/queue/no_show/{id}", web::post().to(handlers::appointments::process_no_show))
             .route("/staff/receptionist/billing", web::get().to(handlers::billing::show_billing_dashboard))
             .route("/staff/receptionist/billing/checkout", web::post().to(handlers::billing::checkout_bill_submit))
             .route("/admin/support", web::get().to(handlers::admin::support_dashboard))
@@ -140,16 +144,22 @@ async fn main() -> std::io::Result<()> {
             .route("/patient/register", web::post().to(handlers::auth::register))
             .route("/patient/dashboard", web::get().to(handlers::auth::patient_dashboard))
 
-            // Patient profile
+            // Patient profile (view + edit)
             .route("/patient/profile", web::get().to(handlers::auth::patient_profile_page))
+            .route("/patient/profile", web::post().to(handlers::auth::update_patient_profile_handler))
 
-            // Staff profile
+            // Staff profile (view + edit)
             .route("/staff/profile", web::get().to(handlers::auth::staff_profile_page))
+            .route("/staff/profile", web::post().to(handlers::auth::update_staff_profile_handler))
 
             // Patient appointment scheduling endpoints
             .route("/patient/appointments/book", web::get().to(handlers::appointments::show_booking_form))
             .route("/patient/appointments/create", web::post().to(handlers::appointments::submit_appointment))
             .route("/patient/appointments/{id}/cancel", web::post().to(handlers::appointments::cancel_appointment))
+
+            // Patient medical history
+            .route("/patient/history", web::get().to(handlers::auth::patient_medical_history_page))
+
 
             // Password reset routes
             .route("/forgot-password", web::get().to(handlers::auth::forgot_password_page))

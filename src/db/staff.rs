@@ -212,6 +212,34 @@ pub async fn get_staff_directory(pool: &PgPool, role_filter: Option<UserRole>) -
     Ok(rows)
 }
 
+/// Update a staff member's own name and phone number
+pub async fn update_staff_profile(
+    pool:         &PgPool,
+    user_id:      Uuid,
+    first_name:   &str,
+    last_name:    &str,
+    phone_number: Option<String>,
+) -> Result<(), String> {
+    sqlx::query!(
+        r#"
+        UPDATE staff
+        SET first_name   = $2,
+            last_name    = $3,
+            phone_number = $4,
+            updated_at   = NOW()
+        WHERE id = $1
+        "#,
+        user_id,
+        first_name,
+        last_name,
+        phone_number
+    )
+    .execute(pool)
+    .await
+    .map_err(|e| format!("Failed to update staff profile: {}", e))?;
+    Ok(())
+}
+
 /// Fetch a single staff member's own profile for the /staff/profile page
 pub async fn get_staff_profile(pool: &PgPool, user_id: Uuid) -> Result<Option<serde_json::Value>, String> {
     let row = sqlx::query(

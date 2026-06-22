@@ -1,0 +1,136 @@
+{% extends "shared/layout.html" %}
+
+{% block title %}My Medical History - HealthHub{% endblock %}
+{% block page_title %}My Medical History{% endblock %}
+{% block nav_patient_history %}class="active"{% endblock %}
+
+{% block extra_head %}
+<style>
+    .page-header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 24px;
+    }
+    .page-header h2 { font-size: 22px; font-weight: 700; color: #0f172a; }
+    .page-header p  { font-size: 14px; color: #6B7280; margin-top: 4px; }
+
+    .history-card {
+        background: white; border-radius: 12px; padding: 28px;
+        border: 1px solid #E5E7EB; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        margin-bottom: 20px;
+    }
+    .visit-header {
+        display: flex; justify-content: space-between; align-items: flex-start;
+        margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #F3F4F6;
+    }
+    .visit-date { font-size: 16px; font-weight: 700; color: #0f172a; }
+    .visit-meta { font-size: 13px; color: #6B7280; margin-top: 4px; }
+    .status-pill {
+        display: inline-flex; padding: 4px 12px; border-radius: 999px;
+        font-size: 11px; font-weight: 700; text-transform: uppercase;
+    }
+    .status-completed   { background: #D1FAE5; color: #065F46; }
+    .status-scheduled   { background: #FEF3C7; color: #D97706; }
+    .status-checked_in  { background: #DBEAFE; color: #1D4ED8; }
+    .status-vitals_taken{ background: #E0F2FE; color: #0369A1; }
+    .status-cancelled   { background: #FEE2E2; color: #DC2626; }
+    .status-no_show     { background: #F3F4F6; color: #6B7280; }
+
+    .section-label {
+        font-size: 11px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.8px; color: #9CA3AF; margin-bottom: 6px;
+    }
+    .section-value { font-size: 14px; color: #111827; font-weight: 500; line-height: 1.6; }
+    .section-value.muted { color: #9CA3AF; font-style: italic; font-weight: 400; }
+
+    .visit-body { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .rx-pill {
+        display: inline-block; background: #EFF6FF; color: #1D4ED8;
+        border: 1px solid #BFDBFE; border-radius: 8px;
+        padding: 10px 14px; font-size: 13px; margin-top: 6px;
+    }
+    .rx-pill strong { display: block; font-size: 14px; margin-bottom: 4px; color: #1e40af; }
+
+    .empty-state {
+        text-align: center; padding: 60px 24px; color: #9CA3AF;
+        background: #F9FAFB; border-radius: 12px;
+        border: 2px dashed #E5E7EB;
+    }
+    .empty-state h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #6B7280; }
+    .empty-state p  { font-size: 14px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h2>My Medical History</h2>
+        <p>A complete record of your clinic visits, diagnoses, and prescriptions.</p>
+    </div>
+    <a href="/patient/dashboard"
+       style="color:#64748B; text-decoration:none; font-size:14px; font-weight:500;">
+        ← Back to Dashboard
+    </a>
+</div>
+
+{% if visits %}
+    {% for visit in visits %}
+    <div class="history-card">
+        <div class="visit-header">
+            <div>
+                <div class="visit-date">{{ visit.appointment_date }}</div>
+                <div class="visit-meta">
+                    {{ visit.start_time }} – {{ visit.end_time }}
+                    &nbsp;·&nbsp; {{ visit.doctor_name }}
+                    {% if visit.room %}&nbsp;·&nbsp; {{ visit.room }}{% endif %}
+                </div>
+            </div>
+            <span class="status-pill status-{{ visit.status }}">{{ visit.status | replace(from="_", to=" ") }}</span>
+        </div>
+
+        {% if visit.diagnosis %}
+        <div class="visit-body">
+            <div>
+                <div class="section-label">Diagnosis</div>
+                <div class="section-value">{{ visit.diagnosis }}</div>
+
+                {% if visit.treatment_notes %}
+                <div class="section-label" style="margin-top:14px;">Treatment Notes</div>
+                <div class="section-value">{{ visit.treatment_notes }}</div>
+                {% endif %}
+            </div>
+
+            <div>
+                {% if visit.medicine_name %}
+                <div class="section-label">Prescription</div>
+                <div class="rx-pill">
+                    <strong>💊 {{ visit.medicine_name }}</strong>
+                    {% if visit.dosage %}Dosage: {{ visit.dosage }}<br>{% endif %}
+                    {% if visit.frequency %}Frequency: {{ visit.frequency }}<br>{% endif %}
+                    {% if visit.duration %}Duration: {{ visit.duration }}{% endif %}
+                </div>
+                {% else %}
+                <div class="section-label">Prescription</div>
+                <div class="section-value muted">No prescription issued</div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="section-value muted">
+            {% if visit.status == "completed" %}
+                No clinical notes were recorded for this visit.
+            {% else %}
+                Consultation pending — notes will appear here after your appointment.
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+{% else %}
+<div class="empty-state">
+    <h3>No visit records yet</h3>
+    <p>Your medical history will appear here after your first completed appointment.</p>
+</div>
+{% endif %}
+
+{% endblock %}

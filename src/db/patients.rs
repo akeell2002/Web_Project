@@ -103,6 +103,58 @@ pub async fn get_patient_directory(pool: &PgPool) -> Result<Vec<serde_json::Valu
     Ok(out)
 }
 
+/// Update a patient's demographic details
+pub async fn update_patient_profile(
+    pool:       &PgPool,
+    patient_id: Uuid,
+    first_name: &str,
+    last_name:  &str,
+    date_of_birth: NaiveDate,
+    gender:     Option<String>,
+    phone_number: Option<String>,
+    emergency_contact_name:  Option<String>,
+    emergency_contact_phone: Option<String>,
+) -> Result<(), String> {
+    sqlx::query!(
+        r#"
+        UPDATE patient
+        SET first_name               = $2,
+            last_name                = $3,
+            date_of_birth            = $4,
+            gender                   = $5,
+            phone_number             = $6,
+            emergency_contact_name   = $7,
+            emergency_contact_phone  = $8,
+            updated_at               = NOW()
+        WHERE id = $1
+        "#,
+        patient_id,
+        first_name,
+        last_name,
+        date_of_birth,
+        gender,
+        phone_number,
+        emergency_contact_name,
+        emergency_contact_phone
+    )
+    .execute(pool)
+    .await
+    .map_err(|e| format!("Failed to update patient profile: {}", e))?;
+    Ok(())
+}
+
+/// Delete a patient's user account (cascades to patient profile and all related records)
+pub async fn delete_patient(pool: &PgPool, patient_id: Uuid) -> Result<(), String> {
+    sqlx::query!(
+        "DELETE FROM users WHERE id = $1 AND role = 'patient'::user_role",
+        patient_id
+    )
+    .execute(pool)
+    .await
+    .map_err(|e| format!("Failed to delete patient: {}", e))?;
+    Ok(())
+}
+
 /// Fetch a single patient's full profile + appointment/visit history for the detail page
 pub async fn get_patient_detail(
     pool: &PgPool,
@@ -213,6 +265,7 @@ pub async fn get_patient_detail(
         "first_name": first_name,
         "last_name": last_name,
         "date_of_birth": dob.format("%d %b %Y").to_string(),
+        "date_of_birth_raw": dob.format("%Y-%m-%d").to_string(), // ISO format for HTML date inputs
         "gender": gender,
         "phone": phone,
         "emergency_contact_name": ec_name,

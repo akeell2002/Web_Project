@@ -59,13 +59,28 @@
                         <span class="queue-num">#{{ appt.queue_number }}</span>
                     {% else %} - {% endif %}
                 </td>
-                <td>
+                <td style="display:flex; gap:8px; align-items:center;">
                     {% if appt.status == "scheduled" %}
-                    <form action="/staff/receptionist/queue/check_in/{{ appt.id }}" method="POST" style="margin: 0;">
+                    <form action="/staff/receptionist/queue/check_in/{{ appt.id }}" method="POST" style="margin:0;">
                         <button type="submit" class="btn-check-in">Check In</button>
                     </form>
+                    <form action="/staff/receptionist/queue/no_show/{{ appt.id }}" method="POST" style="margin:0;"
+                          onsubmit="return confirm('Mark this patient as no-show?');">
+                        <button type="submit"
+                                style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA; padding:7px 12px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer;">
+                            No-Show
+                        </button>
+                    </form>
+                    {% elif appt.status == "checked_in" %}
+                    <form action="/staff/receptionist/queue/no_show/{{ appt.id }}" method="POST" style="margin:0;"
+                          onsubmit="return confirm('Mark this patient as no-show?');">
+                        <button type="submit"
+                                style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA; padding:7px 12px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer;">
+                            No-Show
+                        </button>
+                    </form>
                     {% else %}
-                        <span style="color: #9CA3AF; font-size: 13px; font-style: italic;">No actions</span>
+                        <span style="color: #9CA3AF; font-size: 13px; font-style: italic;">—</span>
                     {% endif %}
                 </td>
             </tr>

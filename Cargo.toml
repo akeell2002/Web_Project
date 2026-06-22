@@ -6,7 +6,6 @@ edition = "2024"
 [dependencies]
 actix-web = "4"
 actix-session = { version = "0.9", features = ["cookie-session"] }
-actix-identity = "0.9"
 actix-files = "0.6"
 tera = "1"
 uuid = { version = "1.0", features = ["v4", "serde"] }
@@ -21,5 +20,4 @@ dotenv = "0.15"
 anyhow = "1"
 thiserror = "1"
 env_logger = "0.10"
-tracing = "0.1"
 indexmap = "2"

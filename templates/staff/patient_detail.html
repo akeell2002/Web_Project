@@ -110,10 +110,26 @@
 
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
     <a href="/staff/patients" class="back-link" style="margin-bottom:0;">← Back to Patient Directory</a>
-    <a href="/staff/patients/{{ patient.id }}/report" target="_blank"
-       style="background:#005999; color:white; text-decoration:none; padding:9px 18px; border-radius:8px; font-size: 14px; font-weight:600;">
-        🖨️ Generate Report
-    </a>
+    <div style="display:flex; gap:10px;">
+        <a href="/staff/patients/{{ patient.id }}/edit"
+           style="background:#F3F4F6; color:#374151; text-decoration:none; padding:9px 18px; border-radius:8px; font-size:14px; font-weight:600; border:1px solid #D1D5DB;">
+            ✏️ Edit Patient
+        </a>
+        <a href="/staff/patients/{{ patient.id }}/report" target="_blank"
+           style="background:#005999; color:white; text-decoration:none; padding:9px 18px; border-radius:8px; font-size:14px; font-weight:600;">
+            🖨️ Generate Report
+        </a>
+        {% if specific_role == "admin" %}
+        <form method="POST" action="/staff/patients/{{ patient.id }}/delete"
+              onsubmit="return confirm('Permanently delete this patient record? This cannot be undone.');"
+              style="margin:0;">
+            <button type="submit"
+                    style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA; padding:9px 18px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">
+                🗑️ Delete
+            </button>
+        </form>
+        {% endif %}
+    </div>
 </div>
 
 <!-- Profile Header -->

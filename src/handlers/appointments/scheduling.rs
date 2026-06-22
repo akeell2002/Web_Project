@@ -192,6 +192,29 @@ pub async fn process_check_in(
     }
 }
 
+/// POST — receptionist marks an appointment as no-show
+pub async fn process_no_show(
+    pool:    web::Data<PgPool>,
+    session: Session,
+    path:    web::Path<Uuid>,
+) -> impl Responder {
+    match session.get::<String>("role") {
+        Ok(Some(role)) if role == "receptionist" || role == "admin" => {}
+        _ => return HttpResponse::Forbidden().body("Access Denied: Receptionist access required."),
+    }
+
+    let appointment_id = path.into_inner();
+
+    match crate::db::appointments::mark_appointment_no_show(&pool, appointment_id).await {
+        Ok(_)  => HttpResponse::SeeOther()
+            .append_header(("Location", "/staff/receptionist/reception?success=no_show"))
+            .finish(),
+        Err(_) => HttpResponse::SeeOther()
+            .append_header(("Location", "/staff/receptionist/reception?error=no_show_failed"))
+            .finish(),
+    }
+}
+
 /// POST — patient cancels their own appointment
 pub async fn cancel_appointment(
     pool:    web::Data<PgPool>,

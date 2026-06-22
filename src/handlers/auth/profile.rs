@@ -3,6 +3,8 @@ use actix_session::Session;
 use tera::{Context, Tera};
 use sqlx::PgPool;
 use uuid::Uuid;
+use serde::Deserialize;
+use chrono::NaiveDate;
 
 pub async fn patient_profile_page(
     pool:    web::Data<PgPool>,
@@ -29,6 +31,124 @@ pub async fn patient_profile_page(
             ctx.insert("staff_name",    &staff_name);
             ctx.insert("profile",       &profile);
             match tera.render("patient/my_profile.html", &ctx) {
+                Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
+                Err(e)   => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
+            }
+        }
+        Ok(None) => HttpResponse::NotFound().body("Profile not found."),
+        Err(e)   => HttpResponse::InternalServerError().body(format!("DB error: {}", e)),
+    }
+}
+
+#[derive(Deserialize)]
+pub struct UpdatePatientProfileForm {
+    pub first_name:              String,
+    pub last_name:               String,
+    pub date_of_birth:           NaiveDate,
+    pub gender:                  Option<String>,
+    pub phone_number:            Option<String>,
+    pub emergency_contact_name:  Option<String>,
+    pub emergency_contact_phone: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct UpdateStaffProfileForm {
+    pub first_name:   String,
+    pub last_name:    String,
+    pub phone_number: Option<String>,
+}
+
+/// POST /patient/profile — save updated patient profile
+pub async fn update_patient_profile_handler(
+    pool:    web::Data<PgPool>,
+    session: Session,
+    form:    web::Form<UpdatePatientProfileForm>,
+) -> impl Responder {
+    let role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
+    if role != "patient" {
+        return HttpResponse::Forbidden().body("Access Denied.");
+    }
+    let patient_id = match session.get::<Uuid>("user_id").unwrap_or_default() {
+        Some(id) => id,
+        None     => return HttpResponse::SeeOther().append_header(("Location", "/patient/login")).finish(),
+    };
+
+    match crate::db::patients::update_patient_profile(
+        &pool,
+        patient_id,
+        &form.first_name,
+        &form.last_name,
+        form.date_of_birth,
+        form.gender.clone(),
+        form.phone_number.clone(),
+        form.emergency_contact_name.clone(),
+        form.emergency_contact_phone.clone(),
+    ).await {
+        Ok(_)  => HttpResponse::SeeOther()
+            .append_header(("Location", "/patient/profile?success=updated"))
+            .finish(),
+        Err(e) => HttpResponse::InternalServerError().body(format!("Update failed: {}", e)),
+    }
+}
+
+/// POST /staff/profile — save updated staff profile
+pub async fn update_staff_profile_handler(
+    pool:    web::Data<PgPool>,
+    session: Session,
+    form:    web::Form<UpdateStaffProfileForm>,
+) -> impl Responder {
+    let role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
+    let valid = ["admin", "doctor", "nurse", "receptionist"];
+    if !valid.contains(&role.as_str()) {
+        return HttpResponse::Forbidden().body("Access Denied.");
+    }
+    let user_id = match session.get::<Uuid>("user_id").unwrap_or_default() {
+        Some(id) => id,
+        None     => return HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish(),
+    };
+
+    match crate::db::staff::update_staff_profile(
+        &pool,
+        user_id,
+        &form.first_name,
+        &form.last_name,
+        form.phone_number.clone(),
+    ).await {
+        Ok(_)  => HttpResponse::SeeOther()
+            .append_header(("Location", "/staff/profile?success=updated"))
+            .finish(),
+        Err(e) => HttpResponse::InternalServerError().body(format!("Update failed: {}", e)),
+    }
+}
+
+/// GET /patient/history — patient views their own visit history
+pub async fn patient_medical_history_page(
+    pool:    web::Data<PgPool>,
+    session: Session,
+    tera:    web::Data<Tera>,
+) -> impl Responder {
+    let role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
+    if role != "patient" {
+        return HttpResponse::SeeOther().append_header(("Location", "/patient/login")).finish();
+    }
+
+    let email      = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let patient_id = match session.get::<Uuid>("user_id").unwrap_or_default() {
+        Some(id) => id,
+        None     => return HttpResponse::SeeOther().append_header(("Location", "/patient/login")).finish(),
+    };
+    let staff_name = email.split('@').next().unwrap_or("Patient").to_string();
+
+    match crate::db::patients::get_patient_detail(&pool, patient_id).await {
+        Ok(Some(profile)) => {
+            // Extract the visits array from the full profile JSON
+            let visits = profile.get("visits").cloned().unwrap_or(serde_json::Value::Array(vec![]));
+            let mut ctx = Context::new();
+            ctx.insert("specific_role", "patient");
+            ctx.insert("email",         &email);
+            ctx.insert("staff_name",    &staff_name);
+            ctx.insert("visits",        &visits);
+            match tera.render("patient/medical_history.html", &ctx) {
                 Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
                 Err(e)   => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
             }
