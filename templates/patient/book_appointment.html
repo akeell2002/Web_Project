@@ -15,54 +15,6 @@
         }
     }
 </script>
-<style>
-    .booking-card {
-        background: #fff;
-        padding: 35px;
-        border-radius: 12px;
-        border: 1px solid #E5E7EB;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.03);
-        max-width: 760px;
-        margin: 0 auto;
-    }
-    .booking-card h2 {
-        margin-top: 0; margin-bottom: 25px; color: #111827;
-        border-bottom: 2px solid #047857; padding-bottom: 10px; font-size: 20px;
-    }
-    .form-grid-2 {
-        display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;
-    }
-    .form-label { display: block; font-weight: bold; margin-bottom: 8px; color: #374151; font-size: 14px; }
-    .form-select, .form-date {
-        width: 100%; padding: 12px; border: 1px solid #D1D5DB;
-        border-radius: 6px; background-color: white; font-size: 14px;
-        font-family: inherit; box-sizing: border-box;
-    }
-    .slots-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
-        gap: 10px; margin-bottom: 30px; max-height: 260px;
-        overflow-y: auto; padding: 5px;
-        border: 1px solid #E5E7EB; border-radius: 8px;
-    }
-    .slot-available {
-        display: block; text-align: center; border: 1px solid #047857;
-        padding: 10px; border-radius: 6px; cursor: pointer;
-        background-color: #ECFDF5; font-weight: bold;
-        color: #065f46; transition: all 0.2s;
-    }
-    .slot-unavailable {
-        display: block; text-align: center; border: 1px solid #E5E7EB;
-        padding: 10px; border-radius: 6px; background-color: #F3F4F6;
-        color: #9CA3AF; cursor: not-allowed; text-decoration: line-through;
-    }
-    .btn-confirm {
-        width: 100%; padding: 14px; font-size: 16px; border: none;
-        cursor: pointer; border-radius: 6px; font-weight: bold;
-        background-color: #047857; color: white;
-    }
-    .btn-confirm:hover { background-color: #065f46; }
-</style>
 {% endblock %}
 
 {% block content %}

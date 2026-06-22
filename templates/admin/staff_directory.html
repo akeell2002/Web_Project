@@ -5,55 +5,6 @@
 {% block nav_admin_staff %}class="active"{% endblock %}
 
 {% block extra_head %}
-<style>
-    .directory-header {
-        background: linear-gradient(135deg, #0F172A 0%, #005999 100%);
-        color: white;
-        padding: 32px;
-        border-radius: 16px;
-        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
-        margin-bottom: 24px;
-    }
-    .directory-header h2 { font-size: 30px; margin-bottom: 8px; }
-    .directory-header p { color: #D6E7F8; line-height: 1.6; }
-
-    .filter-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
-    .filter-chip {
-        display: inline-flex; align-items: center; padding: 10px 14px;
-        border-radius: 999px; text-decoration: none; font-weight: 600; font-size: 14px;
-        background: rgba(255,255,255,0.12); color: white; border: 1px solid rgba(255,255,255,0.2);
-    }
-    .filter-chip.active { background: #ffffff; color: #005999; }
-
-    .directory-panel {
-        background: white; border-radius: 16px; padding: 28px;
-        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
-    }
-    .directory-topline {
-        display: flex; justify-content: space-between; gap: 16px;
-        flex-wrap: wrap; align-items: center; margin-bottom: 18px;
-    }
-    .directory-count { color: #64748B; font-size: 14px; }
-    .directory-table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 12px; }
-    .directory-table th, .directory-table td {
-        padding: 14px 16px; text-align: left; border-bottom: 1px solid #E2E8F0; font-size: 14px;
-    }
-    .directory-table th {
-        text-transform: uppercase; letter-spacing: 0.5px;
-        font-size: 12px; color: #64748B; background: #F8FAFC;
-    }
-    .role-pill {
-        display: inline-flex; padding: 6px 10px; border-radius: 999px;
-        background: #E0F2FE; color: #075985; font-weight: 700;
-        font-size: 12px; text-transform: uppercase;
-    }
-    .empty-state { text-align: center; padding: 40px 20px; color: #64748B; }
-    .btn-submit {
-        background: #005999; color: white; padding: 10px 20px;
-        border-radius: 8px; font-weight: 600; font-size: 14px;
-        text-decoration: none; border: none; cursor: pointer;
-    }
-</style>
 {% endblock %}
 
 {% block content %}

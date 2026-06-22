@@ -4,197 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}HealthHub{% endblock %}</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <style>
-        body {
-            display: flex;
-            flex-direction: row;
-            align-items: stretch;
-            min-height: 100vh;
-            background: #F4F7F6;
-        }
-
-        /* ── SIDEBAR ── */
-        .sidebar {
-            width: 220px;
-            min-height: 100vh;
-            background: #0f172a;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100%;
-            z-index: 100;
-        }
-
-        .sidebar-brand {
-            padding: 24px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
-        }
-
-        .sidebar-brand-name {
-            color: white;
-            font-size: 16px;
-            font-weight: 700;
-        }
-
-        .sidebar-brand-sub {
-            color: #64748b;
-            font-size: 11px;
-            margin-top: 3px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .sidebar-nav {
-            flex: 1;
-            padding: 16px 12px;
-            overflow-y: auto;
-        }
-
-        .sidebar-nav-label {
-            color: #475569;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            padding: 0 8px;
-            margin-bottom: 6px;
-            margin-top: 8px;
-        }
-
-        .sidebar-nav a {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            color: #94a3b8;
-            text-decoration: none;
-            padding: 9px 12px;
-            border-radius: 7px;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 2px;
-            transition: background 0.15s, color 0.15s;
-        }
-
-        .sidebar-nav a:hover {
-            background: rgba(255,255,255,0.07);
-            color: #e2e8f0;
-        }
-
-        .sidebar-nav a.active {
-            background: #005999;
-            color: white;
-        }
-
-        .sidebar-footer {
-            padding: 14px 12px;
-            border-top: 1px solid rgba(255,255,255,0.07);
-        }
-
-        .role-badge {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            background: rgba(255,255,255,0.04);
-            border-radius: 8px;
-        }
-
-        .role-badge-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #005999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 14px;
-            flex-shrink: 0;
-        }
-
-        .role-badge-name {
-            color: #e2e8f0;
-            font-size: 14px;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .role-badge-role {
-            color: #64748b;
-            font-size: 11px;
-            text-transform: capitalize;
-        }
-
-        /* ── MAIN AREA ── */
-        .main-area {
-            margin-left: 220px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* ── TOP BAR ── */
-        .topbar {
-            background: white;
-            border-bottom: 1px solid #E5E7EB;
-            padding: 14px 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .topbar-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #111827;
-        }
-
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .topbar-email {
-            font-size: 14px;
-            color: #6B7280;
-        }
-
-        .topbar-logout {
-            background: #F3F4F6;
-            color: #374151;
-            text-decoration: none;
-            padding: 7px 16px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            transition: background 0.15s;
-        }
-
-        .topbar-logout:hover {
-            background: #E5E7EB;
-        }
-
-        /* ── PAGE CONTENT ── */
-        .page-content {
-            padding: 32px;
-            flex: 1;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/style.css?v=2">
     {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="page-app">
 
 <!-- ═══ SIDEBAR ═══ -->
 <aside class="sidebar">
@@ -240,7 +53,6 @@
             <a href="/staff/patients" {% block nav_recep_patients %}{% endblock %}>🗂️ Patients</a>
             <a href="/staff/beds" {% block nav_recep_beds %}{% endblock %}>🛏️ Beds</a>
 
-
         {% elif specific_role == "patient" %}
             <a href="/patient/dashboard" {% block nav_patient_home %}{% endblock %}>🏠 My Dashboard</a>
             <a href="/patient/appointments/book" {% block nav_patient_book %}{% endblock %}>📅 Book Appointment</a>
@@ -273,7 +85,7 @@
             <span class="topbar-email">{{ email }}</span>
             <a href="/logout" class="topbar-logout">Logout</a>
         </div>
-    </div>                                                                                                              
+    </div>
     <div class="page-content">
         {% block content %}{% endblock %}
     </div>

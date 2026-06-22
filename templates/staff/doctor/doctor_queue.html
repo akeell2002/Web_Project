@@ -5,50 +5,6 @@
 {% block nav_doctor_queue %}class="active"{% endblock %}
 
 {% block extra_head %}
-<style>
-    .queue-header-banner {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        color: white;
-        padding: 30px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .queue-header-banner h2 { font-size: 20px; margin: 0; }
-    .queue-header-banner p { color: #94a3b8; margin: 5px 0 0 0; font-size: 14px; }
-    .count-badge {
-        background: #0ea5e9; color: white;
-        padding: 8px 16px; border-radius: 20px;
-        font-size: 14px; font-weight: bold;
-    }
-    .tab-btn {
-        text-decoration: none; padding: 10px 20px; border-radius: 6px;
-        font-weight: 600; font-size: 14px; transition: all 0.2s;
-        background: white; color: #4B5563; border: 1px solid #D1D5DB;
-    }
-    .tab-btn.active { background: #005999; color: white; border: 1px solid #005999; }
-    .status-pill {
-        display: inline-block; padding: 4px 10px; border-radius: 12px;
-        font-size: 12px; font-weight: bold; text-transform: uppercase;
-    }
-    .status-scheduled { background-color: #fef3c7; color: #d97706; }
-    .status-checked_in { background-color: #d1fae5; color: #065f46; }
-    .status-completed { background-color: #e5e7eb; color: #374151; }
-    .action-btn-encounter {
-        background: #005999; color: white; border: none;
-        padding: 8px 14px; border-radius: 6px; font-size: 14px; font-weight: 600;
-        text-decoration: none; cursor: pointer; transition: background 0.2s;
-    }
-    .action-btn-encounter:hover { background: #004070; }
-    .action-btn-disabled {
-        background: #e5e7eb; color: #9ca3af; padding: 8px 14px;
-        border-radius: 6px; font-size: 14px; font-weight: 600;
-        text-decoration: none; pointer-events: none;
-    }
-</style>
 {% endblock %}
 
 {% block content %}
