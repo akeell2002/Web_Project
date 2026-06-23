@@ -20,7 +20,7 @@
                 <th>Room</th>
                 <th>Status</th>
                 <th>Queue #</th>
-                <th>Action</th>
+                <th>Priority</th> <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -42,6 +42,15 @@
                         <span class="queue-num">#{{ appt.queue_number }}</span>
                     {% else %} - {% endif %}
                 </td>
+                
+                <td style="font-weight: bold;">
+                    {% if appt.priority == 1 %}<span style="color: #DC2626;">🚨 Emergency</span>
+                    {% elif appt.priority == 2 %}<span style="color: #EA580C;">🟠 Urgent</span>
+                    {% elif appt.priority == 3 %}<span style="color: #D97706;">🟡 Semi-Urgent</span>
+                    {% elif appt.priority == 4 %}<span style="color: #16A34A;">🟢 Routine</span>
+                    {% else %}<span style="color: #6B7280;">⚪ Non-Urgent</span>{% endif %}
+                </td>
+                
                 <td style="display:flex; gap:8px; align-items:center;">
                     {% if appt.status == "scheduled" %}
                     <form action="/staff/receptionist/queue/check_in/{{ appt.id }}" method="POST" style="margin:0;">

@@ -14,6 +14,7 @@ pub struct BookingQuery {
     pub doctor_id:        Option<Uuid>,
     pub date:             Option<NaiveDate>,
     pub duration_minutes: Option<i64>,
+    pub visit_type:       Option<String>,
 }
 
 #[derive(serde::Serialize)]
@@ -36,6 +37,7 @@ pub async fn show_booking_form(
     }
 
     let patient_id = session.get::<Uuid>("user_id").unwrap_or_default().unwrap_or_default();
+    let selected_visit_type = query.visit_type.clone().unwrap_or_default();
 
     let doctors = sqlx::query_as!(
         DoctorDropdownItem,
@@ -93,6 +95,7 @@ pub async fn show_booking_form(
     ctx.insert("selected_doctor_id",  &selected_doctor_id);
     ctx.insert("selected_date",       &selected_date.to_string());
     ctx.insert("selected_duration",   &selected_duration);
+    ctx.insert("selected_visit_type", &selected_visit_type);
 
     match tmpl.render("patient/book_appointment.html", &ctx) {
         Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
@@ -106,6 +109,7 @@ pub struct SubmitAppointmentForm {
     pub date:             NaiveDate,
     pub start_time:       NaiveTime,
     pub duration_minutes: i64,
+    pub visit_type:       String,
 }
 
 /// POST — book the appointment
@@ -121,8 +125,16 @@ pub async fn submit_appointment(
 
     let end_time = form.start_time + Duration::minutes(form.duration_minutes);
 
+    let base_priority: i32 = match form.visit_type.as_str() {
+        "emergency"  => 1,
+        "sick_visit" => 2,
+        "specialist" => 3,
+        "routine"    => 4,
+        _            => 5,
+    };
+
     match crate::db::appointments::book_patient_appointment(
-        &pool, patient_id, form.doctor_id, form.date, form.start_time, end_time,
+        &pool, patient_id, form.doctor_id, form.date, form.start_time, end_time, base_priority
     )
     .await
     {

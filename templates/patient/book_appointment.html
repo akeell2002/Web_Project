@@ -9,9 +9,17 @@
     function reloadAvailableSlots() {
         const docId = document.getElementById("doctor_select").value;
         const dateVal = document.getElementById("date_select").value;
-        const durationVal = document.getElementById("duration_select").value;
-        if (docId && dateVal && durationVal) {
-            window.location.href = `/patient/appointments/book?doctor_id=${docId}&date=${dateVal}&duration_minutes=${durationVal}`;
+        const visitDropdown = document.getElementById("visit_type");
+        
+        if (docId && dateVal && visitDropdown.value) {
+            // Grab the specific option the user selected
+            const selectedOption = visitDropdown.options[visitDropdown.selectedIndex];
+            // Extract the hidden duration we attached to that option
+            const durationVal = selectedOption.getAttribute("data-duration");
+            const visitTypeVal = visitDropdown.value;
+
+            // Pass both the duration and the visit type in the URL
+            window.location.href = `/patient/appointments/book?doctor_id=${docId}&date=${dateVal}&duration_minutes=${durationVal}&visit_type=${visitTypeVal}`;
         }
     }
 </script>
@@ -38,20 +46,38 @@
         </div>
     </div>
 
-    <div style="margin-bottom: 25px;">
-        <label class="form-label">Appointment / Consultation Type:</label>
-        <select id="duration_select" class="form-select" onchange="reloadAvailableSlots()">
-            <option value="15" {% if selected_duration == 15 %}selected{% endif %}>🩺 Standard Checkup (15 mins)</option>
-            <option value="30" {% if selected_duration == 30 %}selected{% endif %}>🔬 Detailed Consultation (30 mins)</option>
-            <option value="60" {% if selected_duration == 60 %}selected{% endif %}>💼 Extended Procedure (60 mins)</option>
-        </select>
-    </div>
 
     <form action="/patient/appointments/create" method="POST">
         <input type="hidden" name="doctor_id" value="{{ selected_doctor_id }}">
         <input type="hidden" name="date" value="{{ selected_date }}">
         <input type="hidden" name="duration_minutes" value="{{ selected_duration }}">
 
+        <div style="margin-bottom: 25px; margin-top: 15px;">
+            <label class="form-label" for="visit_type">Reason for Visit (Priority Triage):</label>
+            <select name="visit_type" id="visit_type" class="form-select" onchange="reloadAvailableSlots()" required>
+                <option value="" disabled {% if not selected_visit_type %}selected{% endif %}>-- Select a reason --</option>
+                
+                <option value="emergency" data-duration="30" {% if selected_visit_type == 'emergency' %}selected{% endif %}>
+                    🚨 Urgent Care (30 mins)
+                </option>
+                
+                <option value="sick_visit" data-duration="15" {% if selected_visit_type == 'sick_visit' %}selected{% endif %}>
+                    🤒 Sick Visit / Fever / Flu (15 mins)
+                </option>
+                
+                <option value="specialist" data-duration="30" {% if selected_visit_type == 'specialist' %}selected{% endif %}>
+                    🩺 Specialist Consultation (30 mins)
+                </option>
+                
+                <option value="routine" data-duration="15" {% if selected_visit_type == 'routine' %}selected{% endif %}>
+                    📋 Routine Checkup (15 mins)
+                </option>
+                
+                <option value="procedure" data-duration="60" {% if selected_visit_type == 'procedure' %}selected{% endif %}>
+                    💼 Extended Procedure (60 mins)
+                </option>
+            </select>
+        </div>
         <label class="form-label">Available Appointment Slots:</label>
 
         <div class="slots-grid">

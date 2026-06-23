@@ -1,20 +1,33 @@
 use sqlx::PgPool;
 use uuid::Uuid;
 
-/// Patients checked in today waiting for triage
+/// Patients checked in today waiting for triage (Sorted by Dynamic Priority Algorithm)
 pub async fn get_triage_queue(pool: &PgPool) -> Result<Vec<serde_json::Value>, String> {
     let today = chrono::Local::now().date_naive();
 
     let rows = sqlx::query!(
         r#"
-        SELECT a.id, a.queue_number, a.start_time,
+        SELECT a.id, a.queue_number, a.start_time, 
+               a.priority_level, a.check_in_time, /* <-- FETCH THE PRIORITY */
                p.first_name, p.last_name, p.gender, p.date_of_birth,
                r.room_name as "room_name?"
         FROM appointment a
         JOIN patient p ON a.patient_id = p.id
         LEFT JOIN room r ON a.room_id  = r.id
         WHERE a.date = $1 AND a.status = 'checked_in'
-        ORDER BY a.queue_number ASC
+        ORDER BY (
+            /* DYNAMIC SCORING ALGORITHM */
+            CASE a.priority_level
+                WHEN 1 THEN 1000
+                WHEN 2 THEN 500
+                WHEN 3 THEN 200
+                WHEN 4 THEN 50
+                ELSE 10
+            END
+            +
+            /* AGING: Add 1 point for every minute the patient has waited */
+            COALESCE(EXTRACT(EPOCH FROM (NOW() - a.check_in_time)) / 60.0, 0)
+        ) DESC
         "#,
         today
     )
@@ -29,6 +42,7 @@ pub async fn get_triage_queue(pool: &PgPool) -> Result<Vec<serde_json::Value>, S
                 "id":           row.id,
                 "time":         row.start_time.format("%I:%M %p").to_string(),
                 "queue_number": row.queue_number.unwrap_or(0),
+                "priority":     row.priority_level, /* <-- PASS TO HTML */
                 "patient_name": format!("{} {}", row.first_name, row.last_name),
                 "gender":       row.gender.unwrap_or_else(|| "N/A".to_string()),
                 "dob":          row.date_of_birth.to_string(),

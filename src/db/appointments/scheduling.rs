@@ -58,12 +58,14 @@ pub async fn book_patient_appointment(
     date: NaiveDate,
     start_time: NaiveTime,
     end_time: NaiveTime,
+    priority_level: i32, 
 ) -> Result<crate::models::appointment::Appointment, String> {
     let appointment = sqlx::query_as!(
         crate::models::appointment::Appointment,
         r#"
-        INSERT INTO appointment (patient_id, doctor_id, room_id, date, start_time, end_time, created_by)
-        SELECT $1, $2, NULL, $3, $4, $5, $1
+        /* ADD priority_level to the columns, and $6 to the SELECT clause */
+        INSERT INTO appointment (patient_id, doctor_id, room_id, date, start_time, end_time, created_by, priority_level)
+        SELECT $1, $2, NULL, $3, $4, $5, $1, $6
         WHERE NOT EXISTS (
             SELECT 1 FROM appointment
             WHERE doctor_id = $2 AND date = $3
@@ -85,7 +87,8 @@ pub async fn book_patient_appointment(
         doctor_id,
         date,
         start_time,
-        end_time
+        end_time,
+        priority_level
     )
     .fetch_optional(pool)
     .await
@@ -163,6 +166,7 @@ pub async fn get_today_clinic_schedule(pool: &PgPool) -> Result<Vec<serde_json::
     let rows = sqlx::query!(
         r#"
         SELECT a.id, a.start_time, a.status::text as "status!", a.queue_number,
+               a.priority_level,
                p.first_name as patient_first, p.last_name as patient_last,
                s.first_name as doc_first,     s.last_name as doc_last,
                r.room_name  as "room_name?"
@@ -187,6 +191,7 @@ pub async fn get_today_clinic_schedule(pool: &PgPool) -> Result<Vec<serde_json::
                 "time":         row.start_time.format("%I:%M %p").to_string(),
                 "status":       row.status,
                 "queue_number": row.queue_number,
+                "priority":     row.priority_level,
                 "patient_name": format!("{} {}", row.patient_first, row.patient_last),
                 "doctor_name":  format!("Dr. {}", row.doc_last),
                 "room":         row.room_name.unwrap_or_else(|| "Unassigned".to_string()),
@@ -195,8 +200,25 @@ pub async fn get_today_clinic_schedule(pool: &PgPool) -> Result<Vec<serde_json::
         .collect())
 }
 
-/// Check a patient in and assign the next queue number
+/// Check a patient in and assign the next queue number safely using transaction locks
 pub async fn check_in_patient(pool: &PgPool, appointment_id: Uuid) -> Result<i32, String> {
+    // 1. Open an atomic transaction
+    let mut tx = pool.begin().await.map_err(|e| e.to_string())?;
+
+    // 2. Look up the doctor associated with this appointment
+    let appt_meta = sqlx::query!(
+        "SELECT doctor_id FROM appointment WHERE id = $1", 
+        appointment_id
+    ).fetch_one(&mut *tx).await.map_err(|e| e.to_string())?;
+
+    // 3. Apply a Postgres Advisory Lock mapped to the doctor's ID.
+    // This forces competing check-ins for the SAME doctor to wait in a single-file line,
+    // without blocking check-ins for OTHER doctors.
+    let lock_id = (appt_meta.doctor_id.unwrap_or_default().as_u128() % 2147483647) as i64;
+    sqlx::query!("SELECT pg_advisory_xact_lock($1)", lock_id)
+        .execute(&mut *tx).await.map_err(|e| e.to_string())?;
+
+    // 4. Now it is mathematically safe to SELECT MAX and UPDATE
     let record = sqlx::query!(
         r#"
         UPDATE appointment
@@ -212,9 +234,12 @@ pub async fn check_in_patient(pool: &PgPool, appointment_id: Uuid) -> Result<i32
         "#,
         appointment_id
     )
-    .fetch_optional(pool)
+    .fetch_optional(&mut *tx)
     .await
     .map_err(|e| format!("Failed to update check-in status: {}", e))?;
+
+    // 5. Commit the transaction (which automatically releases the lock)
+    tx.commit().await.map_err(|e| e.to_string())?;
 
     match record {
         Some(row) => Ok(row.queue_number.unwrap_or(0)),
