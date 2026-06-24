@@ -255,37 +255,5 @@
             </form>
         </div>
     </div>
-    <script> // Filter tabs
- function filterRows(filter, btn) {
- document.querySelectorAll('.bm-tab').forEach(t => t.classList.remove('active'));
- btn.classList.add('active');
-
- const rows = document.querySelectorAll('#patientTableBody tr');
- rows.forEach(row => {
- const status = row.dataset.status || '';
- const show = filter === 'all'
- || (filter === 'waiting' && status === 'checked_in')
- || (filter === 'vitals_taken' && status === 'vitals_taken')
- || (filter === 'completed' && status === 'completed');
- row.style.display = show ? '' : 'none';
- });
- }
-
- // Search
- function searchTable(q) {
- const query = q.toLowerCase();
- document.querySelectorAll('#patientTableBody tr').forEach(row => {
- const name = row.dataset.name || '';
- const room = row.dataset.room || '';
- row.style.display = (name.includes(query) || room.includes(query)) ? '' : 'none';
- });
-
- // Also filter bed cards if visible
- document.querySelectorAll('.bed-card').forEach(card => {
- const name = card.dataset.name || '';
- const patient = card.dataset.patient || '';
- card.style.display = (name.includes(query) || patient.includes(query)) ? '' : 'none';
- });
- }
-    </script>
+    
 {% endblock %}

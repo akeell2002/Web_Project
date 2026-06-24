@@ -55,10 +55,11 @@
             <p style="margin-top: 8px;">No support tickets yet.</p>
         </div>
     {% endif %}
-    <script> const params = new URLSearchParams(window.location.search);
- if (params.get('replied') === '1') {
- const banner = document.querySelector('.success-banner');
- if (banner) banner.style.display = 'block';
- }
+    <script> 
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('replied') === '1') {
+            const banner = document.querySelector('.success-banner');
+            if (banner) banner.style.display = 'block';
+        }
     </script>
 {% endblock %}

@@ -120,32 +120,4 @@
             <p>No appointments found in the past 7 days.</p>
         </div>
     {% endif %}
-    <script>
-function toggleCard(id) {
- const card = document.getElementById('card-' + id);
- card.classList.toggle('open');
-}
-
-function updateFormAction(patientId) {
- const select = document.getElementById('appt-select-' + patientId);
- const form = document.getElementById('form-' + patientId);
- const appointmentId = select.value;
- form.action = '/staff/doctor/prescribe/' + appointmentId;
-}
-
-function filterPatients() {
- const query = document.getElementById('patient-search').value.toLowerCase().trim();
- const cards = document.querySelectorAll('#appt-list .appt-card');
- let visibleCount = 0;
-
- cards.forEach(card => {
- const name = card.querySelector('.appt-patient').textContent.toLowerCase();
- const match = name.includes(query);
- card.style.display = match ? '' : 'none';
- if (match) visibleCount++;
- });
-
- document.getElementById('no-results').style.display = visibleCount === 0 ? 'block' : 'none';
-}
-    </script>
 {% endblock %}

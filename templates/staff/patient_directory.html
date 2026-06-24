@@ -78,17 +78,4 @@
         </table>
         <div id="no-results">No patients match your search.</div>
     </div>
-    <script>
-function filterPatients(query) {
- const q = query.toLowerCase();
- const rows = document.querySelectorAll('#patient-table tbody tr[data-searchable]');
- let visible = 0;
- rows.forEach(row => {
- const text = row.getAttribute('data-searchable');
- if (text.includes(q)) { row.style.display = ''; visible++; }
- else { row.style.display = 'none'; }
- });
- document.getElementById('no-results').style.display = (visible === 0 && q.length > 0) ? 'block' : 'none';
-}
-    </script>
 {% endblock %}

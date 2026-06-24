@@ -148,23 +148,6 @@
         </div>
     </div>
 
-    <script>
-    function switchTab(id) {
-        ['tab-general','tab-history','tab-rx'].forEach(t => {
-            document.getElementById(t).style.display = t === id ? 'block' : 'none';
-        });
-        const btnMap = { 'tab-general':'btn-tab-general', 'tab-history':'btn-tab-history', 'tab-rx':'btn-tab-rx' };
-        Object.entries(btnMap).forEach(([tab, btn]) => {
-            const el = document.getElementById(btn);
-            const active = tab === id;
-            el.style.fontWeight    = active ? '600' : '500';
-            el.style.color         = active ? '#1E3A8A' : '#6B7280';
-            el.style.background    = active ? 'white' : 'transparent';
-            el.style.borderBottom  = active ? '2px solid #1E3A8A' : '2px solid transparent';
-        });
-    }
-    </script>
-
     <form action="/staff/doctor/consultation/{{ appointment_id }}" method="POST">
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:stretch;">
 
