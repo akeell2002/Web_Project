@@ -28,10 +28,10 @@ pub async fn patient_dashboard(
             let historical: Vec<_> = appointments.iter().filter(|a| !a["is_upcoming"].as_bool().unwrap_or(false)).collect();
 
             let mut ctx = Context::new();
-            ctx.insert("email",                 &email);
-            ctx.insert("specific_role",         "patient");
-            ctx.insert("display_name", &display_name);
-            ctx.insert("upcoming_appointments", &upcoming);
+            ctx.insert("email",                   &email);
+            ctx.insert("specific_role",           "patient");
+            ctx.insert("display_name",            &display_name);
+            ctx.insert("upcoming_appointments",   &upcoming);
             ctx.insert("historical_appointments", &historical);
 
             return match tera.render("shared/dashboard.html", &ctx) {

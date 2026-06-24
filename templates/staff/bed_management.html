@@ -11,7 +11,7 @@
         <h1>Bed & Patient Management</h1>
         <p>Monitor room occupancy and manage patient transfers across the clinic.</p>
     </div>
-    <!-- Stats row — show patient stats for nurses, bed stats for others -->
+    <!-- Stats row - show patient stats for nurses, bed stats for others -->
     {% if specific_role == "nurse" %}
         <div class="bm-stats">
             <div class="bm-stat">
@@ -229,7 +229,7 @@
                 </select>
                 <label class="form-label fw-semibold small">From Room (current)</label>
                 <select class="form-select" name="from_room_id">
-                    <option value="">— None / Unknown —</option>
+                    <option value="">- None / Unknown -</option>
                     {% for bed in beds %}
                         <option value="{{ bed.room_id }}">{{ bed.room_name }} ({{ bed.computed_status }})</option>
                     {% endfor %}
@@ -238,7 +238,7 @@
                 <select class="form-select" name="to_room_id" required>
                     <option value="">Select room…</option>
                     {% for bed in beds %}
-                        <option value="{{ bed.room_id }}">{{ bed.room_name }} — {{ bed.computed_status }}</option>
+                        <option value="{{ bed.room_id }}">{{ bed.room_name }} - {{ bed.computed_status }}</option>
                     {% endfor %}
                 </select>
                 <label class="form-label fw-semibold small">Reason</label>

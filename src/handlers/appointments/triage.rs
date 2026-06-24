@@ -14,7 +14,7 @@ pub struct SubmitVitalsForm {
     pub priority_level: i32,
 }
 
-/// GET — nurse triage queue
+/// GET - nurse triage queue
 pub async fn nurse_triage_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -43,7 +43,7 @@ pub async fn nurse_triage_page(
     }
 }
 
-/// POST — nurse submits triage vitals
+/// POST - nurse submits triage vitals
 pub async fn submit_triage_vitals(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -74,7 +74,7 @@ pub async fn submit_triage_vitals(
     }
 }
 
-/// GET — nurse medication administration page
+/// GET - nurse medication administration page
 pub async fn medication_administration_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -111,7 +111,7 @@ pub struct AdminLogForm {
     pub remarks: Option<String>,
 }
 
-/// POST — nurse logs medication administration
+/// POST - nurse logs medication administration
 pub async fn submit_medication_administration(
     pool:    web::Data<PgPool>,
     session: Session,

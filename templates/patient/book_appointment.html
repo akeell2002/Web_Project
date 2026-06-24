@@ -3,6 +3,7 @@
 {% block page_title %}Schedule a Consultation{% endblock %}
 {% block nav_patient_book %}class="active"{% endblock %}
 {% block extra_head %}
+    <style> .page-content { padding: 0 !important; } .booking-card { border-radius: 0; border-left: none; border-right: none; border-top: none; } </style>
     <script> function reloadAvailableSlots() {
  const docId = document.getElementById("doctor_select").value;
  const dateVal = document.getElementById("date_select").value;
@@ -24,94 +25,72 @@
 {% block content %}
     <div class="booking-card">
         <h2>Schedule a Consultation</h2>
-        <div class="row g-3 mb-3">
+
+        <!-- Doctor / Date / Visit Type row -->
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:28px;">
             <div>
-                <label class="form-label fw-semibold">Select Doctor:</label>
-                <select id="doctor_select"
-                        class="form-select"
-                        onchange="reloadAvailableSlots()">
+                <label class="form-label fw-semibold">Select Doctor</label>
+                <select id="doctor_select" class="form-select" onchange="reloadAvailableSlots()">
                     {% for doc in doctors %}
-                        <option value="{{ doc.id }}"
-                                {% if selected_doctor_id == doc.id %}selected{% endif %}>
+                        <option value="{{ doc.id }}" {% if selected_doctor_id == doc.id %}selected{% endif %}>
                             Dr. {{ doc.first_name }} {{ doc.last_name }}
                         </option>
                     {% endfor %}
                 </select>
             </div>
             <div>
-                <label class="form-label fw-semibold">Choose Consultation Date:</label>
-                <input type="date"
-                       id="date_select"
-                       class="form-control"
-                       value="{{ selected_date }}"
-                       onchange="reloadAvailableSlots()">
+                <label class="form-label fw-semibold">Consultation Date</label>
+                <input type="date" id="date_select" class="form-control"
+                       value="{{ selected_date }}" onchange="reloadAvailableSlots()">
             </div>
-        </div>
-        <form action="/patient/appointments/create" method="POST">
-            <input class="form-control"
-                   type="hidden"
-                   name="doctor_id"
-                   value="{{ selected_doctor_id }}">
-            <input class="form-control"
-                   type="hidden"
-                   name="date"
-                   value="{{ selected_date }}">
-            <input class="form-control"
-                   type="hidden"
-                   name="duration_minutes"
-                   value="{{ selected_duration }}">
-            <div style="margin-bottom: 25px; margin-top: 15px;">
-                <label class="form-label fw-semibold" for="visit_type">Reason for Visit (Priority Triage):</label>
-                <select name="visit_type"
-                        id="visit_type"
-                        class="form-select"
-                        onchange="reloadAvailableSlots()"
-                        required>
+            <div>
+                <label class="form-label fw-semibold">Reason for Visit</label>
+                <select id="visit_type" class="form-select" onchange="reloadAvailableSlots()">
                     <option value="" disabled {% if not selected_visit_type %}selected{% endif %}>-- Select a reason --</option>
-                    <option value="emergency"
-                            data-duration="30"
-                            {% if selected_visit_type == 'emergency' %}selected{% endif %}>
-                        Urgent Care (30 mins)
-                    </option>
-                    <option value="sick_visit"
-                            data-duration="15"
-                            {% if selected_visit_type == 'sick_visit' %}selected{% endif %}>
-                        Sick Visit / Fever / Flu (15 mins)
-                    </option>
-                    <option value="specialist"
-                            data-duration="30"
-                            {% if selected_visit_type == 'specialist' %}selected{% endif %}>
-                        Specialist Consultation (30 mins)
-                    </option>
-                    <option value="routine"
-                            data-duration="15"
-                            {% if selected_visit_type == 'routine' %}selected{% endif %}>
-                        Routine Checkup (15 mins)
-                    </option>
-                    <option value="procedure"
-                            data-duration="60"
-                            {% if selected_visit_type == 'procedure' %}selected{% endif %}>
-                        Extended Procedure (60 mins)
-                    </option>
+                    <option value="emergency"    data-duration="30" {% if selected_visit_type == 'emergency'  %}selected{% endif %}>Urgent Care (30 min)</option>
+                    <option value="sick_visit"   data-duration="15" {% if selected_visit_type == 'sick_visit' %}selected{% endif %}>Sick Visit / Fever / Flu (15 min)</option>
+                    <option value="specialist"   data-duration="30" {% if selected_visit_type == 'specialist' %}selected{% endif %}>Specialist Consultation (30 min)</option>
+                    <option value="routine"      data-duration="15" {% if selected_visit_type == 'routine'    %}selected{% endif %}>Routine Checkup (15 min)</option>
+                    <option value="procedure"    data-duration="60" {% if selected_visit_type == 'procedure'  %}selected{% endif %}>Extended Procedure (60 min)</option>
                 </select>
             </div>
-            <label class="form-label fw-semibold">Available Appointment Slots:</label>
-            <div class="slots-grid">
-                {% for slot in slots %}
-                    {% if slot.is_available %}
-                        <label class="slot-available">
-                            <input type="radio"
-                                   name="start_time"
-                                   value="{{ slot.raw_time }}"
-                                   required>
-                            {{ slot.time_string }}
-                        </label>
-                    {% else %}
-                        <label class="slot-unavailable">{{ slot.time_string }}</label>
-                    {% endif %}
-                {% endfor %}
+        </div>
+
+        <form action="/patient/appointments/create" method="POST">
+            <input type="hidden" name="doctor_id"        value="{{ selected_doctor_id }}">
+            <input type="hidden" name="date"             value="{{ selected_date }}">
+            <input type="hidden" name="duration_minutes" value="{{ selected_duration }}">
+            <input type="hidden" name="visit_type"       value="{{ selected_visit_type }}">
+
+            <div style="margin-bottom:10px;">
+                <span class="form-label fw-semibold">Available Slots</span>
+                <span style="font-size:12px; color:#9CA3AF; margin-left:8px;">Click a slot to select it</span>
             </div>
-            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mt-3">Confirm Selected Booking Block</button>
+
+            {% if slots %}
+                <div class="slots-grid">
+                    {% for slot in slots %}
+                        {% if slot.is_available %}
+                            <label class="slot-available">
+                                <input type="radio" name="start_time" value="{{ slot.raw_time }}" required>
+                                <span style="font-size:15px; font-weight:700;">{{ slot.time_string }}</span>
+                                <span style="font-size:11px; opacity:0.75;">Available</span>
+                            </label>
+                        {% else %}
+                            <label class="slot-unavailable">
+                                <span style="font-size:15px;">{{ slot.time_string }}</span>
+                                <span style="font-size:11px;">Booked</span>
+                            </label>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mt-2">Confirm Booking</button>
+            {% else %}
+                <div style="background:#F9FAFB; border:2px dashed #E5E7EB; border-radius:12px;
+                            text-align:center; padding:40px; color:#9CA3AF; font-size:14px;">
+                    Select a doctor, date, and visit type above to see available slots.
+                </div>
+            {% endif %}
         </form>
     </div>
 {% endblock %}

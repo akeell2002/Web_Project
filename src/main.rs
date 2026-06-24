@@ -151,9 +151,12 @@ async fn main() -> std::io::Result<()> {
             .route("/patient/appointments/book", web::get().to(handlers::appointments::show_booking_form))
             .route("/patient/appointments/create", web::post().to(handlers::appointments::submit_appointment))
             .route("/patient/appointments/{id}/cancel", web::post().to(handlers::appointments::cancel_appointment))
+            .route("/patient/appointments/{id}/edit",   web::get().to(handlers::appointments::show_update_form))
+            .route("/patient/appointments/{id}/update", web::post().to(handlers::appointments::submit_update_appointment))
 
-            // Patient medical history
+            // Patient medical history and bills
             .route("/patient/history", web::get().to(handlers::auth::patient_medical_history_page))
+            .route("/patient/bills",   web::get().to(handlers::auth::patient_bill_history_page))
 
 
             // Password reset routes

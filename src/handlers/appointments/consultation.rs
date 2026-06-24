@@ -10,7 +10,7 @@ pub struct QueueFilterParams {
     pub view: Option<String>,
 }
 
-/// GET — doctor's daily clinical queue
+/// GET - doctor's daily clinical queue
 pub async fn doctor_daily_queue_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -56,8 +56,9 @@ pub async fn doctor_daily_queue_page(
     }
 }
 
-/// GET — consultation form for a specific appointment
+/// GET - consultation form for a specific appointment
 pub async fn show_consultation_form(
+    pool:    web::Data<PgPool>,
     session: Session,
     tmpl:    web::Data<Tera>,
     path:    web::Path<Uuid>,
@@ -69,13 +70,23 @@ pub async fn show_consultation_form(
 
     let appointment_id = path.into_inner();
     let email          = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-    let display_name = crate::handlers::get_display_name(&session);
+    let display_name   = crate::handlers::get_display_name(&session);
+
+    let patient_info = match crate::db::appointments::get_consultation_patient_info(&pool, appointment_id).await {
+        Ok(Some(info)) => info,
+        Ok(None)       => serde_json::Value::Null,
+        Err(e)         => {
+            eprintln!("Failed to load patient info for consultation: {}", e);
+            serde_json::Value::Null
+        }
+    };
 
     let mut ctx = Context::new();
     ctx.insert("specific_role",    "doctor");
     ctx.insert("email",            &email);
-    ctx.insert("display_name", &display_name);
+    ctx.insert("display_name",     &display_name);
     ctx.insert("appointment_id",   &appointment_id.to_string());
+    ctx.insert("patient",          &patient_info);
     ctx.insert("symptoms",         "");
     ctx.insert("diagnosis",        "");
     ctx.insert("treatment_notes",  "");
@@ -94,7 +105,7 @@ pub async fn show_consultation_form(
     }
 }
 
-/// POST — submit consultation, create medical record, bill, close appointment
+/// POST - submit consultation, create medical record, bill, close appointment
 pub async fn submit_consultation(
     pool: web::Data<PgPool>,
     path: web::Path<Uuid>,
@@ -120,7 +131,7 @@ pub struct PrescribeForm {
     pub instructions:  Option<String>,
 }
 
-/// GET — prescribe medication page (per-patient cards)
+/// GET - prescribe medication page (per-patient cards)
 pub async fn prescribe_medication_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -157,7 +168,7 @@ pub async fn prescribe_medication_page(
     }
 }
 
-/// POST — issue a prescription for a specific appointment
+/// POST - issue a prescription for a specific appointment
 pub async fn submit_prescription(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -180,7 +191,7 @@ pub async fn submit_prescription(
     {
         Ok(_) => {
             eprintln!(
-                "\n[MOCK EMAIL] Prescription: {} ({} × {} for {}) — appt {}\n",
+                "\n[MOCK EMAIL] Prescription: {} ({} x {} for {}) -- appt {}\n",
                 form.medicine_name, form.dosage, form.frequency, form.duration, appointment_id
             );
             HttpResponse::SeeOther().append_header(("Location", "/staff/doctor/prescribe?success=1")).finish()

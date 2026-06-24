@@ -153,7 +153,7 @@ pub async fn process_add_patient(
     }
 }
 
-/// GET /staff/patients/{id}/edit — show edit form pre-filled with current data
+/// GET /staff/patients/{id}/edit - show edit form pre-filled with current data
 pub async fn show_edit_patient_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -184,7 +184,7 @@ pub async fn show_edit_patient_page(
     }
 }
 
-/// POST /staff/patients/{id}/edit — save updated demographics
+/// POST /staff/patients/{id}/edit - save updated demographics
 pub async fn process_edit_patient(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -215,7 +215,7 @@ pub async fn process_edit_patient(
     }
 }
 
-/// POST /staff/patients/{id}/delete — remove patient account
+/// POST /staff/patients/{id}/delete - remove patient account
 pub async fn process_delete_patient(
     pool:    web::Data<PgPool>,
     session: Session,

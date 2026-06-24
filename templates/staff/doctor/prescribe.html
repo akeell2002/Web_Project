@@ -60,7 +60,7 @@
                                     {% for appt in patient.appointments %}
                                         <option value="{{ appt.id }}">
                                             {{ appt.appointment_date }} at {{ appt.start_time }}
-                                            {% if appt.is_today %}— TODAY{% endif %}
+                                            {% if appt.is_today %}- TODAY{% endif %}
                                             · {{ appt.status }}
                                             {% if appt.rx_count > 0 %}· {{ appt.rx_count }} Rx{% endif %}
                                         </option>

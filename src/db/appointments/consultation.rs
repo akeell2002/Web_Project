@@ -1,5 +1,6 @@
 use sqlx::PgPool;
 use uuid::Uuid;
+use chrono::Datelike;
 
 /// Doctor's daily clinical queue with dynamic priority scoring
 pub async fn get_doctor_daily_appointments(
@@ -36,6 +37,7 @@ pub async fn get_doctor_daily_appointments(
             LEFT JOIN room         r  ON a.room_id      = r.id
             LEFT JOIN triage_vitals tv ON a.id           = tv.appointment_id
             WHERE a.doctor_id = $1 AND a.date = $2
+              AND a.status NOT IN ('cancelled', 'no_show')
             ORDER BY
                 CASE WHEN a.status IN ('vitals_taken', 'checked_in') THEN 1
                      WHEN a.status = 'scheduled' THEN 2
@@ -245,4 +247,106 @@ pub async fn insert_prescription(
     .execute(pool)
     .await?;
     Ok(())
+}
+
+/// Fetch patient info + triage vitals + past diagnoses + past prescriptions for the consultation form
+pub async fn get_consultation_patient_info(
+    pool:           &PgPool,
+    appointment_id: Uuid,
+) -> Result<Option<serde_json::Value>, sqlx::Error> {
+    let row = sqlx::query!(
+        r#"
+        SELECT
+            p.id as patient_id,
+            p.first_name, p.last_name, p.date_of_birth, p.gender,
+            p.phone_number, p.emergency_contact_name, p.emergency_contact_phone,
+            a.date, a.start_time, a.end_time,
+            tv.blood_pressure,
+            tv.temperature::FLOAT8 as "temperature?",
+            tv.weight_kg::FLOAT8   as "weight_kg?",
+            tv.height_cm::FLOAT8   as "height_cm?"
+        FROM appointment a
+        JOIN patient p ON a.patient_id = p.id
+        LEFT JOIN triage_vitals tv ON tv.appointment_id = a.id
+        WHERE a.id = $1
+        "#,
+        appointment_id
+    )
+    .fetch_optional(pool)
+    .await?;
+
+    let row = match row {
+        Some(r) => r,
+        None    => return Ok(None),
+    };
+
+    let patient_id = row.patient_id;
+
+    let diagnoses = sqlx::query!(
+        r#"
+        SELECT mr.diagnosis, mr.symptoms, a.date
+        FROM medical_records mr
+        JOIN appointment a ON mr.appointment_id = a.id
+        WHERE mr.patient_id = $1 AND mr.appointment_id != $2
+        ORDER BY a.date DESC LIMIT 20
+        "#,
+        patient_id, appointment_id
+    )
+    .fetch_all(pool)
+    .await?
+    .into_iter()
+    .map(|d| serde_json::json!({
+        "date":      d.date.format("%d %b %Y").to_string(),
+        "diagnosis": d.diagnosis,
+        "symptoms":  d.symptoms.unwrap_or_else(|| "-".to_string()),
+    }))
+    .collect::<Vec<_>>();
+
+    let prescriptions = sqlx::query!(
+        r#"
+        SELECT pr.medicine_name, pr.dosage, pr.frequency, pr.duration,
+               pr.instructions, a.date
+        FROM prescription pr
+        JOIN appointment a ON pr.appointment_id = a.id
+        WHERE a.patient_id = $1 AND pr.appointment_id != $2
+        ORDER BY a.date DESC LIMIT 20
+        "#,
+        patient_id, appointment_id
+    )
+    .fetch_all(pool)
+    .await?
+    .into_iter()
+    .map(|p| serde_json::json!({
+        "date":          p.date.format("%d %b %Y").to_string(),
+        "medicine_name": p.medicine_name,
+        "dosage":        p.dosage,
+        "frequency":     p.frequency,
+        "duration":      p.duration,
+        "instructions":  p.instructions.unwrap_or_else(|| "-".to_string()),
+    }))
+    .collect::<Vec<_>>();
+
+    let dob = row.date_of_birth;
+    let today = chrono::Local::now().date_naive();
+    let mut age_years = today.year() - dob.year();
+    if (today.month(), today.day()) < (dob.month(), dob.day()) { age_years -= 1; }
+    let age = age_years.max(0) as u32;
+
+    Ok(Some(serde_json::json!({
+        "full_name":               format!("{} {}", row.first_name, row.last_name),
+        "date_of_birth":           dob.format("%d %b %Y").to_string(),
+        "age":                     age,
+        "gender":                  row.gender.unwrap_or_else(|| "Not specified".to_string()),
+        "phone":                   row.phone_number.unwrap_or_else(|| "-".to_string()),
+        "emergency_contact_name":  row.emergency_contact_name.unwrap_or_else(|| "-".to_string()),
+        "emergency_contact_phone": row.emergency_contact_phone.unwrap_or_else(|| "-".to_string()),
+        "appointment_date":        row.date.format("%A, %d %b %Y").to_string(),
+        "appointment_time":        format!("{} - {}", row.start_time.format("%I:%M %p"), row.end_time.format("%I:%M %p")),
+        "blood_pressure":          row.blood_pressure.unwrap_or_else(|| "-".to_string()),
+        "temperature":             row.temperature.map(|v| format!("{:.1} C", v)).unwrap_or_else(|| "-".to_string()),
+        "weight_kg":               row.weight_kg.map(|v| format!("{:.1} kg", v)).unwrap_or_else(|| "-".to_string()),
+        "height_cm":               row.height_cm.map(|v| format!("{:.0} cm", v)).unwrap_or_else(|| "-".to_string()),
+        "past_diagnoses":          diagnoses,
+        "past_prescriptions":      prescriptions,
+    })))
 }

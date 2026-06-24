@@ -58,7 +58,7 @@ pub struct UpdateStaffProfileForm {
     pub phone_number: Option<String>,
 }
 
-/// POST /patient/profile — save updated patient profile
+/// POST /patient/profile - save updated patient profile
 pub async fn update_patient_profile_handler(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -96,7 +96,7 @@ pub async fn update_patient_profile_handler(
     }
 }
 
-/// POST /staff/profile — save updated staff profile
+/// POST /staff/profile - save updated staff profile
 pub async fn update_staff_profile_handler(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -130,7 +130,7 @@ pub async fn update_staff_profile_handler(
     }
 }
 
-/// GET /patient/history — patient views their own visit history
+/// GET /patient/history - patient views their own visit history
 pub async fn patient_medical_history_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -164,6 +164,44 @@ pub async fn patient_medical_history_page(
         }
         Ok(None) => HttpResponse::NotFound().body("Profile not found."),
         Err(e)   => HttpResponse::InternalServerError().body(format!("DB error: {}", e)),
+    }
+}
+
+/// GET /patient/bills - patient views their bill history
+pub async fn patient_bill_history_page(
+    pool:    web::Data<PgPool>,
+    session: Session,
+    tera:    web::Data<Tera>,
+) -> impl Responder {
+    let role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
+    if role != "patient" {
+        return HttpResponse::SeeOther().append_header(("Location", "/patient/login")).finish();
+    }
+
+    let email      = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let patient_id = match session.get::<Uuid>("user_id").unwrap_or_default() {
+        Some(id) => id,
+        None     => return HttpResponse::SeeOther().append_header(("Location", "/patient/login")).finish(),
+    };
+    let display_name = crate::handlers::get_display_name(&session);
+
+    let bills = match crate::db::billing::get_patient_bills(&pool, patient_id).await {
+        Ok(list) => list,
+        Err(e) => {
+            eprintln!("Bill history query failure: {}", e);
+            Vec::new()
+        }
+    };
+
+    let mut ctx = Context::new();
+    ctx.insert("specific_role", "patient");
+    ctx.insert("email",         &email);
+    ctx.insert("display_name",  &display_name);
+    ctx.insert("bills",         &bills);
+
+    match tera.render("patient/bill_history.html", &ctx) {
+        Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
+        Err(e)   => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
     }
 }
 

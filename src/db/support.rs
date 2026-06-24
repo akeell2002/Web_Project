@@ -14,7 +14,7 @@ pub struct SupportTicket {
     pub created_at: String,
 }
 
-/// Insert a new public support ticket (anonymous — no user account required)
+/// Insert a new public support ticket (anonymous - no user account required)
 pub async fn submit_ticket(
     pool: &PgPool,
     submitter_name: &str,
@@ -36,7 +36,7 @@ pub async fn submit_ticket(
     Ok(())
 }
 
-/// Fetch all tickets ordered by newest first — for the receptionist dashboard
+/// Fetch all tickets ordered by newest first - for the receptionist dashboard
 pub async fn get_all_tickets(pool: &PgPool) -> Result<Vec<SupportTicket>, sqlx::Error> {
     let rows = sqlx::query(
         r#"

@@ -28,7 +28,7 @@ pub struct SupportDashQuery {
     pub replied: Option<String>,
 }
 
-/// GET /support — public contact form
+/// GET /support - public contact form
 pub async fn support_form_page(
     tmpl:  web::Data<Tera>,
     query: web::Query<SupportQuery>,
@@ -42,7 +42,7 @@ pub async fn support_form_page(
     }
 }
 
-/// POST /support/submit — anonymous ticket submission
+/// POST /support/submit - anonymous ticket submission
 pub async fn submit_support_ticket(
     pool: web::Data<PgPool>,
     form: web::Form<SupportTicketForm>,
@@ -57,7 +57,7 @@ pub async fn submit_support_ticket(
     }
 }
 
-/// GET /admin/support — admin support ticket dashboard
+/// GET /admin/support - admin support ticket dashboard
 pub async fn support_dashboard(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -94,7 +94,7 @@ pub async fn support_dashboard(
     }
 }
 
-/// POST /admin/support/reply — admin sends reply
+/// POST /admin/support/reply - admin sends reply
 pub async fn submit_reply(
     pool:    web::Data<PgPool>,
     session: Session,

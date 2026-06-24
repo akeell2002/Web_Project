@@ -1,98 +1,243 @@
 {% extends "shared/layout.html" %}
-{% block title %}Active Consultation - HealthHub EHR{% endblock %}
-{% block page_title %}Active Medical Encounter{% endblock %}
+{% block title %}Patient Consultation - HealthHub{% endblock %}
+{% block page_title %}Patient Consultation{% endblock %}
 {% block nav_doctor_queue %}class="active"{% endblock %}
 {% block extra_head %}{% endblock %}
 {% block content %}
-    <a href="/staff/doctor/queue"
-       class="text-secondary text-decoration-none small">Back to Queue</a>
-    <div class="form-container">
-        <div class="header-box">
-            <h2 style="margin: 0 0 5px 0; color: #1E3A8A;">Active Medical Encounter</h2>
-            <p style="margin: 0; color: #3B82F6; font-size: 14px;">Appointment ID: {{ appointment_id }}</p>
-        </div>
-        <form action="/staff/doctor/consultation/{{ appointment_id }}"
-              method="POST">
-            <h3 class="h6 fw-bold text-uppercase text-secondary mt-4 mb-2">1. Clinical Assessment</h3>
-            <div class="mb-3">
-                <label class="form-label fw-semibold small">Reported Symptoms</label>
-                <textarea class="form-control"
-                          name="symptoms"
-                          rows="3"
-                          placeholder="E.g., Patient reports sore throat and mild fever...">{{ symptoms }}</textarea>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-semibold small">Primary Diagnosis <span style="color: #EF4444;">*</span></label>
-                <select class="form-select" name="diagnosis" required>
-                    <option value="" disabled {% if diagnosis == "" %}selected{% endif %}>Select primary diagnosis...</option>
-                    <option value="Acute Pharyngitis"
-                            {% if diagnosis == "Acute Pharyngitis" %}selected{% endif %}>Acute Pharyngitis</option>
-                    <option value="Viral Infection"
-                            {% if diagnosis == "Viral Infection" %}selected{% endif %}>Viral Infection</option>
-                    <option value="Routine Checkup"
-                            {% if diagnosis == "Routine Checkup" %}selected{% endif %}>Routine Checkup</option>
-                    <option value="Hypertension"
-                            {% if diagnosis == "Hypertension" %}selected{% endif %}>Hypertension</option>
-                    <option value="Sprain / Strain"
-                            {% if diagnosis == "Sprain / Strain" %}selected{% endif %}>Sprain / Strain</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-semibold small">Treatment Notes</label>
-                <textarea class="form-control"
-                          name="treatment_notes"
-                          rows="3"
-                          placeholder="E.g., Advised rest and plenty of fluids...">{{ treatment_notes }}</textarea>
-            </div>
-            <h3 class="h6 fw-bold text-uppercase text-secondary mt-4 mb-2">2. Prescription Details</h3>
-            <p style="font-size: 14px;
-                      color: #6B7280;
-                      margin-top: -15px;
-                      margin-bottom: 20px"> <i>Optional. Leave blank if no medication is required today.</i> </p>
-            <div style="display: flex; gap: 15px;">
-                <div class="mb-3" style="flex: 1;">
-                    <label class="form-label fw-semibold small">Medicine Name</label>
-                    <input class="form-control"
-                           type="text"
-                           name="medicine_name"
-                           value="{{ medicine_name }}"
-                           placeholder="E.g., Amoxicillin">
-                </div>
-                <div class="mb-3" style="flex: 1;">
-                    <label class="form-label fw-semibold small">Dosage</label>
-                    <input class="form-control"
-                           type="text"
-                           name="dosage"
-                           value="{{ dosage }}"
-                           placeholder="E.g., 500mg">
-                </div>
-            </div>
-            <div style="display: flex; gap: 15px;">
-                <div class="mb-3" style="flex: 1;">
-                    <label class="form-label fw-semibold small">Frequency</label>
-                    <input class="form-control"
-                           type="text"
-                           name="frequency"
-                           value="{{ frequency }}"
-                           placeholder="E.g., Twice a day">
-                </div>
-                <div class="mb-3" style="flex: 1;">
-                    <label class="form-label fw-semibold small">Duration</label>
-                    <input class="form-control"
-                           type="text"
-                           name="duration"
-                           value="{{ duration }}"
-                           placeholder="E.g., 7 days">
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-semibold small">Special Instructions</label>
-                <textarea class="form-control"
-                          name="instructions"
-                          rows="2"
-                          placeholder="E.g., Take after meals">{{ instructions }}</textarea>
-            </div>
-            <button type="submit" class="btn-submit-encounter">Sign Notes & Generate Bill</button>
-        </form>
+
+    <!-- Top nav -->
+    <div style="margin-bottom:16px;">
+        <a href="/staff/doctor/queue"
+           style="display:inline-block;
+                  background:#F1F5F9;
+                  color:#1E3A8A;
+                  border:1px solid #CBD5E1;
+                  padding:7px 16px;
+                  border-radius:8px;
+                  font-size:13px;
+                  font-weight:600;
+                  text-decoration:none;">
+            ← Back to Queue
+        </a>
     </div>
+
+    <!-- Patient Info Panel -->
+    <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; margin-bottom:20px; overflow:hidden;">
+
+        <!-- Panel header: avatar + name + appt info -->
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid #E5E7EB;">
+            <div style="display:flex; align-items:center; gap:14px;">
+                <div style="width:48px; height:48px; border-radius:50%; background:#1E3A8A; color:white;
+                            display:flex; align-items:center; justify-content:center;
+                            font-size:20px; font-weight:700; flex-shrink:0;">
+                    {{ patient.full_name | truncate(length=1, end="") | upper }}
+                </div>
+                <div>
+                    <div style="font-size:17px; font-weight:700; color:#0F172A;">{{ patient.full_name }}</div>
+                    <div style="font-size:12px; color:#6B7280;">{{ patient.appointment_date }} &nbsp;·&nbsp; {{ patient.appointment_time }}</div>
+                </div>
+            </div>
+            <div style="font-size:11px; color:#6B7280; background:#F1F5F9; padding:4px 10px; border-radius:6px; font-family:monospace;">
+                ID: {{ appointment_id }}
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div style="display:flex; border-bottom:1px solid #E5E7EB; background:#F9FAFB;">
+            <button type="button" onclick="switchTab('tab-general')" id="btn-tab-general"
+                style="padding:10px 18px; font-size:13px; font-weight:600; border:none; background:white;
+                       color:#1E3A8A; border-bottom:2px solid #1E3A8A; cursor:pointer;">
+                General Info
+            </button>
+            <button type="button" onclick="switchTab('tab-history')" id="btn-tab-history"
+                style="padding:10px 18px; font-size:13px; font-weight:500; border:none; background:transparent;
+                       color:#6B7280; border-bottom:2px solid transparent; cursor:pointer;">
+                Past Diagnoses
+            </button>
+            <button type="button" onclick="switchTab('tab-rx')" id="btn-tab-rx"
+                style="padding:10px 18px; font-size:13px; font-weight:500; border:none; background:transparent;
+                       color:#6B7280; border-bottom:2px solid transparent; cursor:pointer;">
+                Prescriptions
+            </button>
+        </div>
+
+        <!-- Tab: General Info -->
+        <div id="tab-general" style="padding:20px 24px;">
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:20px;">
+                <div>
+                    <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:#9CA3AF; margin-bottom:8px; letter-spacing:0.05em;">Patient Details</div>
+                    <div style="font-size:13px; color:#374151; margin-bottom:5px;"><span style="color:#9CA3AF;">DOB:</span> {{ patient.date_of_birth }}</div>
+                    <div style="font-size:13px; color:#374151; margin-bottom:5px;"><span style="color:#9CA3AF;">Age:</span> {{ patient.age }} yrs</div>
+                    <div style="font-size:13px; color:#374151;"><span style="color:#9CA3AF;">Gender:</span> {{ patient.gender }}</div>
+                </div>
+                <div>
+                    <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:#9CA3AF; margin-bottom:8px; letter-spacing:0.05em;">Contact</div>
+                    <div style="font-size:13px; color:#374151; margin-bottom:5px;"><span style="color:#9CA3AF;">Phone:</span> {{ patient.phone }}</div>
+                    <div style="font-size:13px; color:#374151; margin-bottom:5px;"><span style="color:#9CA3AF;">Emergency:</span> {{ patient.emergency_contact_name }}</div>
+                    <div style="font-size:13px; color:#374151;"><span style="color:#9CA3AF;">Emg. Phone:</span> {{ patient.emergency_contact_phone }}</div>
+                </div>
+                <div>
+                    <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:#9CA3AF; margin-bottom:8px; letter-spacing:0.05em;">Triage Vitals</div>
+                    <div style="font-size:13px; color:#374151; margin-bottom:5px;"><span style="color:#9CA3AF;">BP:</span> {{ patient.blood_pressure }}</div>
+                    <div style="font-size:13px; color:#374151; margin-bottom:5px;"><span style="color:#9CA3AF;">Temp:</span> {{ patient.temperature }}</div>
+                    <div style="font-size:13px; color:#374151;"><span style="color:#9CA3AF;">Weight:</span> {{ patient.weight_kg }}</div>
+                </div>
+                <div>
+                    <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:#9CA3AF; margin-bottom:8px; letter-spacing:0.05em;">&nbsp;</div>
+                    <div style="font-size:13px; color:#374151;"><span style="color:#9CA3AF;">Height:</span> {{ patient.height_cm }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Past Diagnoses -->
+        <div id="tab-history" style="display:none; padding:16px 24px;">
+            {% if patient.past_diagnoses and patient.past_diagnoses | length > 0 %}
+                <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                    <thead>
+                        <tr style="border-bottom:1px solid #E5E7EB;">
+                            <th style="text-align:left; padding:6px 10px; color:#9CA3AF; font-size:10px; font-weight:700; text-transform:uppercase;">Date</th>
+                            <th style="text-align:left; padding:6px 10px; color:#9CA3AF; font-size:10px; font-weight:700; text-transform:uppercase;">Diagnosis</th>
+                            <th style="text-align:left; padding:6px 10px; color:#9CA3AF; font-size:10px; font-weight:700; text-transform:uppercase;">Symptoms</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in patient.past_diagnoses %}
+                        <tr style="border-bottom:1px solid #F3F4F6;">
+                            <td style="padding:8px 10px; color:#6B7280; white-space:nowrap;">{{ d.date }}</td>
+                            <td style="padding:8px 10px; color:#0F172A; font-weight:500;">{{ d.diagnosis }}</td>
+                            <td style="padding:8px 10px; color:#374151;">{{ d.symptoms }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div style="color:#9CA3AF; font-size:13px; text-align:center; padding:20px 0;">No past diagnoses on record.</div>
+            {% endif %}
+        </div>
+
+        <!-- Tab: Prescriptions -->
+        <div id="tab-rx" style="display:none; padding:16px 24px;">
+            {% if patient.past_prescriptions and patient.past_prescriptions | length > 0 %}
+                <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                    <thead>
+                        <tr style="border-bottom:1px solid #E5E7EB;">
+                            <th style="text-align:left; padding:6px 10px; color:#9CA3AF; font-size:10px; font-weight:700; text-transform:uppercase;">Date</th>
+                            <th style="text-align:left; padding:6px 10px; color:#9CA3AF; font-size:10px; font-weight:700; text-transform:uppercase;">Medicine</th>
+                            <th style="text-align:left; padding:6px 10px; color:#9CA3AF; font-size:10px; font-weight:700; text-transform:uppercase;">Dosage</th>
+                            <th style="text-align:left; padding:6px 10px; color:#9CA3AF; font-size:10px; font-weight:700; text-transform:uppercase;">Frequency</th>
+                            <th style="text-align:left; padding:6px 10px; color:#9CA3AF; font-size:10px; font-weight:700; text-transform:uppercase;">Duration</th>
+                            <th style="text-align:left; padding:6px 10px; color:#9CA3AF; font-size:10px; font-weight:700; text-transform:uppercase;">Instructions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rx in patient.past_prescriptions %}
+                        <tr style="border-bottom:1px solid #F3F4F6;">
+                            <td style="padding:8px 10px; color:#6B7280; white-space:nowrap;">{{ rx.date }}</td>
+                            <td style="padding:8px 10px; color:#0F172A; font-weight:500;">{{ rx.medicine_name }}</td>
+                            <td style="padding:8px 10px; color:#374151;">{{ rx.dosage }}</td>
+                            <td style="padding:8px 10px; color:#374151;">{{ rx.frequency }}</td>
+                            <td style="padding:8px 10px; color:#374151;">{{ rx.duration }}</td>
+                            <td style="padding:8px 10px; color:#374151;">{{ rx.instructions }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div style="color:#9CA3AF; font-size:13px; text-align:center; padding:20px 0;">No past prescriptions on record.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+    function switchTab(id) {
+        ['tab-general','tab-history','tab-rx'].forEach(t => {
+            document.getElementById(t).style.display = t === id ? 'block' : 'none';
+        });
+        const btnMap = { 'tab-general':'btn-tab-general', 'tab-history':'btn-tab-history', 'tab-rx':'btn-tab-rx' };
+        Object.entries(btnMap).forEach(([tab, btn]) => {
+            const el = document.getElementById(btn);
+            const active = tab === id;
+            el.style.fontWeight    = active ? '600' : '500';
+            el.style.color         = active ? '#1E3A8A' : '#6B7280';
+            el.style.background    = active ? 'white' : 'transparent';
+            el.style.borderBottom  = active ? '2px solid #1E3A8A' : '2px solid transparent';
+        });
+    }
+    </script>
+
+    <form action="/staff/doctor/consultation/{{ appointment_id }}" method="POST">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:stretch;">
+
+            <!-- LEFT: Clinical Assessment -->
+            <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:24px;">
+                <div style="margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid #E5E7EB;">
+                    <h3 class="h6 fw-bold text-uppercase text-secondary" style="margin:0;">1. Clinical Assessment</h3>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Reported Symptoms</label>
+                    <textarea class="form-control" name="symptoms" rows="4"
+                              placeholder="E.g., Patient reports sore throat and mild fever...">{{ symptoms }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Primary Diagnosis <span style="color:#EF4444;">*</span></label>
+                    <select class="form-select" name="diagnosis" required>
+                        <option value="" disabled {% if diagnosis == "" %}selected{% endif %}>Select primary diagnosis...</option>
+                        <option value="Acute Pharyngitis" {% if diagnosis == "Acute Pharyngitis" %}selected{% endif %}>Acute Pharyngitis</option>
+                        <option value="Viral Infection"   {% if diagnosis == "Viral Infection"   %}selected{% endif %}>Viral Infection</option>
+                        <option value="Routine Checkup"   {% if diagnosis == "Routine Checkup"   %}selected{% endif %}>Routine Checkup</option>
+                        <option value="Hypertension"      {% if diagnosis == "Hypertension"      %}selected{% endif %}>Hypertension</option>
+                        <option value="Sprain / Strain"   {% if diagnosis == "Sprain / Strain"   %}selected{% endif %}>Sprain / Strain</option>
+                    </select>
+                </div>
+                <div class="mb-0">
+                    <label class="form-label fw-semibold small">Treatment Notes</label>
+                    <textarea class="form-control" name="treatment_notes" rows="4"
+                              placeholder="E.g., Advised rest and plenty of fluids...">{{ treatment_notes }}</textarea>
+                </div>
+            </div>
+
+            <!-- RIGHT: Prescription Details -->
+            <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:24px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid #E5E7EB;">
+                    <h3 class="h6 fw-bold text-uppercase text-secondary" style="margin:0;">2. Prescription Details</h3>
+                    <span style="font-size:12px; color:#9CA3AF; font-style:italic;">Optional (leave blank if not needed)</span>
+                </div>
+                <div style="display:flex; gap:12px;">
+                    <div class="mb-3" style="flex:1;">
+                        <label class="form-label fw-semibold small">Medicine Name</label>
+                        <input class="form-control" type="text" name="medicine_name"
+                               value="{{ medicine_name }}" placeholder="E.g., Amoxicillin">
+                    </div>
+                    <div class="mb-3" style="flex:1;">
+                        <label class="form-label fw-semibold small">Dosage</label>
+                        <input class="form-control" type="text" name="dosage"
+                               value="{{ dosage }}" placeholder="E.g., 500mg">
+                    </div>
+                </div>
+                <div style="display:flex; gap:12px;">
+                    <div class="mb-3" style="flex:1;">
+                        <label class="form-label fw-semibold small">Frequency</label>
+                        <input class="form-control" type="text" name="frequency"
+                               value="{{ frequency }}" placeholder="E.g., Twice a day">
+                    </div>
+                    <div class="mb-3" style="flex:1;">
+                        <label class="form-label fw-semibold small">Duration</label>
+                        <input class="form-control" type="text" name="duration"
+                               value="{{ duration }}" placeholder="E.g., 7 days">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Special Instructions</label>
+                    <textarea class="form-control" name="instructions" rows="4"
+                              placeholder="E.g., Take after meals">{{ instructions }}</textarea>
+                </div>
+                <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+                    <button type="submit" class="btn-submit-encounter">
+                        Sign Notes &amp; Generate Bill
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+
 {% endblock %}

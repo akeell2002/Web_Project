@@ -135,7 +135,8 @@ pub async fn get_patient_appointments(
                 (Some(f), Some(l)) => format!("Dr. {} {}", f, l),
                 _ => "Assigned Practitioner".to_string(),
             };
-            let is_upcoming = if row.date > now_date {
+            let is_terminal = matches!(row.status.as_str(), "cancelled" | "no_show");
+            let is_upcoming = !is_terminal && if row.date > now_date {
                 true
             } else if row.date == now_date {
                 row.start_time >= now_time
@@ -159,7 +160,7 @@ pub async fn get_patient_appointments(
     Ok(list)
 }
 
-/// Full clinic schedule for today — used by the receptionist
+/// Full clinic schedule for today - used by the receptionist
 pub async fn get_today_clinic_schedule(pool: &PgPool) -> Result<Vec<serde_json::Value>, String> {
     let today = chrono::Local::now().date_naive();
 
@@ -268,22 +269,96 @@ pub async fn mark_appointment_no_show(
     Ok(())
 }
 
-/// Cancel a scheduled appointment (patient-owned, safety-checked)
-pub async fn cancel_patient_appointment(
-    pool: &PgPool,
+/// Fetch a single appointment by ID for a specific patient (ownership check)
+pub async fn get_patient_appointment_by_id(
+    pool:           &PgPool,
     appointment_id: Uuid,
-    patient_id: Uuid,
+    patient_id:     Uuid,
+) -> Result<Option<crate::models::appointment::Appointment>, sqlx::Error> {
+    sqlx::query_as!(
+        crate::models::appointment::Appointment,
+        r#"
+        SELECT id, patient_id, doctor_id, room_id,
+               status::text as "status!",
+               date, start_time, end_time, queue_number,
+               check_in_time, created_by as "created_by?",
+               created_at, updated_at
+        FROM appointment
+        WHERE id = $1 AND patient_id = $2
+        "#,
+        appointment_id,
+        patient_id
+    )
+    .fetch_optional(pool)
+    .await
+}
+
+/// Update an existing patient appointment (reschedule)
+pub async fn update_patient_appointment(
+    pool:           &PgPool,
+    appointment_id: Uuid,
+    patient_id:     Uuid,
+    doctor_id:      Uuid,
+    date:           chrono::NaiveDate,
+    start_time:     chrono::NaiveTime,
+    end_time:       chrono::NaiveTime,
+    priority:       i32,
+) -> Result<(), sqlx::Error> {
+    let conflict = sqlx::query!(
+        r#"
+        SELECT id FROM appointment
+        WHERE doctor_id = $1
+          AND date = $2
+          AND id != $3
+          AND status NOT IN ('cancelled', 'no_show')
+          AND start_time < $5
+          AND end_time   > $4
+        LIMIT 1
+        "#,
+        doctor_id, date, appointment_id, start_time, end_time
+    )
+    .fetch_optional(pool)
+    .await?;
+
+    if conflict.is_some() {
+        return Err(sqlx::Error::Protocol("Time slot is already booked.".into()));
+    }
+
+    sqlx::query!(
+        r#"
+        UPDATE appointment
+        SET doctor_id      = $1,
+            date          = $2,
+            start_time    = $3,
+            end_time      = $4,
+            priority_level = $5,
+            updated_at    = NOW()
+        WHERE id = $6 AND patient_id = $7
+        "#,
+        doctor_id, date, start_time, end_time, priority, appointment_id, patient_id
+    )
+    .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
+/// Cancel a patient's own appointment (only if still scheduled)
+pub async fn cancel_patient_appointment(
+    pool:           &PgPool,
+    appointment_id: Uuid,
+    patient_id:     Uuid,
 ) -> Result<(), sqlx::Error> {
     sqlx::query!(
         r#"
         UPDATE appointment
-        SET status = 'cancelled'::appointment_status, updated_at = NOW()
-        WHERE id         = $1
-          AND patient_id = $2
-          AND status     = 'scheduled'::appointment_status
+        SET status     = 'cancelled'::appointment_status,
+            updated_at = NOW()
+        WHERE id = $1 AND patient_id = $2
+          AND status = 'scheduled'::appointment_status
         "#,
         appointment_id,
-        patient_id,
+        patient_id
     )
     .execute(pool)
     .await?;

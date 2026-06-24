@@ -393,7 +393,7 @@ body.page-app-patient .slot-available input[type="radio"] { accent-color: #16a34
 .status-checked_in, .status-pending, .pill-waiting { background: #FEF3C7; color: #D97706; }
 .status-vitals_taken, .status-completed,
 .status-resolved, .pill-available, .pill-vitals    { background: #D1FAE5; color: #065F46; }
-.status-cancelled                                  { background: #F3F4F6; color: #6B7280; }
+.status-cancelled                                  { background: #FEE2E2; color: #DC2626; }
 .status-no_show                                    { background: #FEE2E2; color: #DC2626; }
 
 /* ── BED MANAGEMENT PILLS ───────────────────────────────────────── */
@@ -531,22 +531,28 @@ body.page-app-patient .slot-available input[type="radio"] { accent-color: #16a34
 .onboard-card > p  { color: #64748B; font-size: 14px; margin: 0 0 16px; }
 
 /* ── BOOKING ────────────────────────────────────────────────────── */
-.booking-card { padding: 28px; max-width: 700px; margin: 0 auto; }
-.booking-card h2 { font-size: 18px; font-weight: 700; margin: 0 0 20px; }
-.slots-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 20px; }
+.booking-card { padding: 32px; width: 100%; }
+.booking-card h2 { font-size: 20px; font-weight: 700; margin: 0 0 24px; }
+.slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+    margin: 14px 0 24px;
+}
 .slot-available {
-    padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600;
+    padding: 12px 10px; border-radius: 10px; cursor: pointer; font-weight: 600;
     background: #EFF6FF; border: 2px solid #BFDBFE; color: #1E40AF; font-size: 13px;
-    transition: background 0.15s; display: inline-flex; align-items: center; gap: 6px;
+    transition: background 0.15s; display: flex; flex-direction: column;
+    align-items: center; gap: 4px; text-align: center;
 }
 .slot-available:hover { background: #DBEAFE; border-color: #93C5FD; }
-.slot-available input[type="radio"] { accent-color: #1E40AF; width: 14px; height: 14px; cursor: pointer; }
+.slot-available input[type="radio"] { display: none; }
 .slot-available:has(input:checked) { background: #1E40AF; color: white; border-color: #1E40AF; }
 .slot-unavailable {
-    padding: 8px 14px; border-radius: 8px; font-weight: 500;
-    background: #F3F4F6; color: #9CA3AF; font-size: 13px;
+    padding: 12px 10px; border-radius: 10px; font-weight: 500;
+    background: #F3F4F6; color: #CBD5E1; font-size: 13px;
     text-decoration: line-through; cursor: not-allowed;
-    border: 2px solid transparent;
+    border: 2px solid #F3F4F6; text-align: center;
 }
 
 /* ── DOCTOR QUEUE ───────────────────────────────────────────────── */
@@ -579,7 +585,7 @@ body.page-app-patient .slot-available input[type="radio"] { accent-color: #16a34
 }
 
 /* ── CONSULTATION FORM ──────────────────────────────────────────── */
-.form-container { padding: 28px; max-width: 720px; }
+.form-container { padding: 20px 24px; max-width: 620px; margin: 0 auto; }
 .header-box {
     background: #EFF6FF; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px;
     border-left: 4px solid #005999;

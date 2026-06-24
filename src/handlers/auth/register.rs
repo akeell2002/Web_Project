@@ -17,7 +17,7 @@ pub async fn show_register(tera: web::Data<Tera>) -> impl Responder {
 pub async fn register(
     pool:    web::Data<PgPool>,
     form:    web::Form<PatientRegisterForm>,
-    session: Session,
+    _session: Session,
 ) -> impl Responder {
     if form.password != form.confirm_password {
         return HttpResponse::BadRequest().body("Passwords do not match!");

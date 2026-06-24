@@ -1,0 +1,65 @@
+{% extends "shared/layout.html" %}
+{% block title %}Bill History - HealthHub{% endblock %}
+{% block page_title %}Bill History{% endblock %}
+{% block nav_patient_bills %}class="active"{% endblock %}
+{% block extra_head %}{% endblock %}
+{% block content %}
+    <div class="page-header">
+        <div>
+            <h2>Bill History</h2>
+            <p>A record of all invoices generated from your appointments.</p>
+        </div>
+        <a href="/patient/dashboard"
+           style="color:#64748B;
+                  text-decoration:none;
+                  font-size:14px;
+                  font-weight:500">Back to Dashboard</a>
+    </div>
+
+    <div class="content-card">
+        {% if bills %}
+            <table class="table table-bordered table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Appointment Date</th>
+                        <th>Consultation Fee</th>
+                        <th>Medicine Fee</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bill in bills %}
+                        <tr>
+                            <td>{{ bill.appointment_date }}</td>
+                            <td>S${{ bill.consultation_fee }}</td>
+                            <td>S${{ bill.medicine_fee }}</td>
+                            <td style="font-weight:600;">S${{ bill.total_amount }}</td>
+                            <td>
+                                {% if bill.payment_status == "paid" %}
+                                    <span style="background:#D1FAE5;
+                                                 color:#065F46;
+                                                 padding:3px 10px;
+                                                 border-radius:12px;
+                                                 font-size:11px;
+                                                 font-weight:bold;
+                                                 text-transform:uppercase">Paid</span>
+                                {% else %}
+                                    <span style="background:#FEE2E2;
+                                                 color:#DC2626;
+                                                 padding:3px 10px;
+                                                 border-radius:12px;
+                                                 font-size:11px;
+                                                 font-weight:bold;
+                                                 text-transform:uppercase">Unpaid</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="text-center text-muted py-5">No billing records found.</div>
+        {% endif %}
+    </div>
+{% endblock %}
