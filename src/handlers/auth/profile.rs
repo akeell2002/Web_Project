@@ -72,9 +72,10 @@ pub async fn update_patient_profile_handler(
         Some(id) => id,
         None     => return HttpResponse::SeeOther().append_header(("Location", "/patient/login")).finish(),
     };
-
+    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
     match crate::db::patients::update_patient_profile(
         &pool,
+        &email,
         patient_id,
         &form.first_name,
         &form.last_name,

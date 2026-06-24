@@ -1,304 +1,603 @@
-{% extends "shared/layout.html" %}
-{% block title %}Dashboard - HealthHub{% endblock %}
-{% block page_title %}
-    {% if specific_role == "admin" %}
-        Administrator Dashboard
-    {% elif specific_role == "doctor" %}
-        Doctor Dashboard
-    {% elif specific_role == "nurse" %}
-        Nurse Dashboard
-    {% elif specific_role == "receptionist" %}
-        Receptionist Dashboard
-    {% elif specific_role == "patient" %}
-        Patient Dashboard
-    {% endif %}
-{% endblock %}
-{# Mark the "Overview / Home" nav item active for each role #}
-{% block nav_admin_overview %}class="active"{% endblock %}
-{% block nav_doctor_overview %}class="active"{% endblock %}
-{% block nav_nurse_overview %}class="active"{% endblock %}
-{% block nav_recep_overview %}class="active"{% endblock %}
-{% block nav_patient_home %}class="active"{% endblock %}
-{% block extra_head %}{% endblock %}
-{% block content %}
+{% extends "shared/layout.html" %}
+
+{% block title %}Dashboard - HealthHub{% endblock %}
+
+{% block page_title %}
+
+    {% if specific_role == "admin" %}
+
+        Administrator Dashboard
+
+    {% elif specific_role == "doctor" %}
+
+        Doctor Dashboard
+
+    {% elif specific_role == "nurse" %}
+
+        Nurse Dashboard
+
+    {% elif specific_role == "receptionist" %}
+
+        Receptionist Dashboard
+
+    {% elif specific_role == "patient" %}
+
+        Patient Dashboard
+
+    {% endif %}
+
+{% endblock %}
+
+{# Mark the "Overview / Home" nav item active for each role #}
+
+{% block nav_admin_overview %}class="active"{% endblock %}
+
+{% block nav_doctor_overview %}class="active"{% endblock %}
+
+{% block nav_nurse_overview %}class="active"{% endblock %}
+
+{% block nav_recep_overview %}class="active"{% endblock %}
+
+{% block nav_patient_home %}class="active"{% endblock %}
+
+{% block extra_head %}{% endblock %}
+
+{% block content %}
+
     
 
-    <!-- Welcome Banner -->
-    <div class="welcome-banner {% if specific_role == "patient" %}patient-theme{% endif %}">
-        <h2>Welcome back, {{ display_name }}</h2>
-        <p>
-            {% if specific_role == "admin" %}
-                Full system oversight — staff, security, and clinical operations.
-            {% elif specific_role == "doctor" %}
-                Your clinical queue and patient records are ready.
-            {% elif specific_role == "nurse" %}
-                Triage station and patient care tools are available.
-            {% elif specific_role == "receptionist" %}
-                Reception desk, billing, and front-of-house tools.
-            {% elif specific_role == "patient" %}
-                Manage your appointments and view your visit history below.
-            {% endif %}
-        </p>
-    </div>
-    <!-- ADMIN -->
-    {% if specific_role == "admin" %}
-        <div class="stats-grid">
-            <a href="/admin/staff" class="stat-card">
-                <h3>Total Staff</h3>
-                <div class="value">{{ staff_counts.total_staff }}</div>
-            </a> <a href="/admin/staff?role=doctor" class="stat-card">
-            <h3>Doctors</h3>
-            <div class="value">{{ staff_counts.doctors }}</div>
-        </a> <a href="/admin/staff?role=nurse" class="stat-card">
-        <h3>Nurses</h3>
-        <div class="value">{{ staff_counts.nurses }}</div>
-    </a> <a href="/admin/staff?role=receptionist" class="stat-card">
-    <h3>Receptionists</h3>
-    <div class="value">{{ staff_counts.receptionists }}</div>
-</a> <a href="/admin/staff?role=admin" class="stat-card">
-<h3>Admins</h3>
-<div class="value">{{ staff_counts.admins }}</div>
-</a>
-</div>
-<div class="action-grid">
-    <div class="action-card">
-        <div class="action-icon"></div>
-        <h3>Staff Management</h3>
-        <p>View and manage all staff accounts — filter by role, search by name, and review profiles.</p>
-        <a href="/admin/staff" class="btn btn-primary btn-sm">Manage Staff</a>
-    </div>
-    <div class="action-card">
-        <div class="action-icon"></div>
-        <h3>Onboard Staff</h3>
-        <p>Create doctor, nurse, receptionist, or admin accounts from a single controlled onboarding flow.</p>
-        <a href="/admin/staff/onboard" class="btn btn-primary btn-sm">Onboard Staff</a>
-    </div>
-    <div class="action-card">
-        <div class="action-icon"></div>
-        <h3>Security Monitoring</h3>
-        <p>Review login activity, detect anomalies, and monitor system access logs for compliance auditing.</p>
-        <a href="/admin/security" class="btn btn-danger btn-sm">View Security Logs</a>
-    </div>
-    <div class="action-card">
-        <div class="action-icon"></div>
-        <h3>Patient Directory</h3>
-        <p>Browse all registered patients, view profiles, and access full visit and medical record history.</p>
-        <a href="/staff/patients" class="btn btn-info btn-sm">Open Directory</a>
-    </div>
-    <div class="action-card">
-        <div class="action-icon"></div>
-        <h3>System Analytics</h3>
-        <p>View usage metrics including appointments, patient volume, staff activity, and operational trends.</p>
-        <a href="/admin/analytics" class="btn btn-info btn-sm">View Analytics</a>
-    </div>
-    <div class="action-card">
-        <div class="action-icon"></div>
-        <h3>Support Tickets</h3>
-        <p>Review and reply to account or access issues submitted by users through the public contact form.</p>
-        <a href="/admin/support" class="btn btn-primary btn-sm">Open Tickets</a>
-    </div>
-</div>
-{% endif %}
-<!-- DOCTOR -->
-{% if specific_role == "doctor" %}
-    <div class="action-grid">
-        <div class="action-card">
-            <div class="badge bg-secondary mb-2">Doctor Module</div>
-            <div class="action-icon"></div>
-            <h3>Consult Patients</h3>
-            <p>Review assigned patient records and capture consultation notes for active visits.</p>
-            <a href="/staff/doctor/queue" class="btn btn-primary btn-sm">Open Consultations</a>
-        </div>
-        <div class="action-card">
-            <div class="badge bg-secondary mb-2">Doctor Module</div>
-            <div class="action-icon"></div>
-            <h3>Prescribe Medication</h3>
-            <p>Create prescription plans and document treatment instructions tied to a patient visit.</p>
-            <a href="/staff/doctor/prescribe" class="btn btn-primary btn-sm">Write Prescription</a>
-        </div>
-        <div class="action-card">
-            <div class="badge bg-secondary mb-2">Doctor Module</div>
-            <div class="action-icon"></div>
-            <h3>Patient Records</h3>
-            <p>View the full electronic health record history, including diagnoses and visit summaries.</p>
-            <a href="/staff/patients" class="btn btn-info btn-sm">Open Records</a>
-        </div>
-    </div>
-{% endif %}
-<!-- NURSE -->
-{% if specific_role == "nurse" %}
-    <div class="action-grid">
-        <div class="action-card">
-            <div class="badge bg-secondary mb-2">Nurse Module</div>
-            <div class="action-icon"></div>
-            <h3>Nurse Triage Station</h3>
-            <p>Record vital checks, patient weight, height, and blood pressure for arriving patients.</p>
-            <a href="/staff/nurse/triage" class="btn btn-info btn-sm">Open Triage Desk</a>
-        </div>
-        <div class="action-card">
-            <div class="badge bg-secondary mb-2">Nurse Module</div>
-            <div class="action-icon"></div>
-            <h3>Medication Administration</h3>
-            <p>Document administered medication and track patient response after treatment.</p>
-            <a href="/staff/nurse/medications" class="btn btn-info btn-sm">Administration Log</a>
-        </div>
-        <div class="action-card">
-            <div class="badge bg-secondary mb-2">Nurse Module</div>
-            <div class="action-icon"></div>
-            <h3>Patient Directory</h3>
-            <p>Look up patient profiles and review medical history and visit records.</p>
-            <a href="/staff/patients" class="btn btn-primary btn-sm">View Patients</a>
-        </div>
-    </div>
-{% endif %}
-<!-- RECEPTIONIST -->
-{% if specific_role == "receptionist" %}
-    <div class="action-grid">
-        <div class="action-card">
-            <div class="badge bg-secondary mb-2">Reception Module</div>
-            <div class="action-icon"></div>
-            <h3>Manage Appointments</h3>
-            <p>View today's schedule, check in arriving patients, and manage the clinic queue.</p>
-            <a href="/staff/receptionist/reception" class="btn btn-info btn-sm">Open Reception Desk</a>
-        </div>
-        <div class="action-card">
-            <div class="badge bg-secondary mb-2">Reception Module</div>
-            <div class="action-icon"></div>
-            <h3>Patient Directory</h3>
-            <p>Look up patient profiles, register new patients, and manage front desk records.</p>
-            <a href="/staff/patients" class="btn btn-primary btn-sm">View Patients</a>
-        </div>
-        <div class="action-card">
-            <div class="badge bg-secondary mb-2">Reception Module</div>
-            <div class="action-icon"></div>
-            <h3>Manage Bills</h3>
-            <p>Prepare and track billing records for appointments and front desk transactions.</p>
-            <a href="/staff/receptionist/billing" class="btn btn-primary btn-sm">Billing Desk</a>
-        </div>
-    </div>
-{% endif %}
-<!-- PATIENT -->
-{% if specific_role == "patient" %}
-    <div id="flash-banner"
-         style="display:none;
-                border-radius:10px;
-                padding:12px 20px;
-                margin-bottom:18px;
-                font-size: 14px;
-                font-weight:600"></div>
-    <script> (function(){
- const p = new URLSearchParams(window.location.search);
- const banner = document.getElementById('flash-banner');
- if (p.get('success') === 'cancelled') {
- banner.style.display = 'flex';
- banner.style.background = '#D1FAE5'; banner.style.color = '#065F46';
- banner.style.border = '1px solid #6EE7B7';
- banner.textContent = ' Appointment cancelled successfully.';
- } else if (p.get('error') === 'cancel_failed') {
- banner.style.display = 'flex';
- banner.style.background = '#FEE2E2'; banner.style.color = '#DC2626';
- banner.style.border = '1px solid #FECACA';
- banner.textContent = ' Could not cancel — appointment may already be checked in.';
- }
- })();
-    </script>
-    <div class="content-card">
-        <h2 class="green-accent">Upcoming Appointments</h2>
-        {% if upcoming_appointments %}
-            <table class="table table-bordered table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Practitioner</th>
-                        <th>Date</th>
-                        <th>Time Slot</th>
-                        <th>Room</th>
-                        <th>Status</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for app in upcoming_appointments %}
-                        <tr>
-                            <td style="font-weight:600;">{{ app.doctor_name }}</td>
-                            <td>{{ app.formatted_date }}</td>
-                            <td>
-                                <span style="background:#EFF6FF;
-                                             color:#1E40AF;
-                                             padding:3px 8px;
-                                             border-radius:4px;
-                                             font-size: 12px;
-                                             font-weight:bold">{{ app.start_time }} – {{ app.end_time }}</span>
-                            </td>
-                            <td style="color:#047857;font-weight:bold;">{{ app.room }}</td>
-                            <td>
-                                <span style="background:#D1FAE5;
-                                             color:#065F46;
-                                             padding:3px 10px;
-                                             border-radius:12px;
-                                             font-size: 11px;
-                                             font-weight:bold;
-                                             text-transform:uppercase">{{ app.status }}</span>
-                            </td>
-                            <td>
-                                {% if app.status == "scheduled" %}
-                                    <form method="POST"
-                                          action="/patient/appointments/{{ app.id }}/cancel"
-                                          onsubmit="return confirm('Cancel this appointment?');"
-                                          style="margin:0">
-                                        <button type="submit"
-                                                style="background:#FEE2E2;
-                                                       color:#DC2626;
-                                                       border:none;
-                                                       padding:5px 12px;
-                                                       border-radius:6px;
-                                                       font-size: 12px;
-                                                       font-weight:600;
-                                                       cursor:pointer">Cancel</button>
-                                    </form>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <div class="text-center text-muted py-5">No upcoming appointments scheduled.</div>
-        {% endif %}
-    </div>
-    <div class="content-card">
-        <h2>Past Visits</h2>
-        {% if historical_appointments %}
-            <table class="table table-bordered table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Practitioner</th>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for app in historical_appointments %}
-                        <tr>
-                            <td style="font-weight:500;">{{ app.doctor_name }}</td>
-                            <td>{{ app.formatted_date }}</td>
-                            <td>{{ app.start_time }}</td>
-                            <td>
-                                <span style="background:#E5E7EB;
-                                             color:#374151;
-                                             padding:3px 10px;
-                                             border-radius:12px;
-                                             font-size: 11px;
-                                             font-weight:bold;
-                                             text-transform:uppercase">{{ app.status }}</span>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <div class="text-center text-muted py-5">No past visit records found.</div>
-        {% endif %}
+    <!-- Welcome Banner -->
+
+    <div class="welcome-banner {% if specific_role == "patient" %}patient-theme{% endif %}">
+
+        <h2>Welcome back, {{ display_name }}</h2>
+
+        <p>
+
+            {% if specific_role == "admin" %}
+
+                Full system oversight — staff, security, and clinical operations.
+
+            {% elif specific_role == "doctor" %}
+
+                Your clinical queue and patient records are ready.
+
+            {% elif specific_role == "nurse" %}
+
+                Triage station and patient care tools are available.
+
+            {% elif specific_role == "receptionist" %}
+
+                Reception desk, billing, and front-of-house tools.
+
+            {% elif specific_role == "patient" %}
+
+                Manage your appointments and view your visit history below.
+
+            {% endif %}
+
+        </p>
+
+    </div>
+
+    <!-- ADMIN -->
+
+    {% if specific_role == "admin" %}
+
+        <div class="stats-grid">
+
+            <a href="/admin/staff" class="stat-card">
+
+                <h3>Total Staff</h3>
+
+                <div class="value">{{ staff_counts.total_staff }}</div>
+
+            </a> <a href="/admin/staff?role=doctor" class="stat-card">
+
+            <h3>Doctors</h3>
+
+            <div class="value">{{ staff_counts.doctors }}</div>
+
+        </a> <a href="/admin/staff?role=nurse" class="stat-card">
+
+        <h3>Nurses</h3>
+
+        <div class="value">{{ staff_counts.nurses }}</div>
+
+    </a> <a href="/admin/staff?role=receptionist" class="stat-card">
+
+    <h3>Receptionists</h3>
+
+    <div class="value">{{ staff_counts.receptionists }}</div>
+
+</a> <a href="/admin/staff?role=admin" class="stat-card">
+
+<h3>Admins</h3>
+
+<div class="value">{{ staff_counts.admins }}</div>
+
+</a>
+
+</div>
+
+<div class="action-grid">
+
+    <div class="action-card">
+
+        <div class="action-icon"></div>
+
+        <h3>Staff Management</h3>
+
+        <p>View and manage all staff accounts - filter by role, search by name, and review profiles.</p>
+
+        <a href="/admin/staff" class="btn btn-primary btn-sm">Manage Staff</a>
+
+    </div>
+
+    <div class="action-card">
+
+        <div class="action-icon"></div>
+
+        <h3>Onboard Staff</h3>
+
+        <p>Create doctor, nurse, receptionist, or admin accounts from a single controlled onboarding flow.</p>
+
+        <a href="/admin/staff/onboard" class="btn btn-primary btn-sm">Onboard Staff</a>
+
+    </div>
+
+    <div class="action-card">
+
+        <div class="action-icon"></div>
+
+        <h3>Security Monitoring</h3>
+
+        <p>Review login activity, detect anomalies, and monitor system access logs for compliance auditing.</p>
+
+        <a href="/admin/security" class="btn btn-danger btn-sm">View Security Logs</a>
+
+    </div>
+
+    <div class="action-card">
+
+        <div class="action-icon"></div>
+
+        <h3>Patient Directory</h3>
+
+        <p>Browse all registered patients, view profiles, and access full visit and medical record history.</p>
+
+        <a href="/staff/patients" class="btn btn-info btn-sm">Open Directory</a>
+
+    </div>
+
+    <div class="action-card">
+
+        <div class="action-icon"></div>
+
+        <h3>System Analytics</h3>
+
+        <p>View usage metrics including appointments, patient volume, staff activity, and operational trends.</p>
+
+        <a href="/admin/analytics" class="btn btn-info btn-sm">View Analytics</a>
+
+    </div>
+
+    <div class="action-card">
+
+        <div class="action-icon"></div>
+
+        <h3>Support Tickets</h3>
+
+        <p>Review and reply to account or access issues submitted by users through the public contact form.</p>
+
+        <a href="/admin/support" class="btn btn-primary btn-sm">Open Tickets</a>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+<!-- DOCTOR -->
+
+{% if specific_role == "doctor" %}
+
+    <div class="action-grid">
+
+        <div class="action-card">
+
+            <div class="badge bg-secondary mb-2">Doctor Module</div>
+
+            <div class="action-icon"></div>
+
+            <h3>Consult Patients</h3>
+
+            <p>Review assigned patient records and capture consultation notes for active visits.</p>
+
+            <a href="/staff/doctor/queue" class="btn btn-primary btn-sm">Open Consultations</a>
+
+        </div>
+
+        <div class="action-card">
+
+            <div class="badge bg-secondary mb-2">Doctor Module</div>
+
+            <div class="action-icon"></div>
+
+            <h3>Prescribe Medication</h3>
+
+            <p>Create prescription plans and document treatment instructions tied to a patient visit.</p>
+
+            <a href="/staff/doctor/prescribe" class="btn btn-primary btn-sm">Write Prescription</a>
+
+        </div>
+
+        <div class="action-card">
+
+            <div class="badge bg-secondary mb-2">Doctor Module</div>
+
+            <div class="action-icon"></div>
+
+            <h3>Patient Records</h3>
+
+            <p>View the full electronic health record history, including diagnoses and visit summaries.</p>
+
+            <a href="/staff/patients" class="btn btn-info btn-sm">Open Records</a>
+
+        </div>
+
+    </div>
+
+{% endif %}
+
+<!-- NURSE -->
+
+{% if specific_role == "nurse" %}
+
+    <div class="action-grid">
+
+        <div class="action-card">
+
+            <div class="badge bg-secondary mb-2">Nurse Module</div>
+
+            <div class="action-icon"></div>
+
+            <h3>Nurse Triage Station</h3>
+
+            <p>Record vital checks, patient weight, height, and blood pressure for arriving patients.</p>
+
+            <a href="/staff/nurse/triage" class="btn btn-info btn-sm">Open Triage Desk</a>
+
+        </div>
+
+        <div class="action-card">
+
+            <div class="badge bg-secondary mb-2">Nurse Module</div>
+
+            <div class="action-icon"></div>
+
+            <h3>Medication Administration</h3>
+
+            <p>Document administered medication and track patient response after treatment.</p>
+
+            <a href="/staff/nurse/medications" class="btn btn-info btn-sm">Administration Log</a>
+
+        </div>
+
+        <div class="action-card">
+
+            <div class="badge bg-secondary mb-2">Nurse Module</div>
+
+            <div class="action-icon"></div>
+
+            <h3>Patient Directory</h3>
+
+            <p>Look up patient profiles and review medical history and visit records.</p>
+
+            <a href="/staff/patients" class="btn btn-primary btn-sm">View Patients</a>
+
+        </div>
+
+    </div>
+
+{% endif %}
+
+<!-- RECEPTIONIST -->
+
+{% if specific_role == "receptionist" %}
+
+    <div class="action-grid">
+
+        <div class="action-card">
+
+            <div class="badge bg-secondary mb-2">Reception Module</div>
+
+            <div class="action-icon"></div>
+
+            <h3>Manage Appointments</h3>
+
+            <p>View today's schedule, check in arriving patients, and manage the clinic queue.</p>
+
+            <a href="/staff/receptionist/reception" class="btn btn-info btn-sm">Open Reception Desk</a>
+
+        </div>
+
+        <div class="action-card">
+
+            <div class="badge bg-secondary mb-2">Reception Module</div>
+
+            <div class="action-icon"></div>
+
+            <h3>Patient Directory</h3>
+
+            <p>Look up patient profiles, register new patients, and manage front desk records.</p>
+
+            <a href="/staff/patients" class="btn btn-primary btn-sm">View Patients</a>
+
+        </div>
+
+        <div class="action-card">
+
+            <div class="badge bg-secondary mb-2">Reception Module</div>
+
+            <div class="action-icon"></div>
+
+            <h3>Manage Bills</h3>
+
+            <p>Prepare and track billing records for appointments and front desk transactions.</p>
+
+            <a href="/staff/receptionist/billing" class="btn btn-primary btn-sm">Billing Desk</a>
+
+        </div>
+
+    </div>
+
+{% endif %}
+
+<!-- PATIENT -->
+
+{% if specific_role == "patient" %}
+
+    <div id="flash-banner"
+
+         style="display:none;
+
+                border-radius:10px;
+
+                padding:12px 20px;
+
+                margin-bottom:18px;
+
+                font-size: 14px;
+
+                font-weight:600"></div>
+
+    <script> (function(){
+
+ const p = new URLSearchParams(window.location.search);
+
+ const banner = document.getElementById('flash-banner');
+
+ if (p.get('success') === 'cancelled') {
+
+ banner.style.display = 'flex';
+
+ banner.style.background = '#D1FAE5'; banner.style.color = '#065F46';
+
+ banner.style.border = '1px solid #6EE7B7';
+
+ banner.textContent = ' Appointment cancelled successfully.';
+
+ } else if (p.get('error') === 'cancel_failed') {
+
+ banner.style.display = 'flex';
+
+ banner.style.background = '#FEE2E2'; banner.style.color = '#DC2626';
+
+ banner.style.border = '1px solid #FECACA';
+
+ banner.textContent = ' Could not cancel — appointment may already be checked in.';
+
+ }
+
+ })();
+
+    </script>
+
+    <div class="content-card">
+
+        <h2 class="green-accent">Upcoming Appointments</h2>
+
+        {% if upcoming_appointments %}
+
+            <table class="table table-bordered table-hover align-middle">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Practitioner</th>
+
+                        <th>Date</th>
+
+                        <th>Time Slot</th>
+
+                        <th>Room</th>
+
+                        <th>Status</th>
+
+                        <th></th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for app in upcoming_appointments %}
+
+                        <tr>
+
+                            <td style="font-weight:600;">{{ app.doctor_name }}</td>
+
+                            <td>{{ app.formatted_date }}</td>
+
+                            <td>
+
+                                <span style="background:#EFF6FF;
+
+                                             color:#1E40AF;
+
+                                             padding:3px 8px;
+
+                                             border-radius:4px;
+
+                                             font-size: 12px;
+
+                                             font-weight:bold">{{ app.start_time }} – {{ app.end_time }}</span>
+
+                            </td>
+
+                            <td style="color:#047857;font-weight:bold;">{{ app.room }}</td>
+
+                            <td>
+
+                                <span style="background:#D1FAE5;
+
+                                             color:#065F46;
+
+                                             padding:3px 10px;
+
+                                             border-radius:12px;
+
+                                             font-size: 11px;
+
+                                             font-weight:bold;
+
+                                             text-transform:uppercase">{{ app.status }}</span>
+
+                            </td>
+
+                            <td>
+
+                                {% if app.status == "scheduled" %}
+
+                                    <form method="POST"
+
+                                          action="/patient/appointments/{{ app.id }}/cancel"
+
+                                          onsubmit="return confirm('Cancel this appointment?');"
+
+                                          style="margin:0">
+
+                                        <button type="submit"
+
+                                                style="background:#FEE2E2;
+
+                                                       color:#DC2626;
+
+                                                       border:none;
+
+                                                       padding:5px 12px;
+
+                                                       border-radius:6px;
+
+                                                       font-size: 12px;
+
+                                                       font-weight:600;
+
+                                                       cursor:pointer">Cancel</button>
+
+                                    </form>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        {% else %}
+
+            <div class="text-center text-muted py-5">No upcoming appointments scheduled.</div>
+
+        {% endif %}
+
+    </div>
+
+    <div class="content-card">
+
+        <h2>Past Visits</h2>
+
+        {% if historical_appointments %}
+
+            <table class="table table-bordered table-hover align-middle">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Practitioner</th>
+
+                        <th>Date</th>
+
+                        <th>Time</th>
+
+                        <th>Status</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for app in historical_appointments %}
+
+                        <tr>
+
+                            <td style="font-weight:500;">{{ app.doctor_name }}</td>
+
+                            <td>{{ app.formatted_date }}</td>
+
+                            <td>{{ app.start_time }}</td>
+
+                            <td>
+
+                                <span style="background:#E5E7EB;
+
+                                             color:#374151;
+
+                                             padding:3px 10px;
+
+                                             border-radius:12px;
+
+                                             font-size: 11px;
+
+                                             font-weight:bold;
+
+                                             text-transform:uppercase">{{ app.status }}</span>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        {% else %}
+
+            <div class="text-center text-muted py-5">No past visit records found.</div>
+
+        {% endif %}
+
     </div>
 {% endif %}
 {% endblock %}

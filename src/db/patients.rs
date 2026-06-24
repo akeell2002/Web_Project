@@ -56,11 +56,23 @@ pub async fn register_patient(
     .await
     .map_err(|e| format!("Database error while creating patient profile: {}", e))?;
 
-    // 4. Commit transaction safely
-    tx.commit()
-        .await
-        .map_err(|e| format!("Failed to commit transaction: {}", e))?;
+    // To audit the creation process
+    let details = format!("Account created for {} for type patient",  email);
+    tx.commit().await.map_err(|e| format!("Transaction commit failed for {}: {}", email, e))?;
 
+    // Execute logging after a successful transaction commit
+    let _ = crate::db::users::log_access_event(
+        pool,
+        Some(user.id),
+        Some(email),
+        "patient_account_created",
+        Some(user.id),
+        email,
+        "patient",
+        &details,
+    ).await;
+
+    println!("Account created for {} for type patient",  email);    
     Ok(user)
 }
 
@@ -105,7 +117,8 @@ pub async fn get_patient_directory(pool: &PgPool) -> Result<Vec<serde_json::Valu
 
 /// Update a patient's demographic details
 pub async fn update_patient_profile(
-    pool:       &PgPool,
+    pool: &PgPool,
+    email: &str,
     patient_id: Uuid,
     first_name: &str,
     last_name:  &str,
@@ -115,6 +128,11 @@ pub async fn update_patient_profile(
     emergency_contact_name:  Option<String>,
     emergency_contact_phone: Option<String>,
 ) -> Result<(), String> {
+    let mut tx: Transaction<'_, Postgres> = pool
+        .begin()
+        .await
+        .map_err(|e| format!("Failed to start transaction: {}", e))?;
+
     sqlx::query!(
         r#"
         UPDATE patient
@@ -140,11 +158,52 @@ pub async fn update_patient_profile(
     .execute(pool)
     .await
     .map_err(|e| format!("Failed to update patient profile: {}", e))?;
+
+    // To audit the update process
+    let details = format!("Account updated for {} for type patient",  email);
+    tx.commit().await.map_err(|e| format!("Transaction commit failed for {}: {}", email, e))?;
+
+    // Execute logging after a successful transaction commit
+    let _ = crate::db::users::log_access_event(
+        pool,
+        Some(patient_id),
+        Some(email),
+        "patient_account_updated",
+        Some(patient_id),
+        email,
+        "patient",
+        &details,
+    ).await;
+
+    println!("Account updated for {} for type patient",  email);  
     Ok(())
 }
 
 /// Delete a patient's user account (cascades to patient profile and all related records)
-pub async fn delete_patient(pool: &PgPool, patient_id: Uuid) -> Result<(), String> {
+pub async fn delete_patient(pool: &PgPool, patient_id: Uuid, admin_email:&str, patient_email: &str,) -> Result<(), String> {
+    let mut tx: Transaction<'_, Postgres> = pool
+        .begin()
+        .await
+        .map_err(|e| format!("Failed to start transaction: {}", e))?;
+
+    // To audit the delete process, we log the deletion attempt before actually deleting the account
+    let details = format!("Account {} deleted by {}.", patient_email, admin_email);
+    tx.commit().await.map_err(|e| format!("Transaction commit failed for {}: {}", patient_email, e))?;
+
+    // Execute logging after a successful transaction commit
+    let _ = crate::db::users::log_access_event(
+        pool,
+        Some(patient_id),
+        Some(patient_email),
+        "patient_account_deleted",
+        Some(patient_id),
+        patient_email,
+        "patient",
+        &details,
+    ).await;
+
+    println!("Account deleted for {} successfully.", patient_email);
+
     sqlx::query!(
         "DELETE FROM users WHERE id = $1 AND role = 'patient'::user_role",
         patient_id
@@ -152,6 +211,8 @@ pub async fn delete_patient(pool: &PgPool, patient_id: Uuid) -> Result<(), Strin
     .execute(pool)
     .await
     .map_err(|e| format!("Failed to delete patient: {}", e))?;
+    
+      
     Ok(())
 }
 

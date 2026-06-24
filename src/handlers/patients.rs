@@ -194,9 +194,11 @@ pub async fn process_edit_patient(
     if let Err(r) = super::staff_only(&session) { return r; }
 
     let patient_id = path.into_inner();
+    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
 
     match crate::db::patients::update_patient_profile(
         pool.get_ref(),
+        &email,
         patient_id,
         &form.first_name,
         &form.last_name,
@@ -226,8 +228,19 @@ pub async fn process_delete_patient(
     }
 
     let patient_id = path.into_inner();
+    let admin_email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let patient_email = match sqlx::query_scalar!(
+        "SELECT email FROM users WHERE id = $1 AND role = 'patient'::user_role",
+        patient_id
+    )
+    .fetch_optional(pool.get_ref())
+    .await {
+        Ok(Some(email)) => email,
+        Ok(None) => return HttpResponse::NotFound().body("Target patient account not found."),
+        Err(e) => return HttpResponse::InternalServerError().body(format!("Database registry error: {}", e)),
+    };
 
-    match crate::db::patients::delete_patient(pool.get_ref(), patient_id).await {
+    match crate::db::patients::delete_patient(pool.get_ref(), patient_id, &admin_email, &patient_email).await {
         Ok(_)  => HttpResponse::SeeOther()
             .append_header(("Location", "/staff/patients?success=patient_deleted"))
             .finish(),
