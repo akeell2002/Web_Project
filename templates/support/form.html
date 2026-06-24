@@ -3,38 +3,48 @@
 {% block title %}Contact Support - HealthHub{% endblock %}
 
 {% block body %}
-<body class="page-auth">
+<body class="page-auth page-auth-support">
 
-<div class="d-flex align-items-center justify-content-center min-vh-100">
-    <div class="support-card">
-        <div class="support-logo">HealthHub</div>
-        <div class="support-sub">Contact Support</div>
+    <div class="auth-orb auth-orb-1"></div>
+    <div class="auth-orb auth-orb-2"></div>
+    <div class="auth-orb auth-orb-3"></div>
+
+    <div class="glass-card glass-card-wide">
+
+        <div class="glass-brand">
+            <div class="glass-brand-logo">HealthHub</div>
+            <div class="glass-brand-sub">Contact Support</div>
+        </div>
+
+        <div class="glass-title">How can we help?</div>
+        <div class="glass-subtitle">Fill in your details and we'll get back to you shortly.</div>
 
         {% if sent %}
-        <div class="alert alert-success">
-            Your message has been sent. Our team will get back to you shortly.
+        <div class="glass-notice glass-notice-success">
+            <strong>Message Sent!</strong>
+            Our team will get back to you shortly.
         </div>
         {% endif %}
 
         <form method="POST" action="/support/submit">
-            <label class="form-label fw-semibold small" for="submitter_name">Your Name</label>
-            <input class="form-control" type="text" id="submitter_name" name="submitter_name"
-                   placeholder="John Doe" required>
-
-            <label class="form-label fw-semibold small" for="submitter_email">Email Address</label>
-            <input class="form-control" type="email" id="submitter_email" name="submitter_email"
-                   placeholder="you@example.com" required>
-
-            <label class="form-label fw-semibold small" for="issue_description">How can we help?</label>
-            <textarea class="form-control" id="issue_description" name="issue_description"
-                      placeholder="Describe your issue or question..." required></textarea>
-
-            <button type="submit" class="submit-btn">Send Message</button>
+            <input type="text" name="submitter_name" placeholder="Your Name" required>
+            <input type="email" name="submitter_email" placeholder="Email Address" required>
+            <textarea name="issue_description"
+                      placeholder="Describe your issue or question..."
+                      rows="4" required></textarea>
+            <button type="submit" class="btn-glass-submit">Send Message</button>
         </form>
 
-        <a href="/" class="text-secondary text-decoration-none small d-block mt-3">Back to Home</a>
+        <div class="glass-links">
+            <p>Return to <a href="/">Main Portal</a></p>
+        </div>
+
+        <div class="glass-notice">
+            <strong>Response Time:</strong>
+            Our support team typically responds within 24 hours on business days.
+        </div>
+
     </div>
-</div>
 
 </body>
 {% endblock %}

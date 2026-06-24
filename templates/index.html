@@ -1,68 +1,38 @@
 {% extends "shared/base.html" %}
 
-{% block title %}HealthHub Clinical Systems{% endblock %}
+{% block title %}HealthHub — Access Portal{% endblock %}
 
 {% block body %}
-<body class="page-auth">
+<body class="page-auth page-auth-index glass-card-center">
 
-<div class="fullscreen-gateway" id="glowContext">
-    <div class="portal-wrapper">
+    <div class="auth-orb auth-orb-1"></div>
+    <div class="auth-orb auth-orb-2"></div>
+    <div class="auth-orb auth-orb-3"></div>
 
-        <div class="brand-panel">
-            <div class="system-tag">HEALTHHUB ACCESS PORTAL</div>
-            <div class="brand-message">
-                <h2>Unified Medical<br>Access System.</h2>
-                <p>
-                    Secure access for patients and healthcare staff to manage
-                    appointments, medical records, and healthcare services
-                    through the HealthHub Clinical Systems platform.
-                </p>
-                <div style="margin-top:25px; padding:12px; background:rgba(0,0,0,0.15); border-left:3px solid #7DD3FC; border-radius:4px;">
-                    <p style="font-size:11px; line-height:1.4; color:#E6F0F9; margin:0;">
-                        <strong>Security Notice:</strong> All sessions are encrypted and monitored
-                        for patient data protection and healthcare compliance standards.
-                    </p>
-                </div>
-            </div>
-            <div class="panel-footer">&copy; 2026 HealthHub Medical Infrastructure.</div>
+    <div class="glass-card glass-card-narrow glass-card-center">
+
+        <div class="glass-brand">
+            <div class="glass-brand-logo">HealthHub</div>
+            <div class="glass-brand-sub">Clinical Systems</div>
         </div>
 
-        <div class="form-panel">
-            <div class="gateway-inner-content">
-                <div class="form-header">
-                    <h3>Choose Access Portal</h3>
-                    <p>Select the appropriate login portal to continue.</p>
-                </div>
+        <div class="glass-title">Choose Access Portal</div>
+        <div class="glass-subtitle">Select the appropriate login portal to continue.</div>
 
-                <a href="/patient/login" style="text-decoration:none; display:block; width:100%;">
-                    <button class="btn-submit" style="background:#00A98F; margin-bottom:18px;">
-                        Log In as Patient
-                    </button>
-                </a>
+        <a href="/patient/login" class="btn-glass-submit btn-glass-patient">Log In as Patient</a>
+        <a href="/staff/login" class="btn-glass-submit btn-glass-staff">Log In as Staff</a>
 
-                <a href="/staff/login" style="text-decoration:none; display:block; width:100%;">
-                    <button class="btn-submit" style="background:#005999;">
-                        Log In as Staff
-                    </button>
-                </a>
+        <div class="glass-links">
+            <p>Need assistance? <a href="/support">Contact Support</a></p>
+        </div>
 
-                <div class="switch-auth" style="margin-top:30px; text-align:center;">
-                    <p>Need assistance? <a href="/support">Contact System Support</a></p>
-                </div>
-            </div>
+        <div class="glass-notice">
+            <strong>Security Notice:</strong>
+            All sessions are encrypted and monitored for patient data protection
+            and healthcare compliance standards.
         </div>
 
     </div>
-</div>
-
-<script>
-    const glowContext = document.getElementById('glowContext');
-    window.addEventListener('mousemove', (e) => {
-        const bounds = glowContext.getBoundingClientRect();
-        glowContext.style.setProperty('--mouse-x', `${e.clientX - bounds.left}px`);
-        glowContext.style.setProperty('--mouse-y', `${e.clientY - bounds.top}px`);
-    });
-</script>
 
 </body>
 {% endblock %}

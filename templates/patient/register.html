@@ -3,87 +3,57 @@
 {% block title %}Create Account - HealthHub{% endblock %}
 
 {% block body %}
-<body class="page-auth">
+<body class="page-auth page-auth-patient">
 
-<div class="portal-wrapper">
+    <div class="auth-orb auth-orb-1"></div>
+    <div class="auth-orb auth-orb-2"></div>
+    <div class="auth-orb auth-orb-3"></div>
 
-    <div class="brand-panel" style="background:linear-gradient(135deg,#047857 0%,#065f46 100%);">
-        <div class="system-tag" style="color:#DFF7EE;">HEALTHHUB PATIENT REGISTRATION</div>
-        <div class="brand-message">
-            <h2>Create Your<br>Patient Account.</h2>
-            <p>
-                Register for a HealthHub account to book appointments,
-                manage healthcare visits, and securely access your
-                patient information online anytime.
-            </p>
-            <div style="margin-top:25px; padding:12px; background:rgba(0,0,0,0.15); border-left:3px solid #065f46; border-radius:4px;">
-                <p style="font-size:11px; line-height:1.4; color:#E6F0F9; margin:0;">
-                    <strong>Privacy & Security:</strong> Your account information is securely
-                    encrypted and protected according to healthcare privacy standards.
-                </p>
-            </div>
+    <div class="glass-card glass-card-wide glass-card-register">
+
+        <div class="glass-brand">
+            <div class="glass-brand-logo">HealthHub</div>
+            <div class="glass-brand-sub">Patient Registration</div>
         </div>
-        <div class="panel-footer">&copy; 2026 HealthHub Medical Infrastructure.</div>
-    </div>
 
-    <div class="form-panel">
-        <div class="gateway-inner-content">
-            <div class="form-header">
-                <h3>Create New Account</h3>
-                <p>Please fill in your details to register.</p>
-            </div>
+        <div class="glass-title">Create New Account</div>
+        <div class="glass-subtitle">Fill in your details to register as a patient.</div>
 
-            <form method="POST" action="/patient/register">
-                <div class="mb-3">
-                    <input class="form-control" type="text" name="first_name" placeholder="First Name" required>
-                </div>
-                <div class="mb-3">
-                    <input class="form-control" type="text" name="last_name" placeholder="Last Name" required>
-                </div>
-                <div class="mb-3">
-                    <input class="form-control" type="email" name="email" placeholder="Email Address" required>
-                </div>
-                <div class="mb-3">
-                    <input class="form-control" type="text" name="date_of_birth"
-                           placeholder="DD/MM/YYYY" pattern="\d{2}/\d{2}/\d{4}"
-                           title="Date of Birth (DD/MM/YYYY)" required>
-                </div>
-                <div class="mb-3">
-                    <select class="form-select" name="gender">
-                        <option value="">Select Gender (Optional)</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <input class="form-control" type="password" name="password" placeholder="Create Password" required>
-                </div>
-                <div class="mb-3">
-                    <input class="form-control" type="password" name="confirm_password" placeholder="Confirm Password" required>
-                </div>
-                <div class="mb-3">
-                    <input class="form-control" type="text" name="phone_number" placeholder="Phone Number (Optional)">
-                </div>
-                <div class="mb-3">
-                    <input class="form-control" type="text" name="emergency_contact_name" placeholder="Emergency Contact Name (Optional)">
-                </div>
-                <div class="mb-3">
-                    <input class="form-control" type="text" name="emergency_contact_phone" placeholder="Emergency Contact Phone (Optional)">
-                </div>
+        <form method="POST" action="/patient/register">
+            <input type="text" name="first_name" placeholder="First Name" required>
+            <input type="text" name="last_name" placeholder="Last Name" required>
+            <input type="email" name="email" placeholder="Email Address" required>
+            <input type="text" name="date_of_birth"
+                   placeholder="Date of Birth (DD/MM/YYYY)"
+                   pattern="\d{2}/\d{2}/\d{4}"
+                   title="Date of Birth (DD/MM/YYYY)" required>
+            <select name="gender">
+                <option value="">Select Gender (Optional)</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+            </select>
+            <input type="password" name="password" placeholder="Create Password" required>
+            <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+            <input type="text" name="phone_number" placeholder="Phone Number (Optional)">
+            <input type="text" name="emergency_contact_name" placeholder="Emergency Contact Name (Optional)">
+            <input type="text" name="emergency_contact_phone" placeholder="Emergency Contact Phone (Optional)">
 
-                <button type="submit" class="btn-submit" style="margin-top:15px;">
-                    Create Account
-                </button>
-            </form>
+            <button type="submit" class="btn-glass-submit">Create Account</button>
+        </form>
 
-            <div class="switch-auth" style="margin-top:25px; text-align:center;">
-                <p>Already have an account? <a href="/patient/login">Sign In</a></p>
-            </div>
+        <div class="glass-links">
+            <p>Already have an account? <a href="/patient/login">Sign In</a></p>
+            <p>Return to <a href="/">Main Portal</a></p>
         </div>
-    </div>
 
-</div>
+        <div class="glass-notice">
+            <strong>Privacy & Security:</strong>
+            Your account information is securely encrypted and protected
+            according to healthcare privacy standards.
+        </div>
+
+    </div>
 
 </body>
 {% endblock %}

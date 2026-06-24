@@ -3,81 +3,48 @@
 {% block title %}Patient Login - HealthHub{% endblock %}
 
 {% block body %}
-<body class="page-auth">
+<body class="page-auth page-auth-patient">
 
-<div class="fullscreen-gateway" id="glowContext">
-    <div class="portal-wrapper">
+    <div class="auth-orb auth-orb-1"></div>
+    <div class="auth-orb auth-orb-2"></div>
+    <div class="auth-orb auth-orb-3"></div>
 
-        <div class="brand-panel" style="background:linear-gradient(135deg,#047857 0%,#065f46 100%);">
-            <div class="system-tag">HEALTHHUB PATIENT ACCESS</div>
-            <div class="brand-message">
-                <h2>Patient Care<br>Portal.</h2>
-                <p>
-                    Access your appointments, healthcare information,
-                    medical schedules, and clinic services securely
-                    through the HealthHub Patient Management System.
-                </p>
-                <div style="margin-top:25px; padding:12px; background:rgba(0,0,0,0.15); border-left:3px solid #A7F3D0; border-radius:4px;">
-                    <p style="font-size:11px; line-height:1.4; color:#E6F0F9; margin:0;">
-                        <strong>Privacy Notice:</strong> Your personal and medical information
-                        is protected under healthcare privacy and data protection regulations.
-                    </p>
-                </div>
-            </div>
-            <div class="panel-footer">&copy; 2026 HealthHub Medical Infrastructure.</div>
+    <div class="glass-card">
+
+        <div class="glass-brand">
+            <div class="glass-brand-logo">HealthHub</div>
+            <div class="glass-brand-sub">Patient Care Portal</div>
         </div>
 
-        <div class="form-panel">
-            <div class="gateway-inner-content">
-                <div class="form-header">
-                    <h3>Patient Log In</h3>
-                    <p>Please sign in to continue to your patient dashboard.</p>
-                </div>
+        <div class="glass-title">Patient Log In</div>
+        <div class="glass-subtitle">Sign in to access your appointments and health records.</div>
 
-                <form method="POST" action="/patient/login">
-                    <div class="mb-3">
-                        <input class="form-control" type="email" name="email"
-                               placeholder="Email Address"
-                               value='{{ email | default(value="") }}'
-                               required autocomplete="off">
-                    </div>
-                    <div class="mb-3">
-                        <input class="form-control" type="password" name="password"
-                               placeholder="Password" required>
-                    </div>
+        <form method="POST" action="/patient/login">
+            <input type="email" name="email" placeholder="Email Address"
+                   value='{{ email | default(value="") }}'
+                   required autocomplete="off">
+            <input type="password" name="password" placeholder="Password" required>
 
-                    <div style="color:#ff4d4f; min-height:18px; font-size:14px; margin-bottom:10px;">
-                        {% if error_message %}{{ error_message }}{% else %}&nbsp;{% endif %}
-                    </div>
-
-                    <button type="submit" class="btn-submit" style="margin-top:10px;">
-                        Patient Login
-                    </button>
-                </form>
-
-                <div class="switch-auth" style="margin-top:25px; text-align:center;">
-                    <p>Don't have an account? <a href="/patient/register">Create New Account</a></p>
-                    <p style="margin-top:8px;">
-                        <a href="/forgot-password" style="color:#005999; font-size:14px;">Forgot your password?</a>
-                    </p>
-                </div>
-                <div class="switch-auth" style="margin-top:10px; text-align:center;">
-                    <p>Return to <a href="/">Main Portal</a></p>
-                </div>
+            <div class="glass-error">
+                {% if error_message %}{{ error_message }}{% else %}&nbsp;{% endif %}
             </div>
+
+            <button type="submit" class="btn-glass-submit">Patient Login</button>
+        </form>
+
+        <div class="glass-links">
+            <p>Don't have an account? <a href="/patient/register">Create New Account</a></p>
+            <p><a href="/forgot-password">Forgot your password?</a></p>
+            <p>Return to <a href="/">Main Portal</a></p>
+        </div>
+
+        <div class="glass-notice">
+            <strong>Privacy Notice:</strong>
+            Your personal and medical information is protected under healthcare
+            privacy and data protection regulations.
         </div>
 
     </div>
-</div>
-
-<script>
-    const glowContext = document.getElementById('glowContext');
-    window.addEventListener('mousemove', (e) => {
-        const bounds = glowContext.getBoundingClientRect();
-        glowContext.style.setProperty('--mouse-x', `${e.clientX - bounds.left}px`);
-        glowContext.style.setProperty('--mouse-y', `${e.clientY - bounds.top}px`);
-    });
-</script>
 
 </body>
 {% endblock %}
