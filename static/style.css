@@ -135,9 +135,11 @@ body.page-auth-support .btn-glass-submit {
     z-index: 100;
 }
 
-.sidebar-brand { padding: 24px 20px; border-bottom: 1px solid #1e293b; }
+.sidebar-brand { padding: 20px 20px 16px; border-bottom: 1px solid #1e293b; }
 .sidebar-brand-name { color: white; font-size: 16px; font-weight: 700; }
 .sidebar-brand-sub  { color: #64748b; font-size: 11px; margin-top: 3px; text-transform: uppercase; letter-spacing: 1px; }
+.sidebar-logo { height: 32px; width: 32px; object-fit: contain; display: block; flex-shrink: 0; filter: brightness(0) invert(1); }
+.auth-logo, .sidebar-logo { filter: brightness(0) invert(1); }
 
 .sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
 .sidebar-nav-label {
@@ -258,6 +260,7 @@ body.page-app-patient .slot-available input[type="radio"] { accent-color: #16a34
 }
 .glass-brand-logo { font-size: 22px; font-weight: 800; color: white; letter-spacing: -0.5px; }
 .glass-brand-sub  { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+.auth-logo        { max-height: 48px; max-width: 160px; object-fit: contain; margin-bottom: 4px; filter: brightness(0) invert(1); }
 
 .glass-title    { color: white; font-size: 22px; font-weight: 700; margin-bottom: 4px; }
 .glass-subtitle { color: rgba(255,255,255,0.5); font-size: 13px; margin-bottom: 26px; }
@@ -651,6 +654,10 @@ body.page-app-patient .slot-available input[type="radio"] { accent-color: #16a34
 .analytics-header    { margin-bottom: 24px; }
 .analytics-header h2 { font-size: 20px; font-weight: 700; margin: 0 0 4px; }
 .analytics-header p  { color: #64748B; font-size: 14px; margin: 0; }
+.analytics-section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: #94A3B8; margin-bottom: 12px;
+}
 .progress-card { padding: 24px; margin-bottom: 20px; }
 .progress-card h3 { font-size: 15px; font-weight: 700; margin: 0 0 16px; }
 .progress-row     { margin-bottom: 14px; }

@@ -23,7 +23,7 @@
             <select id="sec-role" class="form-select form-select-sm" style="max-width:160px">
                 <option value="">All roles</option>
             </select>
-            <button id="sec-clear" class="btn btn-sm btn-outline-secondary ms-auto">Clear filters</button>
+            <button id="sec-clear" type="button" class="btn btn-sm btn-outline-secondary ms-auto">Clear filters</button>
         </div>
 
         {# ── Count line (no space before "s") ── #}
@@ -84,8 +84,9 @@
 
     <script>
     (function () {
-        var tbody   = document.getElementById('sec-tbody');
-        var rows    = Array.from(tbody.querySelectorAll('tr:not(#sec-empty-row)'));
+        var tbody        = document.getElementById('sec-tbody');
+        var rows         = Array.from(tbody.querySelectorAll('tr:not(#sec-empty-row)'));
+        var originalOrder = rows.slice(); // snapshot original DOM order
         var countEl = document.getElementById('sec-count');
         var noRes   = document.getElementById('sec-no-results');
         var searchEl = document.getElementById('sec-search');
@@ -150,7 +151,15 @@
         actionEl.addEventListener('change', applyFilters);
         roleEl.addEventListener('change',   applyFilters);
         clearBtn.addEventListener('click', function () {
-            searchEl.value = ''; actionEl.value = ''; roleEl.value = '';
+            searchEl.value = '';
+            actionEl.selectedIndex = 0;
+            roleEl.selectedIndex = 0;
+            // Restore original row order
+            originalOrder.forEach(function (r) { tbody.appendChild(r); });
+            rows = originalOrder.slice();
+            // Reset sort arrows
+            sortState.col = -1; sortState.asc = true;
+            document.querySelectorAll('.sec-sortable .sec-arrow').forEach(function (a) { a.textContent = '↕'; });
             applyFilters();
         });
 

@@ -1,11 +1,5 @@
-/* ================================================================
-   HEALTHHUB — SHARED JAVASCRIPT  (static/js/app.js)
-   Handles: mouse glow, auth page flash banners, app toast banners.
-   Page-specific JS that uses server-rendered data stays in templates.
-   ================================================================ */
 
-/* ── MOUSE GLOW ─────────────────────────────────────────────────────
-   Tracks cursor position as CSS variables used by the radial-gradient
+/* This the mouse glow, will track the cursor position as CSS variables used by the radial-gradient 
    glow on both auth and app pages (body::before in style.css).        */
 document.addEventListener('mousemove', function (e) {
     document.body.style.setProperty('--mouse-x', e.clientX + 'px');

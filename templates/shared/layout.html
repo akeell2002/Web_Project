@@ -6,12 +6,17 @@
     <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-brand">
-            <div class="sidebar-brand-name">HealthHub</div>
-            <div class="sidebar-brand-sub">
-                {% if specific_role == "patient" %}Patient Portal
-                {% elif specific_role == "admin" %}Admin Console
-                {% else %}Staff Portal
-                {% endif %}
+            <div style="display:flex; align-items:center; gap:10px;">
+                <img src="/static/logo.png" alt="HealthHub" class="sidebar-logo">
+                <div>
+                    <div class="sidebar-brand-name">HealthHub</div>
+                    <div class="sidebar-brand-sub">
+                        {% if specific_role == "patient" %}Patient Portal
+                        {% elif specific_role == "admin" %}Admin Console
+                        {% else %}Staff Portal
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
 
