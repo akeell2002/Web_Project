@@ -8,7 +8,6 @@ pub mod appointments;
 pub mod billing;
 pub mod support;
 pub mod beds;
-pub mod seed_test_data;
 pub mod analytics;
 
 
