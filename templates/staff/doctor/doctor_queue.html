@@ -1,40 +1,41 @@
 {% extends "shared/layout.html" %}
-
 {% block title %}My Daily Queue - HealthHub EHR{% endblock %}
 {% block page_title %}Clinical Consultation Queue{% endblock %}
 {% block nav_doctor_queue %}class="active"{% endblock %}
-
-{% block extra_head %}
-{% endblock %}
-
+{% block extra_head %}{% endblock %}
 {% block content %}
-<div class="queue-header-banner">
-    <div>
-        <h2>My Clinical Consultation Dashboard</h2>
-        <p>{{ formatted_date }} | Practitioner Identity: Verified</p>
+    <div class="queue-header-banner">
+        <div>
+            <h2>My Clinical Consultation Dashboard</h2>
+            <p>{{ formatted_date }} | Practitioner Identity: Verified</p>
+        </div>
+        <div class="count-badge">
+            {% if current_view == "today" %}
+                Today's Active Workload: {{ queue_count }}
+            {% else %}
+                Total Upcoming Caseload: {{ queue_count }}
+            {% endif %}
+        </div>
     </div>
-    <div class="count-badge">
-        {% if current_view == "today" %}
-            Today's Active Workload: {{ queue_count }}
-        {% else %}
-            Total Upcoming Caseload: {{ queue_count }}
-        {% endif %}
-    </div>
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <a href="/staff/doctor/queue?view=today"
+           class="tab-btn {% if current_view == 'today' %}active{% endif %}">Today's Active Queue</a> <a href="/staff/doctor/queue?view=all"
+    class="tab-btn {% if current_view == 'all' %}active{% endif %}">View All Upcoming Bookings</a>
 </div>
-
-<div style="display: flex; gap: 10px; margin-bottom: 20px;">
-    <a href="/staff/doctor/queue?view=today" class="tab-btn {% if current_view == 'today' %}active{% endif %}">
-        🗓️ Today's Active Queue
-    </a>
-    <a href="/staff/doctor/queue?view=all" class="tab-btn {% if current_view == 'all' %}active{% endif %}">
-        📋 View All Upcoming Bookings
-    </a>
-</div>
-
-<div style="background: white; border-radius: 12px; border: 1px solid #E5E7EB; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+<div style="background: white;
+            border-radius: 12px;
+            border: 1px solid #E5E7EB;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02)">
+    <table style="width: 100%;
+                  border-collapse: collapse;
+                  text-align: left;
+                  font-size: 14px">
         <thead>
-            <tr style="background-color: #F9FAFB; color: #4B5563; font-weight: bold; border-bottom: 2px solid #E5E7EB;">
+            <tr style="background-color: #F9FAFB;
+                       color: #4B5563;
+                       font-weight: bold;
+                       border-bottom: 2px solid #E5E7EB">
                 <th style="padding: 14px 12px;">Queue Info</th>
                 <th style="padding: 14px 12px;">Scheduled Interval</th>
                 <th style="padding: 14px 12px;">Patient</th>
@@ -46,73 +47,103 @@
         </thead>
         <tbody>
             {% for item in queue %}
-            <tr style="border-bottom: 1px solid #F3F4F6; transition: background 0.15s;" onmouseover="this.style.backgroundColor='#F9FAFB'" onmouseout="this.style.backgroundColor='transparent'">
-                <td style="padding: 16px 12px; font-weight: bold; color: #111827;">
-                    {% if item.queue_number %}
-                        <span style="font-size: 16px; color: #005999;">#{{ item.queue_number }}</span>
-                    {% else %}
-                        <span style="color: #9CA3AF; font-style: italic;">Unassigned</span>
-                    {% endif %}
-                    
-                    {% if item.is_today and item.priority_level %}
-                        <div style="margin-top: 8px;">
-                            {% if item.priority_level == 1 %}
-                                <span style="background: #dc2626; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">L1-EMERGENCY</span>
-                            {% elif item.priority_level == 2 %}
-                                <span style="background: #f59e0b; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">L2-URGENT</span>
-                            {% elif item.priority_level == 3 %}
-                                <span style="background: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">L3-SEMI-URGENT</span>
-                            {% endif %}
-                            
-                            {% if item.status == 'vitals_taken' %}
-                                <div style="font-size: 11px; color: #6B7280; margin-top: 4px;">
-                                    Acuity Score: <strong style="color: #0ea5e9;">{{ item.dynamic_score }}</strong>
-                                </div>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-                </td>
-                <td style="padding: 16px 12px; font-weight: 600; color: #374151;">
-                    {% if item.is_today %}
-                        <span style="display:inline-block; font-size: 11px; background:#d1fae5; color:#065f46; padding:2px 6px; border-radius:4px; margin-bottom:4px; font-weight:bold;">TODAY</span>
-                    {% else %}
-                        <span style="display:block; font-size: 14px; color:#005999;">{{ item.appointment_date }}</span>
-                    {% endif %}
-                    <span style="display:block; font-size: 12px; color:#6B7280; font-weight:normal;">{{ item.start_time }} - {{ item.end_time }}</span>
-                </td>
-                <td style="padding: 16px 12px; font-weight: 600; color: #111827;">{{ item.patient_name }}</td>
-                <td style="padding: 16px 12px; color: #4B5563;">{{ item.patient_dob }} <span style="font-size: 12px; color:#6B7280;">({{ item.patient_gender }})</span></td>
-                <td style="padding: 16px 12px; font-weight: bold; color: #0ea5e9;">{{ item.room }}</td>
-                <td style="padding: 16px 12px;">
-                    {% if item.status == 'checked_in' %}
-                        <span class="status-pill status-checked_in">Ready Outside</span>
-                    {% elif item.status == 'scheduled' %}
-                        <span class="status-pill status-scheduled">Scheduled</span>
-                    {% else %}
-                        <span class="status-pill status-completed">Encounter Logged</span>
-                    {% endif %}
-                </td>
-                <td style="padding: 16px 12px; text-align: right;">
-                    {% if item.status == 'vitals_taken' %}
-                        <a href="/staff/doctor/consultation/{{ item.id }}" class="action-btn-encounter">Begin Consultation</a>
-                    
-                    {% elif item.status == 'checked_in' %}
-                        <span class="action-btn-disabled" style="cursor: not-allowed; opacity: 0.8; background-color: #fef3c7; color: #d97706;">Awaiting Nurse Triage</span>
-                    
-                    {% elif item.status == 'completed' %}
-                        <span class="action-btn-disabled" style="cursor: not-allowed;">Completed</span>
-                    
-                    {% else %}
-                        <span style="color:#6B7280; font-size: 14px; font-style:italic; padding-right:10px;">Awaiting Arrival</span>
-                    {% endif %}
-                </td>
-            </tr>
+                <tr style="border-bottom: 1px solid #F3F4F6;
+                           transition: background 0.15s"
+                    onmouseover="this.style.backgroundColor='#F9FAFB'"
+                    onmouseout="this.style.backgroundColor='transparent'">
+                    <td style="padding: 16px 12px; font-weight: bold; color: #111827;">
+                        {% if item.queue_number %}
+                            <span style="font-size: 16px; color: #005999;">#{{ item.queue_number }}</span>
+                        {% else %}
+                            <span style="color: #9CA3AF; font-style: italic;">Unassigned</span>
+                        {% endif %}
+                        {% if item.is_today and item.priority_level %}
+                            <div style="margin-top: 8px;">
+                                {% if item.priority_level == 1 %}
+                                    <span style="background: #dc2626;
+                                                 color: white;
+                                                 padding: 2px 6px;
+                                                 border-radius: 4px;
+                                                 font-size: 11px">L1-EMERGENCY</span>
+                                {% elif item.priority_level == 2 %}
+                                    <span style="background: #f59e0b;
+                                                 color: white;
+                                                 padding: 2px 6px;
+                                                 border-radius: 4px;
+                                                 font-size: 11px">L2-URGENT</span>
+                                {% elif item.priority_level == 3 %}
+                                    <span style="background: #3b82f6;
+                                                 color: white;
+                                                 padding: 2px 6px;
+                                                 border-radius: 4px;
+                                                 font-size: 11px">L3-SEMI-URGENT</span>
+                                {% endif %}
+                                {% if item.status == 'vitals_taken' %}
+                                    <div style="font-size: 11px; color: #6B7280; margin-top: 4px;"> Acuity Score: <strong style="color: #0ea5e9;">{{ item.dynamic_score }}</strong> </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 16px 12px; font-weight: 600; color: #374151;">
+                        {% if item.is_today %}
+                            <span style="display:inline-block;
+                                         font-size: 11px;
+                                         background:#d1fae5;
+                                         color:#065f46;
+                                         padding:2px 6px;
+                                         border-radius:4px;
+                                         margin-bottom:4px;
+                                         font-weight:bold">TODAY</span>
+                        {% else %}
+                            <span style="display:block; font-size: 14px; color:#005999;">{{ item.appointment_date }}</span>
+                        {% endif %}
+                        <span style="display:block;
+                                     font-size: 12px;
+                                     color:#6B7280;
+                                     font-weight:normal">{{ item.start_time }} - {{ item.end_time }}</span>
+                    </td>
+                    <td style="padding: 16px 12px; font-weight: 600; color: #111827;">{{ item.patient_name }}</td>
+                    <td style="padding: 16px 12px; color: #4B5563;">{{ item.patient_dob }} <span style="font-size: 12px; color:#6B7280;">({{ item.patient_gender }})</span></td>
+                    <td style="padding: 16px 12px; font-weight: bold; color: #0ea5e9;">{{ item.room }}</td>
+                    <td style="padding: 16px 12px;">
+                        {% if item.status == 'checked_in' %}
+                            <span class="status-pill status-checked_in">Ready Outside</span>
+                        {% elif item.status == 'scheduled' %}
+                            <span class="status-pill status-scheduled">Scheduled</span>
+                        {% else %}
+                            <span class="status-pill status-completed">Encounter Logged</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 16px 12px; text-align: right;">
+                        {% if item.status == 'vitals_taken' %}
+                            <a href="/staff/doctor/consultation/{{ item.id }}"
+                               class="action-btn-encounter">Begin Consultation</a>
+                        {% elif item.status == 'checked_in' %}
+                            <span class="action-btn-disabled"
+                                  style="cursor: not-allowed;
+                                         opacity: 0.8;
+                                         background-color: #fef3c7;
+                                         color: #d97706">Awaiting Nurse Triage</span>
+                        {% elif item.status == 'completed' %}
+                            <span class="action-btn-disabled" style="cursor: not-allowed;">Completed</span>
+                        {% else %}
+                            <span style="color:#6B7280;
+                                         font-size: 14px;
+                                         font-style:italic;
+                                         padding-right:10px">Awaiting Arrival</span>
+                        {% endif %}
+                    </td>
+                </tr>
             {% else %}
-            <tr>
-                <td colspan="7" style="text-align: center; padding: 40px; color: #9CA3AF; font-style: italic; background-color: #F9FAFB; border-radius: 8px;">
-                    No active clinical appointments match the selected filter.
-                </td>
-            </tr>
+                <tr>
+                    <td colspan="7"
+                        style="text-align: center;
+                               padding: 40px;
+                               color: #9CA3AF;
+                               font-style: italic;
+                               background-color: #F9FAFB;
+                               border-radius: 8px">No active clinical appointments match the selected filter.</td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>

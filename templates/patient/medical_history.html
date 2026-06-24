@@ -1,83 +1,80 @@
 {% extends "shared/layout.html" %}
-
 {% block title %}My Medical History - HealthHub{% endblock %}
 {% block page_title %}My Medical History{% endblock %}
 {% block nav_patient_history %}class="active"{% endblock %}
-
-{% block extra_head %}
-{% endblock %}
-
+{% block extra_head %}{% endblock %}
 {% block content %}
-
-<div class="page-header">
-    <div>
-        <h2>My Medical History</h2>
-        <p>A complete record of your clinic visits, diagnoses, and prescriptions.</p>
-    </div>
-    <a href="/patient/dashboard"
-       style="color:#64748B; text-decoration:none; font-size:14px; font-weight:500;">
-        ← Back to Dashboard
-    </a>
-</div>
-
-{% if visits %}
-    {% for visit in visits %}
-    <div class="history-card">
-        <div class="visit-header">
-            <div>
-                <div class="visit-date">{{ visit.appointment_date }}</div>
-                <div class="visit-meta">
-                    {{ visit.start_time }} – {{ visit.end_time }}
-                    &nbsp;·&nbsp; {{ visit.doctor_name }}
-                    {% if visit.room %}&nbsp;·&nbsp; {{ visit.room }}{% endif %}
-                </div>
-            </div>
-            <span class="status-pill status-{{ visit.status }}">{{ visit.status | replace(from="_", to=" ") }}</span>
+    <div class="page-header">
+        <div>
+            <h2>My Medical History</h2>
+            <p>A complete record of your clinic visits, diagnoses, and prescriptions.</p>
         </div>
-
-        {% if visit.diagnosis %}
-        <div class="visit-body">
-            <div>
-                <div class="section-label">Diagnosis</div>
-                <div class="section-value">{{ visit.diagnosis }}</div>
-
-                {% if visit.treatment_notes %}
-                <div class="section-label" style="margin-top:14px;">Treatment Notes</div>
-                <div class="section-value">{{ visit.treatment_notes }}</div>
-                {% endif %}
-            </div>
-
-            <div>
-                {% if visit.medicine_name %}
-                <div class="section-label">Prescription</div>
-                <div class="rx-pill">
-                    <strong>💊 {{ visit.medicine_name }}</strong>
-                    {% if visit.dosage %}Dosage: {{ visit.dosage }}<br>{% endif %}
-                    {% if visit.frequency %}Frequency: {{ visit.frequency }}<br>{% endif %}
-                    {% if visit.duration %}Duration: {{ visit.duration }}{% endif %}
+        <a href="/patient/dashboard"
+           style="color:#64748B;
+                  text-decoration:none;
+                  font-size:14px;
+                  font-weight:500">Back to Dashboard</a>
+    </div>
+    {% if visits %}
+        {% for visit in visits %}
+            <div class="history-card">
+                <div class="visit-header">
+                    <div>
+                        <div class="visit-date">{{ visit.appointment_date }}</div>
+                        <div class="visit-meta">
+                            {{ visit.start_time }} – {{ visit.end_time }}
+                            &nbsp;·&nbsp; {{ visit.doctor_name }}
+                            {% if visit.room %}&nbsp;·&nbsp; {{ visit.room }}{% endif %}
+                        </div>
+                    </div>
+                    <span class="status-pill status-{{ visit.status }}">{{ visit.status | replace(from="_", to=" ") }}</span>
                 </div>
+                {% if visit.diagnosis %}
+                    <div class="visit-body">
+                        <div>
+                            <div class="section-label">Diagnosis</div>
+                            <div class="section-value">{{ visit.diagnosis }}</div>
+                            {% if visit.treatment_notes %}
+                                <div class="section-label" style="margin-top:14px;">Treatment Notes</div>
+                                <div class="section-value">{{ visit.treatment_notes }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {% if visit.medicine_name %}
+                                <div class="section-label">Prescription</div>
+                                <div class="rx-pill">
+                                    <strong>{{ visit.medicine_name }}</strong>
+                                    {% if visit.dosage %}
+                                        Dosage: {{ visit.dosage }}
+                                        <br>
+                                    {% endif %}
+                                    {% if visit.frequency %}
+                                        Frequency: {{ visit.frequency }}
+                                        <br>
+                                    {% endif %}
+                                    {% if visit.duration %}Duration: {{ visit.duration }}{% endif %}
+                                </div>
+                            {% else %}
+                                <div class="section-label">Prescription</div>
+                                <div class="section-value muted">No prescription issued</div>
+                            {% endif %}
+                        </div>
+                    </div>
                 {% else %}
-                <div class="section-label">Prescription</div>
-                <div class="section-value muted">No prescription issued</div>
+                    <div class="section-value muted">
+                        {% if visit.status == "completed" %}
+                            No clinical notes were recorded for this visit.
+                        {% else %}
+                            Consultation pending — notes will appear here after your appointment.
+                        {% endif %}
+                    </div>
                 {% endif %}
             </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center text-muted py-5">
+            <h3>No visit records yet</h3>
+            <p>Your medical history will appear here after your first completed appointment.</p>
         </div>
-        {% else %}
-        <div class="section-value muted">
-            {% if visit.status == "completed" %}
-                No clinical notes were recorded for this visit.
-            {% else %}
-                Consultation pending — notes will appear here after your appointment.
-            {% endif %}
-        </div>
-        {% endif %}
-    </div>
-    {% endfor %}
-{% else %}
-<div class="empty-state">
-    <h3>No visit records yet</h3>
-    <p>Your medical history will appear here after your first completed appointment.</p>
-</div>
-{% endif %}
-
+    {% endif %}
 {% endblock %}

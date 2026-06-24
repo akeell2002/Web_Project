@@ -1,70 +1,75 @@
 {% extends "shared/layout.html" %}
-
 {% block title %}Register Patient - HealthHub EHR{% endblock %}
 {% block page_title %}New Patient Registration{% endblock %}
-
 {# Mark Patients nav active for whichever staff role is viewing #}
 {% block nav_admin_patients %}class="active"{% endblock %}
 {% block nav_doctor_patients %}class="active"{% endblock %}
 {% block nav_nurse_patients %}class="active"{% endblock %}
 {% block nav_recep_patients %}class="active"{% endblock %}
-
-{% block extra_head %}
-{% endblock %}
-
+{% block extra_head %}{% endblock %}
 {% block content %}
-<div class="intake-card">
-    <h3>New Patient Demographics</h3>
-    <p>Enter core identity and contact parameters. Required fields (*) must be completed.</p>
-
-    <div class="notice-box">
-        <strong>Data Integrity:</strong>
-        All required fields must be completed to generate a valid Medical Record Number (MRN) in the master database.
-        Ensure data matches government-issued identification exactly.
+    <div class="intake-card">
+        <h3>New Patient Demographics</h3>
+        <p>Enter core identity and contact parameters. Required fields (*) must be completed.</p>
+        <div class="alert alert-info">
+            <strong>Data Integrity:</strong> All required fields must be completed to generate a valid Medical Record Number (MRN) in the master database.
+            Ensure data matches government-issued identification exactly.
+        </div>
+        <form method="POST" action="/staff/patients/add">
+            <div class="row g-2 mb-1">
+                <div class="col mb-3">
+                    <input class="form-control"
+                           type="text"
+                           name="first_name"
+                           placeholder="Legal First Name *"
+                           required>
+                </div>
+                <div class="mb-3">
+                    <input class="form-control"
+                           type="text"
+                           name="last_name"
+                           placeholder="Legal Last Name *"
+                           required>
+                </div>
+            </div>
+            <div class="row g-2 mb-1">
+                <div class="col mb-3">
+                    <label class="form-label fw-semibold small">Date of Birth *</label>
+                    <input class="form-control" type="date" name="date_of_birth" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Biological Sex *</label>
+                    <select class="form-select" name="gender" required>
+                        <option value="" disabled selected>Select...</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other / Undisclosed</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-3">
+                <input class="form-control"
+                       type="tel"
+                       name="phone_number"
+                       placeholder="Primary Contact Number">
+            </div>
+            <div class="mb-3">
+                <input class="form-control"
+                       type="email"
+                       name="email"
+                       placeholder="Patient Email Address *"
+                       required>
+            </div>
+            <div class="mb-3">
+                <input class="form-control"
+                       type="password"
+                       name="raw_password"
+                       placeholder="Temporary Password *"
+                       required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">Register Patient</button>
+        </form>
+        <a href="/staff/patients"
+           class="text-secondary text-decoration-none d-inline-block mt-3 small"> Cancel & Return to Patient Directory</a>
     </div>
-
-    <form method="POST" action="/staff/patients/add">
-
-        <div class="input-row">
-            <div class="input-field">
-                <input type="text" name="first_name" placeholder="Legal First Name *" required>
-            </div>
-            <div class="input-field">
-                <input type="text" name="last_name" placeholder="Legal Last Name *" required>
-            </div>
-        </div>
-
-        <div class="input-row">
-            <div class="input-field">
-                <label>Date of Birth *</label>
-                <input type="date" name="date_of_birth" required>
-            </div>
-            <div class="input-field">
-                <label>Biological Sex *</label>
-                <select name="gender" required>
-                    <option value="" disabled selected>Select...</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other / Undisclosed</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="input-field">
-            <input type="tel" name="phone_number" placeholder="Primary Contact Number">
-        </div>
-
-        <div class="input-field">
-            <input type="email" name="email" placeholder="Patient Email Address *" required>
-        </div>
-
-        <div class="input-field">
-            <input type="password" name="raw_password" placeholder="Temporary Password *" required>
-        </div>
-
-        <button type="submit" class="btn-submit">Register Patient</button>
-    </form>
-
-    <a href="/staff/patients" class="cancel-link">← Cancel &amp; Return to Patient Directory</a>
-</div>
 {% endblock %}

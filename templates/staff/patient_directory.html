@@ -1,79 +1,94 @@
 {% extends "shared/layout.html" %}
-
 {% block title %}Patient Directory - HealthHub{% endblock %}
 {% block page_title %}Patient Directory{% endblock %}
-
 {# Mark Patients nav active for whichever role is viewing #}
 {% block nav_admin_patients %}class="active"{% endblock %}
 {% block nav_doctor_patients %}class="active"{% endblock %}
 {% block nav_nurse_patients %}class="active"{% endblock %}
 {% block nav_recep_patients %}class="active"{% endblock %}
-
-{% block extra_head %}
-{% endblock %}
-
+{% block extra_head %}{% endblock %}
 {% block content %}
-<div class="directory-card">
-    <div class="directory-card-header">
-        <div>
-            <h3>Patient Registry</h3>
-            <p>Central registry of all registered medical profiles within the infrastructure.</p>
+    <div class="directory-card">
+        <div class="directory-card-header">
+            <div>
+                <h3>Patient Registry</h3>
+                <p>Central registry of all registered medical profiles within the infrastructure.</p>
+            </div>
+            <a href="/staff/patients/add" class="btn btn-primary">+ Register New Patient</a>
         </div>
-        <a href="/staff/patients/add" class="btn-register">+ Register New Patient</a>
+        <div class="search-wrap" style="margin-bottom: 18px;">
+            <input class="form-control"
+                   type="text"
+                   id="patient-search"
+                   placeholder=" Search by name, email, or phone..."
+                   oninput="filterPatients(this.value)">
+        </div>
+        <table class="table table-bordered table-hover align-middle"
+               id="patient-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Legal Name</th>
+                    <th>Date of Birth</th>
+                    <th>Gender</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in patients %}
+                    <tr data-searchable="{{ p.first_name | lower }} {{ p.last_name | lower }} {{ p.email | lower }} {{ p.phone | lower }}"
+                        style="transition: background 0.15s"
+                        onmouseover="this.style.backgroundColor='#F9FAFB'"
+                        onmouseout="this.style.backgroundColor='transparent'">
+                        <td style="font-weight: bold; color: #64748B;">#{{ p.id | truncate(length=8, end="") }}</td>
+                        <td>
+                            <a href="/staff/patients/{{ p.id }}"
+                               style="color: #005999;
+                                      font-weight: 600;
+                                      text-decoration: none">{{ p.first_name }} {{ p.last_name }}</a>
+                        </td>
+                        <td>{{ p.date_of_birth }}</td>
+                        <td>{{ p.gender }}</td>
+                        <td>
+                            {% if p.phone %}
+                                {{ p.phone }}
+                            {% else %}
+                                <span style="color:#94a3b8;">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if p.email %}
+                                {{ p.email }}
+                            {% else %}
+                                <span style="color:#94a3b8;">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6"
+                            style="text-align: center;
+                                   color: #94a3b8;
+                                   padding: 30px;
+                                   font-style: italic">No patients registered inside the master system index yet.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div id="no-results">No patients match your search.</div>
     </div>
-
-    <div class="search-wrap" style="margin-bottom: 18px;">
-        <input type="text" id="patient-search" placeholder="🔍  Search by name, email, or phone..." oninput="filterPatients(this.value)">
-    </div>
-
-    <table class="clinical-table" id="patient-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Legal Name</th>
-                <th>Date of Birth</th>
-                <th>Gender</th>
-                <th>Phone</th>
-                <th>Email</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for p in patients %}
-            <tr data-searchable="{{ p.first_name | lower }} {{ p.last_name | lower }} {{ p.email | lower }} {{ p.phone | lower }}" style="transition: background 0.15s;" onmouseover="this.style.backgroundColor='#F9FAFB'" onmouseout="this.style.backgroundColor='transparent'">
-                <td style="font-weight: bold; color: #64748B;">#{{ p.id | truncate(length=8, end="") }}</td>
-                <td>
-                    <a href="/staff/patients/{{ p.id }}" style="color: #005999; font-weight: 600; text-decoration: none;">
-                        {{ p.first_name }} {{ p.last_name }}
-                    </a>
-                </td>
-                <td>{{ p.date_of_birth }}</td>
-                <td>{{ p.gender }}</td>
-                <td>{% if p.phone %}{{ p.phone }}{% else %}<span style="color:#94a3b8;">-</span>{% endif %}</td>
-                <td>{% if p.email %}{{ p.email }}{% else %}<span style="color:#94a3b8;">-</span>{% endif %}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="6" style="text-align: center; color: #94a3b8; padding: 30px; font-style: italic;">
-                    No patients registered inside the master system index yet.
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <div id="no-results">No patients match your search.</div>
-</div>
-
-<script>
+    <script>
 function filterPatients(query) {
-    const q = query.toLowerCase();
-    const rows = document.querySelectorAll('#patient-table tbody tr[data-searchable]');
-    let visible = 0;
-    rows.forEach(row => {
-        const text = row.getAttribute('data-searchable');
-        if (text.includes(q)) { row.style.display = ''; visible++; }
-        else { row.style.display = 'none'; }
-    });
-    document.getElementById('no-results').style.display = (visible === 0 && q.length > 0) ? 'block' : 'none';
+ const q = query.toLowerCase();
+ const rows = document.querySelectorAll('#patient-table tbody tr[data-searchable]');
+ let visible = 0;
+ rows.forEach(row => {
+ const text = row.getAttribute('data-searchable');
+ if (text.includes(q)) { row.style.display = ''; visible++; }
+ else { row.style.display = 'none'; }
+ });
+ document.getElementById('no-results').style.display = (visible === 0 && q.length > 0) ? 'block' : 'none';
 }
-</script>
+    </script>
 {% endblock %}

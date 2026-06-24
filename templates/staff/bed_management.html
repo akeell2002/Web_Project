@@ -1,301 +1,291 @@
 {% extends "shared/layout.html" %}
-
 {% block title %}Bed Management - HealthHub{% endblock %}
-
-{% block page_title %}🛏️ Bed Management{% endblock %}
-
+{% block page_title %}Bed Management{% endblock %}
 {% block nav_doctor_beds %}class="active"{% endblock %}
 {% block nav_nurse_beds %}class="active"{% endblock %}
 {% block nav_recep_beds %}class="active"{% endblock %}
-
-{% block extra_head %}
-{% endblock %}
-
+{% block extra_head %}{% endblock %}
 {% block content %}
-
-<!-- Header -->
-<div class="bm-header">
-    <h1>Bed & Patient Management</h1>
-    <p>Monitor room occupancy and manage patient transfers across the clinic.</p>
-</div>
-
-<!-- Stats row — show patient stats for nurses, bed stats for others -->
-{% if specific_role == "nurse" %}
-<div class="bm-stats">
-    <div class="bm-stat">
-        <div class="bm-stat-label">Total Patients Today</div>
-        <div class="bm-stat-value">{{ patient_stats.total_patients }}</div>
+    <!-- Header -->
+    <div class="bm-header">
+        <h1>Bed & Patient Management</h1>
+        <p>Monitor room occupancy and manage patient transfers across the clinic.</p>
     </div>
-    <div class="bm-stat stat-emergency">
-        <div class="bm-stat-label">Emergency</div>
-        <div class="bm-stat-value">{{ patient_stats.emergency }}</div>
-    </div>
-    <div class="bm-stat">
-        <div class="bm-stat-label">Vitals Taken</div>
-        <div class="bm-stat-value">{{ patient_stats.vitals_taken }}</div>
-    </div>
-    <div class="bm-stat stat-available">
-        <div class="bm-stat-label">Discharged Today</div>
-        <div class="bm-stat-value">{{ patient_stats.discharged_today }}</div>
-    </div>
-</div>
-{% else %}
-<div class="bm-stats">
-    <div class="bm-stat">
-        <div class="bm-stat-label">Total Beds</div>
-        <div class="bm-stat-value">{{ bed_stats.total_beds }}</div>
-    </div>
-    <div class="bm-stat stat-occupied">
-        <div class="bm-stat-label">Occupied</div>
-        <div class="bm-stat-value">{{ bed_stats.occupied }}</div>
-    </div>
-    <div class="bm-stat stat-available">
-        <div class="bm-stat-label">Available</div>
-        <div class="bm-stat-value">{{ bed_stats.available }}</div>
-    </div>
-    <div class="bm-stat stat-maint">
-        <div class="bm-stat-label">Maintenance</div>
-        <div class="bm-stat-value">{{ bed_stats.maintenance }}</div>
-    </div>
-</div>
-{% endif %}
-
-<!-- Two-column body -->
-<div class="bm-body">
-
-    <!-- ── LEFT: Main content ── -->
-    <div class="bm-main">
-        <div class="bm-toolbar">
-            <div class="bm-tabs">
-                <button class="bm-tab active" onclick="filterRows('all', this)">All</button>
-                <button class="bm-tab" onclick="filterRows('waiting', this)">Waiting</button>
-                <button class="bm-tab" onclick="filterRows('vitals_taken', this)">Vitals Taken</button>
-                <button class="bm-tab" onclick="filterRows('completed', this)">Discharged</button>
+    <!-- Stats row — show patient stats for nurses, bed stats for others -->
+    {% if specific_role == "nurse" %}
+        <div class="bm-stats">
+            <div class="bm-stat">
+                <div class="bm-stat-label">Total Patients Today</div>
+                <div class="bm-stat-value">{{ patient_stats.total_patients }}</div>
             </div>
-            <div class="bm-search">
-                <span class="bm-search-icon">🔍</span>
-                <input type="text" placeholder="Search patient or room…" oninput="searchTable(this.value)" id="bmSearch">
+            <div class="bm-stat stat-emergency">
+                <div class="bm-stat-label">Emergency</div>
+                <div class="bm-stat-value">{{ patient_stats.emergency }}</div>
             </div>
-            <button class="request-transfer-btn" onclick="document.getElementById('transferModal').classList.add('open')">
-                ↔ Request Transfer
-            </button>
+            <div class="bm-stat">
+                <div class="bm-stat-label">Vitals Taken</div>
+                <div class="bm-stat-value">{{ patient_stats.vitals_taken }}</div>
+            </div>
+            <div class="bm-stat stat-available">
+                <div class="bm-stat-label">Discharged Today</div>
+                <div class="bm-stat-value">{{ patient_stats.discharged_today }}</div>
+            </div>
         </div>
-
-        {% if specific_role == "doctor" %}
-        <!-- Doctor view: bed grid -->
-        <div class="bed-grid" id="bedGrid">
-            {% for bed in beds %}
-            <div class="bed-card {{ bed.computed_status }}" data-name="{{ bed.room_name | lower }}" data-patient="{{ bed.patient_name | default(value='') | lower }}">
-                <div class="bed-card-name">{{ bed.room_name }}</div>
-                <div class="bed-card-loc">{{ bed.location }} · {{ bed.room_type }}</div>
-                {% if bed.computed_status == "occupied" %}
-                    <span class="pill pill-occupied">Occupied</span>
-                    <div class="bed-patient">{{ bed.patient_name }}</div>
-                    <div class="bed-patient-meta">{{ bed.appointment_status | default(value="") | replace(from="_", to=" ") | capitalize }}</div>
-                {% elif bed.computed_status == "maintenance" %}
-                    <span class="pill pill-maint">Maintenance</span>
-                {% else %}
-                    <span class="pill pill-available">Available</span>
-                {% endif %}
+    {% else %}
+        <div class="bm-stats">
+            <div class="bm-stat">
+                <div class="bm-stat-label">Total Beds</div>
+                <div class="bm-stat-value">{{ bed_stats.total_beds }}</div>
             </div>
+            <div class="bm-stat stat-occupied">
+                <div class="bm-stat-label">Occupied</div>
+                <div class="bm-stat-value">{{ bed_stats.occupied }}</div>
+            </div>
+            <div class="bm-stat stat-available">
+                <div class="bm-stat-label">Available</div>
+                <div class="bm-stat-value">{{ bed_stats.available }}</div>
+            </div>
+            <div class="bm-stat stat-maint">
+                <div class="bm-stat-label">Maintenance</div>
+                <div class="bm-stat-value">{{ bed_stats.maintenance }}</div>
+            </div>
+        </div>
+    {% endif %}
+    <!-- Two-column body -->
+    <div class="bm-body">
+        <!-- LEFT: Main content -->
+        <div class="bm-main">
+            <div class="bm-toolbar">
+                <div class="bm-tabs">
+                    <button class="bm-tab active" onclick="filterRows('all', this)">All</button>
+                    <button class="bm-tab" onclick="filterRows('waiting', this)">Waiting</button>
+                    <button class="bm-tab" onclick="filterRows('vitals_taken', this)">Vitals Taken</button>
+                    <button class="bm-tab" onclick="filterRows('completed', this)">Discharged</button>
+                </div>
+                <div class="bm-search">
+                    <span class="bm-search-icon"></span>
+                    <input class="form-control"
+                           type="text"
+                           placeholder="Search patient or room…"
+                           oninput="searchTable(this.value)"
+                           id="bmSearch">
+                </div>
+                <button class="request-transfer-btn"
+                        onclick="document.getElementById('transferModal').classList.add('open')">
+                    ↔ Request Transfer
+                </button>
+            </div>
+            {% if specific_role == "doctor" %}
+                <!-- Doctor view: bed grid -->
+                <div class="bed-grid" id="bedGrid">
+                    {% for bed in beds %}
+                        <div class="bed-card {{ bed.computed_status }}"
+                             data-name="{{ bed.room_name | lower }}"
+                             data-patient="{{ bed.patient_name | default(value='') | lower }}">
+                            <div class="bed-card-name">{{ bed.room_name }}</div>
+                            <div class="bed-card-loc">{{ bed.location }} · {{ bed.room_type }}</div>
+                            {% if bed.computed_status == "occupied" %}
+                                <span class="pill pill-occupied">Occupied</span>
+                                <div class="bed-patient">{{ bed.patient_name }}</div>
+                                <div class="bed-patient-meta">{{ bed.appointment_status | default(value="") | replace(from="_", to=" ") | capitalize }}</div>
+                            {% elif bed.computed_status == "maintenance" %}
+                                <span class="pill pill-maint">Maintenance</span>
+                            {% else %}
+                                <span class="pill pill-available">Available</span>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div style="grid-column: 1/-1;">
+                            <div class="bm-empty">
+                                <div class="bm-empty-icon"></div>
+                                <p>No rooms found. Rooms are seeded from the database.</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <!-- All roles: patient table -->
+            {% if patients %}
+                <table class="table table-hover align-middle" id="patientTable">
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Condition</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Room</th>
+                            <th>Doctor</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="patientTableBody">
+                        {% for p in patients %}
+                            <tr data-status="{{ p.status }}"
+                                data-name="{{ p.patient_name | lower }}"
+                                data-room="{{ p.room_name | lower }}">
+                                <td>
+                                    <div class="patient-name">{{ p.patient_name }}</div>
+                                    <div class="patient-meta">{{ p.age }}y · {{ p.gender }}</div>
+                                </td>
+                                <td>{{ p.condition }}</td>
+                                <td>
+                                    {% if p.priority_label == "Emergency" %}
+                                        <span class="pill pill-emergency">Emergency</span>
+                                    {% elif p.priority_label == "High Risk" %}
+                                        <span class="pill pill-high-risk">High Risk</span>
+                                    {% elif p.priority_label == "Moderate" %}
+                                        <span class="pill pill-moderate">Moderate</span>
+                                    {% else %}
+                                        <span class="pill pill-stable">Stable</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if p.status_label == "Waiting" %}
+                                        <span class="pill pill-waiting">Waiting</span>
+                                    {% elif p.status_label == "Vitals Taken" %}
+                                        <span class="pill pill-vitals">Vitals Taken</span>
+                                    {% elif p.status_label == "Discharged" %}
+                                        <span class="pill pill-discharged">Discharged</span>
+                                    {% else %}
+                                        <span class="pill pill-waiting">{{ p.status_label }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ p.room_name }}</td>
+                                <td>{{ p.doctor_name }}</td>
+                                <td> <a href="/staff/patients/{{ p.patient_id }}"
+    class="btn btn-outline-primary btn-sm">View</a> </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             {% else %}
-            <div style="grid-column: 1/-1;">
                 <div class="bm-empty">
-                    <div class="bm-empty-icon">🛏️</div>
-                    <p>No rooms found. Rooms are seeded from the database.</p>
+                    <div class="bm-empty-icon"></div>
+                    <p>No patients currently in the clinic today.</p>
                 </div>
+            {% endif %}
+        </div>
+        <!-- RIGHT: Transfer Requests -->
+        <div class="bm-panel">
+            <div class="bm-panel-header">
+                <h3>Transfer Requests</h3>
+                <p>Room change requests from staff</p>
             </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <!-- All roles: patient table -->
-        {% if patients %}
-        <table class="bm-table" id="patientTable">
-            <thead>
-                <tr>
-                    <th>Patient</th>
-                    <th>Condition</th>
-                    <th>Priority</th>
-                    <th>Status</th>
-                    <th>Room</th>
-                    <th>Doctor</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody id="patientTableBody">
-                {% for p in patients %}
-                <tr data-status="{{ p.status }}" data-name="{{ p.patient_name | lower }}" data-room="{{ p.room_name | lower }}">
-                    <td>
-                        <div class="patient-name">{{ p.patient_name }}</div>
-                        <div class="patient-meta">{{ p.age }}y · {{ p.gender }}</div>
-                    </td>
-                    <td>{{ p.condition }}</td>
-                    <td>
-                        {% if p.priority_label == "Emergency" %}
-                            <span class="pill pill-emergency">Emergency</span>
-                        {% elif p.priority_label == "High Risk" %}
-                            <span class="pill pill-high-risk">High Risk</span>
-                        {% elif p.priority_label == "Moderate" %}
-                            <span class="pill pill-moderate">Moderate</span>
-                        {% else %}
-                            <span class="pill pill-stable">Stable</span>
+            {% if transfers %}
+                {% for t in transfers %}
+                    <div class="transfer-item">
+                        <div class="transfer-meta">
+                            <div class="transfer-status {{ t.status }}">
+                                {% if t.status == "pending" %}
+                                    Pending
+                                {% elif t.status == "approved" %}
+                                    Approved
+                                {% else %}
+                                    Rejected
+                                {% endif %}
+                            </div>
+                            <div class="transfer-time">{{ t.time_ago }}</div>
+                        </div>
+                        <div class="transfer-patient">{{ t.patient_name }}</div>
+                        <div class="transfer-rooms"> <span class="room-chip">{{ t.from_room }}</span> <span class="transfer-arrow"></span> <span class="room-chip">{{ t.to_room }}</span> </div>
+                        {% if t.reason %}
+                            <div class="transfer-reason">{{ t.reason }}</div>
                         {% endif %}
-                    </td>
-                    <td>
-                        {% if p.status_label == "Waiting" %}
-                            <span class="pill pill-waiting">Waiting</span>
-                        {% elif p.status_label == "Vitals Taken" %}
-                            <span class="pill pill-vitals">Vitals Taken</span>
-                        {% elif p.status_label == "Discharged" %}
-                            <span class="pill pill-discharged">Discharged</span>
-                        {% else %}
-                            <span class="pill pill-waiting">{{ p.status_label }}</span>
+                        <div class="transfer-by">Requested by {{ t.requested_by }}</div>
+                        {% if t.status == "pending" and (specific_role == "doctor" or specific_role == "admin") %}
+                            <div class="transfer-actions">
+                                <form method="POST"
+                                      action="/staff/beds/transfer/{{ t.transfer_id }}/approve"
+                                      style="flex:1">
+                                    <button type="submit" class="btn btn-success btn-sm" style="width:100%;">Approve</button>
+                                </form>
+                                <form method="POST"
+                                      action="/staff/beds/transfer/{{ t.transfer_id }}/reject"
+                                      style="flex:1">
+                                    <button type="submit" class="btn btn-danger btn-sm" style="width:100%;">Reject</button>
+                                </form>
+                            </div>
                         {% endif %}
-                    </td>
-                    <td>{{ p.room_name }}</td>
-                    <td>{{ p.doctor_name }}</td>
-                    <td>
-                        <a href="/staff/patients/{{ p.patient_id }}" class="view-btn">View</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="bm-empty">
-            <div class="bm-empty-icon">🏥</div>
-            <p>No patients currently in the clinic today.</p>
-        </div>
-        {% endif %}
-    </div>
-
-    <!-- ── RIGHT: Transfer Requests ── -->
-    <div class="bm-panel">
-        <div class="bm-panel-header">
-            <h3>Transfer Requests</h3>
-            <p>Room change requests from staff</p>
-        </div>
-
-        {% if transfers %}
-            {% for t in transfers %}
-            <div class="transfer-item">
-                <div class="transfer-meta">
-                    <div class="transfer-status {{ t.status }}">
-                        {% if t.status == "pending" %}⚠ Pending
-                        {% elif t.status == "approved" %}✔ Approved
-                        {% else %}✖ Rejected{% endif %}
                     </div>
-                    <div class="transfer-time">{{ t.time_ago }}</div>
-                </div>
-
-                <div class="transfer-patient">{{ t.patient_name }}</div>
-
-                <div class="transfer-rooms">
-                    <span class="room-chip">{{ t.from_room }}</span>
-                    <span class="transfer-arrow">→</span>
-                    <span class="room-chip">{{ t.to_room }}</span>
-                </div>
-
-                {% if t.reason %}
-                <div class="transfer-reason">{{ t.reason }}</div>
-                {% endif %}
-
-                <div class="transfer-by">Requested by {{ t.requested_by }}</div>
-
-                {% if t.status == "pending" and (specific_role == "doctor" or specific_role == "admin") %}
-                <div class="transfer-actions">
-                    <form method="POST" action="/staff/beds/transfer/{{ t.transfer_id }}/approve" style="flex:1;">
-                        <button type="submit" class="btn-approve" style="width:100%;">Approve</button>
-                    </form>
-                    <form method="POST" action="/staff/beds/transfer/{{ t.transfer_id }}/reject" style="flex:1;">
-                        <button type="submit" class="btn-reject" style="width:100%;">Reject</button>
-                    </form>
-                </div>
-                {% endif %}
-            </div>
-            {% endfor %}
-        {% else %}
-            <div class="panel-no-transfers">
-                No transfer requests yet.
-            </div>
-        {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="panel-no-transfers">No transfer requests yet.</div>
+            {% endif %}
+        </div>
     </div>
-
-</div>
-
-<!-- ── REQUEST TRANSFER MODAL ── -->
-<div class="modal-overlay" id="transferModal" onclick="if(event.target===this)this.classList.remove('open')">
-    <div class="modal">
-        <h3>↔ Request Room Transfer</h3>
-        <form method="POST" action="/staff/beds/transfer/request">
-            <label>Patient</label>
-            <select name="patient_id" required>
-                <option value="">Select patient…</option>
-                {% for p in patients %}
-                <option value="{{ p.patient_id }}">{{ p.patient_name }}</option>
-                {% endfor %}
-            </select>
-
-            <label>From Room (current)</label>
-            <select name="from_room_id">
-                <option value="">— None / Unknown —</option>
-                {% for bed in beds %}
-                <option value="{{ bed.room_id }}">{{ bed.room_name }} ({{ bed.computed_status }})</option>
-                {% endfor %}
-            </select>
-
-            <label>To Room (destination)</label>
-            <select name="to_room_id" required>
-                <option value="">Select room…</option>
-                {% for bed in beds %}
-                <option value="{{ bed.room_id }}">{{ bed.room_name }} — {{ bed.computed_status }}</option>
-                {% endfor %}
-            </select>
-
-            <label>Reason</label>
-            <textarea name="reason" rows="2" placeholder="e.g. Stable vitals, freeing up triage bay"></textarea>
-
-            <div class="modal-actions">
-                <button type="submit" class="modal-btn-submit">Submit Request</button>
-                <button type="button" class="modal-btn-cancel" onclick="document.getElementById('transferModal').classList.remove('open')">Cancel</button>
-            </div>
-        </form>
+    <!-- REQUEST TRANSFER MODAL -->
+    <div class="modal-overlay"
+         id="transferModal"
+         onclick="if(event.target===this)this.classList.remove('open')">
+        <div class="modal">
+            <h3>↔ Request Room Transfer</h3>
+            <form method="POST" action="/staff/beds/transfer/request">
+                <label class="form-label fw-semibold small">Patient</label>
+                <select class="form-select" name="patient_id" required>
+                    <option value="">Select patient…</option>
+                    {% for p in patients %}
+                        <option value="{{ p.patient_id }}">{{ p.patient_name }}</option>
+                    {% endfor %}
+                </select>
+                <label class="form-label fw-semibold small">From Room (current)</label>
+                <select class="form-select" name="from_room_id">
+                    <option value="">— None / Unknown —</option>
+                    {% for bed in beds %}
+                        <option value="{{ bed.room_id }}">{{ bed.room_name }} ({{ bed.computed_status }})</option>
+                    {% endfor %}
+                </select>
+                <label class="form-label fw-semibold small">To Room (destination)</label>
+                <select class="form-select" name="to_room_id" required>
+                    <option value="">Select room…</option>
+                    {% for bed in beds %}
+                        <option value="{{ bed.room_id }}">{{ bed.room_name }} — {{ bed.computed_status }}</option>
+                    {% endfor %}
+                </select>
+                <label class="form-label fw-semibold small">Reason</label>
+                <textarea class="form-control"
+                          name="reason"
+                          rows="2"
+                          placeholder="e.g. Stable vitals, freeing up triage bay"></textarea>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                    <button type="button"
+                            class="btn btn-secondary"
+                            onclick="document.getElementById('transferModal').classList.remove('open')">Cancel</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
+    <script> // Filter tabs
+ function filterRows(filter, btn) {
+ document.querySelectorAll('.bm-tab').forEach(t => t.classList.remove('active'));
+ btn.classList.add('active');
 
-<script>
-    // Filter tabs
-    function filterRows(filter, btn) {
-        document.querySelectorAll('.bm-tab').forEach(t => t.classList.remove('active'));
-        btn.classList.add('active');
+ const rows = document.querySelectorAll('#patientTableBody tr');
+ rows.forEach(row => {
+ const status = row.dataset.status || '';
+ const show = filter === 'all'
+ || (filter === 'waiting' && status === 'checked_in')
+ || (filter === 'vitals_taken' && status === 'vitals_taken')
+ || (filter === 'completed' && status === 'completed');
+ row.style.display = show ? '' : 'none';
+ });
+ }
 
-        const rows = document.querySelectorAll('#patientTableBody tr');
-        rows.forEach(row => {
-            const status = row.dataset.status || '';
-            const show = filter === 'all'
-                || (filter === 'waiting'      && status === 'checked_in')
-                || (filter === 'vitals_taken' && status === 'vitals_taken')
-                || (filter === 'completed'    && status === 'completed');
-            row.style.display = show ? '' : 'none';
-        });
-    }
+ // Search
+ function searchTable(q) {
+ const query = q.toLowerCase();
+ document.querySelectorAll('#patientTableBody tr').forEach(row => {
+ const name = row.dataset.name || '';
+ const room = row.dataset.room || '';
+ row.style.display = (name.includes(query) || room.includes(query)) ? '' : 'none';
+ });
 
-    // Search
-    function searchTable(q) {
-        const query = q.toLowerCase();
-        document.querySelectorAll('#patientTableBody tr').forEach(row => {
-            const name = row.dataset.name || '';
-            const room = row.dataset.room || '';
-            row.style.display = (name.includes(query) || room.includes(query)) ? '' : 'none';
-        });
-
-        // Also filter bed cards if visible
-        document.querySelectorAll('.bed-card').forEach(card => {
-            const name    = card.dataset.name    || '';
-            const patient = card.dataset.patient || '';
-            card.style.display = (name.includes(query) || patient.includes(query)) ? '' : 'none';
-        });
-    }
-</script>
+ // Also filter bed cards if visible
+ document.querySelectorAll('.bed-card').forEach(card => {
+ const name = card.dataset.name || '';
+ const patient = card.dataset.patient || '';
+ card.style.display = (name.includes(query) || patient.includes(query)) ? '' : 'none';
+ });
+ }
+    </script>
 {% endblock %}

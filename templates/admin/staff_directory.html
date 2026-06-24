@@ -1,62 +1,63 @@
 {% extends "shared/layout.html" %}
-
 {% block title %}{{ directory_title }} - HealthHub Admin{% endblock %}
 {% block page_title %}{{ directory_title }}{% endblock %}
 {% block nav_admin_staff %}class="active"{% endblock %}
-
-{% block extra_head %}
-{% endblock %}
-
+{% block extra_head %}{% endblock %}
 {% block content %}
-<div class="directory-header">
-    <h2>{{ directory_title }}</h2>
-    <p>Browse registered staff accounts. Use the filters to switch between roles or view the full staff registry.</p>
-
-    <div class="filter-row">
-        <a href="/admin/staff" class="filter-chip {% if selected_role == 'all' %}active{% endif %}">All Staff</a>
-        <a href="/admin/staff?role=doctor" class="filter-chip {% if selected_role == 'doctor' %}active{% endif %}">Doctors</a>
-        <a href="/admin/staff?role=nurse" class="filter-chip {% if selected_role == 'nurse' %}active{% endif %}">Nurses</a>
-        <a href="/admin/staff?role=receptionist" class="filter-chip {% if selected_role == 'receptionist' %}active{% endif %}">Receptionists</a>
-        <a href="/admin/staff?role=admin" class="filter-chip {% if selected_role == 'admin' %}active{% endif %}">Admins</a>
+    <div class="directory-header">
+        <h2>{{ directory_title }}</h2>
+        <p>Browse registered staff accounts. Use the filters to switch between roles or view the full staff registry.</p>
+        <div class="filter-row"> <a href="/admin/staff"
+    class="filter-chip {% if selected_role == 'all' %}active{% endif %}">All Staff</a> <a href="/admin/staff?role=doctor"
+    class="filter-chip {% if selected_role == 'doctor' %}active{% endif %}">Doctors</a> <a href="/admin/staff?role=nurse"
+    class="filter-chip {% if selected_role == 'nurse' %}active{% endif %}">Nurses</a> <a href="/admin/staff?role=receptionist"
+    class="filter-chip {% if selected_role == 'receptionist' %}active{% endif %}">Receptionists</a> <a href="/admin/staff?role=admin"
+    class="filter-chip {% if selected_role == 'admin' %}active{% endif %}">Admins</a> </div>
     </div>
-</div>
-
-<div class="directory-panel">
-    <div class="directory-topline">
-        <div>
-            <h3 style="margin-bottom: 4px; color: #0F172A;">Registry</h3>
-            <div class="directory-count">{{ staff_count }} account{% if staff_count != 1 %}s{% endif %} found</div>
+    <div class="directory-panel">
+        <div class="directory-topline">
+            <div>
+                <h3 style="margin-bottom: 4px; color: #0F172A;">Registry</h3>
+                <div class="directory-count">{{ staff_count }} account
+                    {% if staff_count != 1 %}s{% endif %}
+                found</div>
+            </div>
+            <a href="/admin/staff/onboard"
+               class="btn btn-primary w-100 py-2 fw-semibold">Onboard New Staff</a>
         </div>
-        <a href="/admin/staff/onboard" class="btn-submit">Onboard New Staff</a>
+        <table class="table table-bordered table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Phone</th>
+                    <th>Registered</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in staff_members %}
+                    <tr>
+                        <td>{{ member.display_name }}</td>
+                        <td>{{ member.email }}</td>
+                        <td><span class="badge bg-primary">{{ member.role }}</span></td>
+                        <td>
+                            {% if member.phone_number %}
+                                {{ member.phone_number }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ member.created_at }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="text-center text-muted py-5">No staff members found for this role.</div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-
-    <table class="directory-table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Phone</th>
-                <th>Registered</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for member in staff_members %}
-            <tr>
-                <td>{{ member.display_name }}</td>
-                <td>{{ member.email }}</td>
-                <td><span class="role-pill">{{ member.role }}</span></td>
-                <td>{% if member.phone_number %}{{ member.phone_number }}{% else %}-{% endif %}</td>
-                <td>{{ member.created_at }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="5">
-                    <div class="empty-state">No staff members found for this role.</div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
 {% endblock %}

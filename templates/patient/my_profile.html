@@ -1,116 +1,218 @@
 {% extends "shared/layout.html" %}
-
 {% block title %}My Profile - HealthHub{% endblock %}
 {% block page_title %}My Profile{% endblock %}
 {% block nav_patient_home %}{% endblock %}
-
-{% block extra_head %}
-{% endblock %}
-
+{% block extra_head %}{% endblock %}
 {% block content %}
-<div class="profile-card">
-    <div class="profile-header">
-        <div class="profile-avatar">{{ profile.first_name | truncate(length=1, end="") | upper }}</div>
-        <div>
-            <div class="profile-header-name">{{ profile.first_name }} {{ profile.last_name }}</div>
-            <div class="profile-header-sub">Patient · HealthHub Portal</div>
+    <div class="profile-card">
+        <div class="profile-header">
+            <div class="profile-avatar">{{ profile.first_name | truncate(length=1, end="") | upper }}</div>
+            <div>
+                <div class="profile-header-name">{{ profile.first_name }} {{ profile.last_name }}</div>
+                <div class="profile-header-sub">Patient · HealthHub Portal</div>
+            </div>
+        </div>
+        <div class="profile-body">
+            <div class="profile-section-title">Personal Information</div>
+            <div class="profile-row"> <span class="profile-label">Full Name</span> <span class="profile-value">{{ profile.first_name }} {{ profile.last_name }}</span> </div>
+            <div class="profile-row"> <span class="profile-label">Date of Birth</span> <span class="profile-value">{{ profile.date_of_birth }}</span> </div>
+            <div class="profile-row"> <span class="profile-label">Gender</span> <span class="profile-value">
+                {% if profile.gender %}
+                    {{ profile.gender }}
+                {% else %}
+                    Not provided
+                {% endif %}
+            </span> </div>
+            <hr class="divider">
+            <div class="profile-section-title">Contact Details</div>
+            <div class="profile-row"> <span class="profile-label">Email</span> <span class="profile-value">{{ profile.email | default(value="Not provided") }}</span> </div>
+            <div class="profile-row"> <span class="profile-label">Phone</span> <span class="profile-value">
+                {% if profile.phone %}
+                    {{ profile.phone }}
+                {% else %}
+                    Not provided
+                {% endif %}
+            </span> </div>
+            <hr class="divider">
+            <div class="profile-section-title">Emergency Contact</div>
+            <div class="profile-row"> <span class="profile-label">Contact Name</span> <span class="profile-value">
+                {% if profile.emergency_contact_name %}
+                    {{ profile.emergency_contact_name }}
+                {% else %}
+                    Not provided
+                {% endif %}
+            </span> </div>
+            <div class="profile-row"> <span class="profile-label">Contact Phone</span> <span class="profile-value">
+                {% if profile.emergency_contact_phone %}
+                    {{ profile.emergency_contact_phone }}
+                {% else %}
+                    Not provided
+                {% endif %}
+            </span> </div>
+            <hr class="divider">
+            <div class="profile-section-title">Update My Details</div>
+            <form method="POST" action="/patient/profile" style="margin-top:16px;">
+                <div style="display:grid;
+                            grid-template-columns:1fr 1fr;
+                            gap:12px;
+                            margin-bottom:12px">
+                    <div>
+                        <label class="form-label fw-semibold small"
+                               style="font-size:12px;
+                                      font-weight:600;
+                                      color:#374151;
+                                      display:block;
+                                      margin-bottom:4px">First Name</label>
+                        <input class="form-control"
+                               type="text"
+                               name="first_name"
+                               value="{{ profile.first_name }}"
+                               required
+                               style="width:100%;
+                                      padding:9px 12px;
+                                      border:1px solid #D1D5DB;
+                                      border-radius:7px;
+                                      font-size:14px;
+                                      box-sizing:border-box">
+                    </div>
+                    <div>
+                        <label class="form-label fw-semibold small"
+                               style="font-size:12px;
+                                      font-weight:600;
+                                      color:#374151;
+                                      display:block;
+                                      margin-bottom:4px">Last Name</label>
+                        <input class="form-control"
+                               type="text"
+                               name="last_name"
+                               value="{{ profile.last_name }}"
+                               required
+                               style="width:100%;
+                                      padding:9px 12px;
+                                      border:1px solid #D1D5DB;
+                                      border-radius:7px;
+                                      font-size:14px;
+                                      box-sizing:border-box">
+                    </div>
+                </div>
+                <div style="display:grid;
+                            grid-template-columns:1fr 1fr;
+                            gap:12px;
+                            margin-bottom:12px">
+                    <div>
+                        <label class="form-label fw-semibold small"
+                               style="font-size:12px;
+                                      font-weight:600;
+                                      color:#374151;
+                                      display:block;
+                                      margin-bottom:4px">Date of Birth</label>
+                        <input class="form-control"
+                               type="date"
+                               name="date_of_birth"
+                               value="{{ profile.date_of_birth_raw | default(value='') }}"
+                               required
+                               style="width:100%;
+                                      padding:9px 12px;
+                                      border:1px solid #D1D5DB;
+                                      border-radius:7px;
+                                      font-size:14px;
+                                      box-sizing:border-box">
+                    </div>
+                    <div>
+                        <label class="form-label fw-semibold small"
+                               style="font-size:12px;
+                                      font-weight:600;
+                                      color:#374151;
+                                      display:block;
+                                      margin-bottom:4px">Gender</label>
+                        <select class="form-select"
+                                name="gender"
+                                style="width:100%;
+                                       padding:9px 12px;
+                                       border:1px solid #D1D5DB;
+                                       border-radius:7px;
+                                       font-size:14px;
+                                       box-sizing:border-box">
+                            <option value="">Prefer not to say</option>
+                            <option value="Male" {% if profile.gender == "Male" %}selected{% endif %}>Male</option>
+                            <option value="Female" {% if profile.gender == "Female" %}selected{% endif %}>Female</option>
+                            <option value="Other" {% if profile.gender == "Other" %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-bottom:12px;">
+                    <label class="form-label fw-semibold small"
+                           style="font-size:12px;
+                                  font-weight:600;
+                                  color:#374151;
+                                  display:block;
+                                  margin-bottom:4px">Phone Number</label>
+                    <input class="form-control"
+                           type="tel"
+                           name="phone_number"
+                           value="{{ profile.phone | default(value='') }}"
+                           style="width:100%;
+                                  padding:9px 12px;
+                                  border:1px solid #D1D5DB;
+                                  border-radius:7px;
+                                  font-size:14px;
+                                  box-sizing:border-box">
+                </div>
+                <div style="display:grid;
+                            grid-template-columns:1fr 1fr;
+                            gap:12px;
+                            margin-bottom:20px">
+                    <div>
+                        <label class="form-label fw-semibold small"
+                               style="font-size:12px;
+                                      font-weight:600;
+                                      color:#374151;
+                                      display:block;
+                                      margin-bottom:4px">Emergency Contact Name</label>
+                        <input class="form-control"
+                               type="text"
+                               name="emergency_contact_name"
+                               value="{{ profile.emergency_contact_name | default(value='') }}"
+                               style="width:100%;
+                                      padding:9px 12px;
+                                      border:1px solid #D1D5DB;
+                                      border-radius:7px;
+                                      font-size:14px;
+                                      box-sizing:border-box">
+                    </div>
+                    <div>
+                        <label class="form-label fw-semibold small"
+                               style="font-size:12px;
+                                      font-weight:600;
+                                      color:#374151;
+                                      display:block;
+                                      margin-bottom:4px">Emergency Contact Phone</label>
+                        <input class="form-control"
+                               type="tel"
+                               name="emergency_contact_phone"
+                               value="{{ profile.emergency_contact_phone | default(value='') }}"
+                               style="width:100%;
+                                      padding:9px 12px;
+                                      border:1px solid #D1D5DB;
+                                      border-radius:7px;
+                                      font-size:14px;
+                                      box-sizing:border-box">
+                    </div>
+                </div>
+                <button type="submit"
+                        style="background:#005999;
+                               color:white;
+                               border:none;
+                               padding:10px 22px;
+                               border-radius:7px;
+                               font-size:14px;
+                               font-weight:600;
+                               cursor:pointer">Save Changes</button>
+            </form>
+            <a href="/patient/dashboard"
+               class="text-secondary text-decoration-none small"
+               style="margin-top:16px;
+                      display:inline-block">Back to Dashboard</a>
         </div>
     </div>
-
-    <div class="profile-body">
-        <div class="profile-section-title">Personal Information</div>
-
-        <div class="profile-row">
-            <span class="profile-label">Full Name</span>
-            <span class="profile-value">{{ profile.first_name }} {{ profile.last_name }}</span>
-        </div>
-        <div class="profile-row">
-            <span class="profile-label">Date of Birth</span>
-            <span class="profile-value">{{ profile.date_of_birth }}</span>
-        </div>
-        <div class="profile-row">
-            <span class="profile-label">Gender</span>
-            <span class="profile-value">{% if profile.gender %}{{ profile.gender }}{% else %}Not provided{% endif %}</span>
-        </div>
-        <hr class="divider">
-        <div class="profile-section-title">Contact Details</div>
-
-        <div class="profile-row">
-            <span class="profile-label">Email</span>
-            <span class="profile-value">{{ profile.email | default(value="Not provided") }}</span>
-        </div>
-        <div class="profile-row">
-            <span class="profile-label">Phone</span>
-            <span class="profile-value">{% if profile.phone %}{{ profile.phone }}{% else %}Not provided{% endif %}</span>
-        </div>
-
-        <hr class="divider">
-        <div class="profile-section-title">Emergency Contact</div>
-
-        <div class="profile-row">
-            <span class="profile-label">Contact Name</span>
-            <span class="profile-value">{% if profile.emergency_contact_name %}{{ profile.emergency_contact_name }}{% else %}Not provided{% endif %}</span>
-        </div>
-        <div class="profile-row">
-            <span class="profile-label">Contact Phone</span>
-            <span class="profile-value">{% if profile.emergency_contact_phone %}{{ profile.emergency_contact_phone }}{% else %}Not provided{% endif %}</span>
-        </div>
-
-        <hr class="divider">
-        <div class="profile-section-title">Update My Details</div>
-        <form method="POST" action="/patient/profile" style="margin-top:16px;">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-                <div>
-                    <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:4px;">First Name</label>
-                    <input type="text" name="first_name" value="{{ profile.first_name }}" required
-                           style="width:100%; padding:9px 12px; border:1px solid #D1D5DB; border-radius:7px; font-size:14px; box-sizing:border-box;">
-                </div>
-                <div>
-                    <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:4px;">Last Name</label>
-                    <input type="text" name="last_name" value="{{ profile.last_name }}" required
-                           style="width:100%; padding:9px 12px; border:1px solid #D1D5DB; border-radius:7px; font-size:14px; box-sizing:border-box;">
-                </div>
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-                <div>
-                    <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:4px;">Date of Birth</label>
-                    <input type="date" name="date_of_birth" value="{{ profile.date_of_birth_raw | default(value='') }}" required
-                           style="width:100%; padding:9px 12px; border:1px solid #D1D5DB; border-radius:7px; font-size:14px; box-sizing:border-box;">
-                </div>
-                <div>
-                    <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:4px;">Gender</label>
-                    <select name="gender" style="width:100%; padding:9px 12px; border:1px solid #D1D5DB; border-radius:7px; font-size:14px; box-sizing:border-box;">
-                        <option value="">Prefer not to say</option>
-                        <option value="Male"   {% if profile.gender == "Male"   %}selected{% endif %}>Male</option>
-                        <option value="Female" {% if profile.gender == "Female" %}selected{% endif %}>Female</option>
-                        <option value="Other"  {% if profile.gender == "Other"  %}selected{% endif %}>Other</option>
-                    </select>
-                </div>
-            </div>
-            <div style="margin-bottom:12px;">
-                <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:4px;">Phone Number</label>
-                <input type="tel" name="phone_number" value="{{ profile.phone | default(value='') }}"
-                       style="width:100%; padding:9px 12px; border:1px solid #D1D5DB; border-radius:7px; font-size:14px; box-sizing:border-box;">
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
-                <div>
-                    <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:4px;">Emergency Contact Name</label>
-                    <input type="text" name="emergency_contact_name" value="{{ profile.emergency_contact_name | default(value='') }}"
-                           style="width:100%; padding:9px 12px; border:1px solid #D1D5DB; border-radius:7px; font-size:14px; box-sizing:border-box;">
-                </div>
-                <div>
-                    <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:4px;">Emergency Contact Phone</label>
-                    <input type="tel" name="emergency_contact_phone" value="{{ profile.emergency_contact_phone | default(value='') }}"
-                           style="width:100%; padding:9px 12px; border:1px solid #D1D5DB; border-radius:7px; font-size:14px; box-sizing:border-box;">
-                </div>
-            </div>
-            <button type="submit"
-                    style="background:#005999; color:white; border:none; padding:10px 22px; border-radius:7px; font-size:14px; font-weight:600; cursor:pointer;">
-                Save Changes
-            </button>
-        </form>
-
-        <a href="/patient/dashboard" class="edit-link" style="margin-top:16px; display:inline-block;">← Back to Dashboard</a>
-    </div>
-</div>
 {% endblock %}

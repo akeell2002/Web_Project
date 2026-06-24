@@ -1,83 +1,107 @@
 {% extends "shared/layout.html" %}
-
 {% block title %}Reception Desk - HealthHub EHR{% endblock %}
 {% block page_title %}Reception Desk Queue{% endblock %}
 {% block nav_recep_desk %}class="active"{% endblock %}
-
-{% block extra_head %}
-{% endblock %}
-
+{% block extra_head %}{% endblock %}
 {% block content %}
-<p class="reception-date">Today's Date: {{ date }}</p>
-
-<div class="reception-card">
-    <table class="clinical-table">
-        <thead>
-            <tr>
-                <th>Time</th>
-                <th>Patient Name</th>
-                <th>Assigned Doctor</th>
-                <th>Room</th>
-                <th>Status</th>
-                <th>Queue #</th>
-                <th>Priority</th> <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for appt in schedule %}
-            <tr>
-                <td>{{ appt.time }}</td>
-                <td><strong>{{ appt.patient_name }}</strong></td>
-                <td>{{ appt.doctor_name }}</td>
-                <td style="font-weight: 600; color: #4B5563;">🏢 {{ appt.room }}</td>
-                <td>
-                    {% if appt.status == "scheduled" %} 🟡 Scheduled
-                    {% elif appt.status == "checked_in" %} 🟠 Waiting for Nurse
-                    {% elif appt.status == "vitals_taken" %} 🟢 Ready for Doctor
-                    {% elif appt.status == "completed" %} ⚫ Completed
-                    {% else %} {{ appt.status }} {% endif %}
-                </td>
-                <td>
-                    {% if appt.queue_number %}
-                        <span class="queue-num">#{{ appt.queue_number }}</span>
-                    {% else %} - {% endif %}
-                </td>
-                
-                <td style="font-weight: bold;">
-                    {% if appt.priority == 1 %}<span style="color: #DC2626;">🚨 Emergency</span>
-                    {% elif appt.priority == 2 %}<span style="color: #EA580C;">🟠 Urgent</span>
-                    {% elif appt.priority == 3 %}<span style="color: #D97706;">🟡 Semi-Urgent</span>
-                    {% elif appt.priority == 4 %}<span style="color: #16A34A;">🟢 Routine</span>
-                    {% else %}<span style="color: #6B7280;">⚪ Non-Urgent</span>{% endif %}
-                </td>
-                
-                <td style="display:flex; gap:8px; align-items:center;">
-                    {% if appt.status == "scheduled" %}
-                    <form action="/staff/receptionist/queue/check_in/{{ appt.id }}" method="POST" style="margin:0;">
-                        <button type="submit" class="btn-check-in">Check In</button>
-                    </form>
-                    <form action="/staff/receptionist/queue/no_show/{{ appt.id }}" method="POST" style="margin:0;"
-                          onsubmit="return confirm('Mark this patient as no-show?');">
-                        <button type="submit"
-                                style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA; padding:7px 12px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer;">
-                            No-Show
-                        </button>
-                    </form>
-                    {% elif appt.status == "checked_in" %}
-                    <form action="/staff/receptionist/queue/no_show/{{ appt.id }}" method="POST" style="margin:0;"
-                          onsubmit="return confirm('Mark this patient as no-show?');">
-                        <button type="submit"
-                                style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA; padding:7px 12px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer;">
-                            No-Show
-                        </button>
-                    </form>
-                    {% else %}
-                        <span style="color: #9CA3AF; font-size: 13px; font-style: italic;">—</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+    <p class="reception-date">Today's Date: {{ date }}</p>
+    <div class="reception-card">
+        <table class="table table-bordered table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Patient Name</th>
+                    <th>Assigned Doctor</th>
+                    <th>Room</th>
+                    <th>Status</th>
+                    <th>Queue #</th>
+                    <th>Priority</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appt in schedule %}
+                    <tr>
+                        <td>{{ appt.time }}</td>
+                        <td><strong>{{ appt.patient_name }}</strong></td>
+                        <td>{{ appt.doctor_name }}</td>
+                        <td style="font-weight: 600; color: #4B5563;">{{ appt.room }}</td>
+                        <td>
+                            {% if appt.status == "scheduled" %}
+                                Scheduled
+                            {% elif appt.status == "checked_in" %}
+                                Waiting for Nurse
+                            {% elif appt.status == "vitals_taken" %}
+                                Ready for Doctor
+                            {% elif appt.status == "completed" %}
+                                Completed
+                            {% else %}
+                                {{ appt.status }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if appt.queue_number %}
+                                <span class="queue-num">#{{ appt.queue_number }}</span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td style="font-weight: bold;">
+                            {% if appt.priority == 1 %}
+                                <span style="color: #DC2626;">Emergency</span>
+                            {% elif appt.priority == 2 %}
+                                <span style="color: #EA580C;">Urgent</span>
+                            {% elif appt.priority == 3 %}
+                                <span style="color: #D97706;">Semi-Urgent</span>
+                            {% elif appt.priority == 4 %}
+                                <span style="color: #16A34A;">Routine</span>
+                            {% else %}
+                                <span style="color: #6B7280;">Non-Urgent</span>
+                            {% endif %}
+                        </td>
+                        <td style="display:flex; gap:8px; align-items:center;">
+                            {% if appt.status == "scheduled" %}
+                                <form action="/staff/receptionist/queue/check_in/{{ appt.id }}"
+                                      method="POST"
+                                      style="margin:0">
+                                    <button type="submit" class="btn btn-success btn-sm">Check In</button>
+                                </form>
+                                <form action="/staff/receptionist/queue/no_show/{{ appt.id }}"
+                                      method="POST"
+                                      style="margin:0"
+                                      onsubmit="return confirm('Mark this patient as no-show?');">
+                                    <button type="submit"
+                                            style="background:#FEF2F2;
+                                                   color:#DC2626;
+                                                   border:1px solid #FECACA;
+                                                   padding:7px 12px;
+                                                   border-radius:6px;
+                                                   font-size:13px;
+                                                   font-weight:600;
+                                                   cursor:pointer">No-Show</button>
+                                </form>
+                            {% elif appt.status == "checked_in" %}
+                                <form action="/staff/receptionist/queue/no_show/{{ appt.id }}"
+                                      method="POST"
+                                      style="margin:0"
+                                      onsubmit="return confirm('Mark this patient as no-show?');">
+                                    <button type="submit"
+                                            style="background:#FEF2F2;
+                                                   color:#DC2626;
+                                                   border:1px solid #FECACA;
+                                                   padding:7px 12px;
+                                                   border-radius:6px;
+                                                   font-size:13px;
+                                                   font-weight:600;
+                                                   cursor:pointer">No-Show</button>
+                                </form>
+                            {% else %}
+                                <span style="color: #9CA3AF; font-size: 13px; font-style: italic;">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}

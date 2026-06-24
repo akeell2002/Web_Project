@@ -1,26 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Report — {{ patient.full_name }}</title>
-</head>
-<body class="page-app">
+{% extends "shared/base.html" %}
+
+{% block title %}Medical Report — {{ patient.full_name }}{% endblock %}
+
+{% block body %}
+<body style="background:#fff; font-family:'Segoe UI',system-ui,sans-serif; color:#1a1a1a;">
 
 <div class="print-bar">
-    <a href="/staff/patients/{{ patient.id }}">← Back to Patient Profile</a>
-    <button class="btn-print" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    <a href="/staff/patients/{{ patient.id }}">Back to Patient Profile</a>
+    <button class="btn-print" onclick="window.print()">Print / Save as PDF</button>
 </div>
 
 <!-- Report Header -->
 <div class="report-header">
     <div class="report-clinic">
-        <h1>⚕️ HealthHub Medical Centre</h1>
+        <h1>HealthHub Medical Centre</h1>
         <p>Official Patient Medical Report</p>
     </div>
     <div class="report-meta">
         <div>Report Date: <strong>{{ report_date }}</strong></div>
-        <div>Patient ID: <strong style="font-family:monospace; font-size: 11px;">{{ patient.id }}</strong></div>
+        <div>Patient ID: <strong style="font-family:monospace; font-size:11px;">{{ patient.id }}</strong></div>
         <div>Total Visits: <strong>{{ patient.visit_count }}</strong></div>
     </div>
 </div>
@@ -83,9 +81,11 @@
 
 <!-- Visit History -->
 <div class="section">
-    <div class="section-title">Visit History ({{ patient.visit_count }} record{% if patient.visit_count != 1 %}s{% endif %})</div>
+    <div class="section-title">
+        Visit History ({{ patient.visit_count }} record{% if patient.visit_count != 1 %}s{% endif %})
+    </div>
     {% if patient.visits %}
-    <table class="visit-table">
+    <table class="table table-bordered align-middle">
         <thead>
             <tr>
                 <th>Date</th>
@@ -108,11 +108,11 @@
                     {% if visit.diagnosis %}
                         <div style="font-weight:600; margin-bottom:3px;">{{ visit.diagnosis }}</div>
                         {% if visit.treatment_notes %}
-                        <div style="color:#6B7280; font-size: 11px; margin-bottom:4px;">{{ visit.treatment_notes }}</div>
+                        <div style="color:#6B7280; font-size:11px; margin-bottom:4px;">{{ visit.treatment_notes }}</div>
                         {% endif %}
                         {% if visit.medicine_name %}
                         <div class="rx-inline">
-                            💊 <strong>{{ visit.medicine_name }}</strong>
+                            <strong>{{ visit.medicine_name }}</strong>
                             {% if visit.dosage %} · {{ visit.dosage }}{% endif %}
                             {% if visit.frequency %} · {{ visit.frequency }}{% endif %}
                             {% if visit.duration %} · {{ visit.duration }}{% endif %}
@@ -139,4 +139,4 @@
 </div>
 
 </body>
-</html>
+{% endblock %}

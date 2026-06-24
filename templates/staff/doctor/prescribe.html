@@ -1,132 +1,151 @@
 {% extends "shared/layout.html" %}
-
 {% block title %}Prescribe Medication - HealthHub{% endblock %}
 {% block page_title %}Prescribe Medication{% endblock %}
-
 {% block nav_doctor_prescribe %}class="active"{% endblock %}
-
-{% block extra_head %}
-{% endblock %}
-
+{% block extra_head %}{% endblock %}
 {% block content %}
-
-{% if success %}
-<div class="success-banner">✅ Prescription saved successfully.</div>
-{% endif %}
-
-<div class="prescribe-header">
-    <h2>💊 Prescribe Medication</h2>
-    <p>Patients seen in the past 7 days. Select a patient and visit to issue or add a prescription.</p>
-</div>
-
-{% if appointments %}
-<div class="search-bar">
-    <span class="search-icon">🔍</span>
-    <input type="text" id="patient-search" placeholder="Search patient by name..." oninput="filterPatients()">
-</div>
-
-<div id="no-results" class="no-results">
-    <div style="font-size: 36px;">🔍</div>
-    <p>No patients match your search.</p>
-</div>
-
-<div class="appt-list" id="appt-list">
-    {% for patient in appointments %}
-    <div class="appt-card" id="card-{{ patient.patient_id }}">
-        <div class="appt-card-header" onclick="toggleCard('{{ patient.patient_id }}')">
-            <div>
-                <div class="appt-patient">{{ patient.patient_name }}</div>
-                <div class="appt-meta">{{ patient.appointments | length }} visit(s) in the past 7 days</div>
-            </div>
-            <div class="appt-right">
-                {% if patient.appointments | length > 1 %}
-                <span class="rx-badge">{{ patient.appointments | length }} visits</span>
-                {% endif %}
-                <span class="toggle-arrow">▾</span>
-            </div>
-        </div>
-
-        <div class="rx-form">
-            <form method="POST" action="/staff/doctor/prescribe/placeholder" id="form-{{ patient.patient_id }}"
-                  onsubmit="updateFormAction('{{ patient.patient_id }}'); return true;">
-
-                <div class="form-group full" style="margin-bottom: 16px;">
-                    <label>Select Visit *</label>
-                    <select name="appointment_select" id="appt-select-{{ patient.patient_id }}" required
-                            style="border: 1px solid #D1D5DB; border-radius: 8px; padding: 9px 13px; font-size: 14px; width: 100%; font-family: inherit;">
-                        {% for appt in patient.appointments %}
-                        <option value="{{ appt.id }}">
-                            {{ appt.appointment_date }} at {{ appt.start_time }}
-                            {% if appt.is_today %} — TODAY{% endif %}
-                            · {{ appt.status }}
-                            {% if appt.rx_count > 0 %} · {{ appt.rx_count }} Rx{% endif %}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-group full">
-                        <label>Medicine Name *</label>
-                        <input type="text" name="medicine_name" placeholder="e.g. Amoxicillin 500mg" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Dosage *</label>
-                        <input type="text" name="dosage" placeholder="e.g. 1 tablet" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Frequency *</label>
-                        <input type="text" name="frequency" placeholder="e.g. Twice daily" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Duration *</label>
-                        <input type="text" name="duration" placeholder="e.g. 7 days" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Instructions (optional)</label>
-                        <input type="text" name="instructions" placeholder="e.g. Take after meals">
-                    </div>
-                </div>
-                <button type="submit" class="btn-prescribe">💊 Save Prescription</button>
-            </form>
-        </div>
+    {% if success %}
+        <div class="alert alert-success">Prescription saved successfully.</div>
+    {% endif %}
+    <div class="prescribe-header">
+        <h2>Prescribe Medication</h2>
+        <p>Patients seen in the past 7 days. Select a patient and visit to issue or add a prescription.</p>
     </div>
-    {% endfor %}
-</div>
-{% else %}
-<div class="empty-state">
-    <div style="font-size: 40px;">📋</div>
-    <p>No appointments found in the past 7 days.</p>
-</div>
-{% endif %}
-
-<script>
+    {% if appointments %}
+        <div class="search-bar">
+            <span class="search-icon"></span>
+            <input class="form-control"
+                   type="text"
+                   id="patient-search"
+                   placeholder="Search patient by name..."
+                   oninput="filterPatients()">
+        </div>
+        <div id="no-results" class="no-results">
+            <div style="font-size: 36px;"></div>
+            <p>No patients match your search.</p>
+        </div>
+        <div class="appt-list" id="appt-list">
+            {% for patient in appointments %}
+                <div class="appt-card" id="card-{{ patient.patient_id }}">
+                    <div class="appt-card-header"
+                         onclick="toggleCard('{{ patient.patient_id }}')">
+                        <div>
+                            <div class="appt-patient">{{ patient.patient_name }}</div>
+                            <div class="appt-meta">{{ patient.appointments | length }} visit(s) in the past 7 days</div>
+                        </div>
+                        <div class="appt-right">
+                            {% if patient.appointments | length > 1 %}
+                                <span class="badge bg-warning text-dark">{{ patient.appointments | length }} visits</span>
+                            {% endif %}
+                            <span class="toggle-arrow"></span>
+                        </div>
+                    </div>
+                    <div class="rx-form">
+                        <form method="POST"
+                              action="/staff/doctor/prescribe/placeholder"
+                              id="form-{{ patient.patient_id }}"
+                              onsubmit="updateFormAction('{{ patient.patient_id }}'); return true;">
+                            <div class="mb-3 col-12" style="margin-bottom: 16px;">
+                                <label class="form-label fw-semibold small">Select Visit *</label>
+                                <select class="form-select"
+                                        name="appointment_select"
+                                        id="appt-select-{{ patient.patient_id }}"
+                                        required
+                                        style="border: 1px solid #D1D5DB;
+                                               border-radius: 8px;
+                                               padding: 9px 13px;
+                                               font-size: 14px;
+                                               width: 100%;
+                                               font-family: inherit">
+                                    {% for appt in patient.appointments %}
+                                        <option value="{{ appt.id }}">
+                                            {{ appt.appointment_date }} at {{ appt.start_time }}
+                                            {% if appt.is_today %}— TODAY{% endif %}
+                                            · {{ appt.status }}
+                                            {% if appt.rx_count > 0 %}· {{ appt.rx_count }} Rx{% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="mb-3 col-12">
+                                    <label class="form-label fw-semibold small">Medicine Name *</label>
+                                    <input class="form-control"
+                                           type="text"
+                                           name="medicine_name"
+                                           placeholder="e.g. Amoxicillin 500mg"
+                                           required>
+                                </div>
+                                <div class="col mb-3">
+                                    <label class="form-label fw-semibold small">Dosage *</label>
+                                    <input class="form-control"
+                                           type="text"
+                                           name="dosage"
+                                           placeholder="e.g. 1 tablet"
+                                           required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold small">Frequency *</label>
+                                    <input class="form-control"
+                                           type="text"
+                                           name="frequency"
+                                           placeholder="e.g. Twice daily"
+                                           required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold small">Duration *</label>
+                                    <input class="form-control"
+                                           type="text"
+                                           name="duration"
+                                           placeholder="e.g. 7 days"
+                                           required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold small">Instructions (optional)</label>
+                                    <input class="form-control"
+                                           type="text"
+                                           name="instructions"
+                                           placeholder="e.g. Take after meals">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-success">Save Prescription</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center text-muted py-5">
+            <div style="font-size: 40px;"></div>
+            <p>No appointments found in the past 7 days.</p>
+        </div>
+    {% endif %}
+    <script>
 function toggleCard(id) {
-    const card = document.getElementById('card-' + id);
-    card.classList.toggle('open');
+ const card = document.getElementById('card-' + id);
+ card.classList.toggle('open');
 }
 
 function updateFormAction(patientId) {
-    const select = document.getElementById('appt-select-' + patientId);
-    const form = document.getElementById('form-' + patientId);
-    const appointmentId = select.value;
-    form.action = '/staff/doctor/prescribe/' + appointmentId;
+ const select = document.getElementById('appt-select-' + patientId);
+ const form = document.getElementById('form-' + patientId);
+ const appointmentId = select.value;
+ form.action = '/staff/doctor/prescribe/' + appointmentId;
 }
 
 function filterPatients() {
-    const query = document.getElementById('patient-search').value.toLowerCase().trim();
-    const cards = document.querySelectorAll('#appt-list .appt-card');
-    let visibleCount = 0;
+ const query = document.getElementById('patient-search').value.toLowerCase().trim();
+ const cards = document.querySelectorAll('#appt-list .appt-card');
+ let visibleCount = 0;
 
-    cards.forEach(card => {
-        const name = card.querySelector('.appt-patient').textContent.toLowerCase();
-        const match = name.includes(query);
-        card.style.display = match ? '' : 'none';
-        if (match) visibleCount++;
-    });
+ cards.forEach(card => {
+ const name = card.querySelector('.appt-patient').textContent.toLowerCase();
+ const match = name.includes(query);
+ card.style.display = match ? '' : 'none';
+ if (match) visibleCount++;
+ });
 
-    document.getElementById('no-results').style.display = visibleCount === 0 ? 'block' : 'none';
+ document.getElementById('no-results').style.display = visibleCount === 0 ? 'block' : 'none';
 }
-</script>
-
+    </script>
 {% endblock %}

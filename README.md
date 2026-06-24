@@ -11,7 +11,7 @@ A full-stack enterprise web application built with **Rust**, **Actix Web**, **Te
 | Admin        | admin@clinic.com        | Password123!  |
 | Doctor       | doctor@clinic.com       | Password123!  |
 | Nurse        | nurse@clinic.com        | Password123!  |
-| Receptionist | reception@clinic.com    | Password123!  |
+| Receptionist | receptionist@clinic.com | Password123!  |
 
 Patients self-register at `/patient/register`, or staff can register them at `/staff/patients/add`.
 
@@ -26,6 +26,7 @@ Patients self-register at `/patient/register`, or staff can register them at `/s
 | Templating  | Tera (SSR)                                      |
 | Database    | PostgreSQL via SQLx                             |
 | Auth        | Actix Session (cookie-based) + Argon2 hashing  |
+| Frontend    | Bootstrap 5.3 (CDN) + custom CSS               |
 | Logging     | env_logger                                      |
 | Config      | dotenv                                          |
 
@@ -144,7 +145,7 @@ The server starts at `http://127.0.0.1:8080`. Migrations run automatically on st
 
 ## Database Schema
 
-Defined across 5 migrations in `/migrations/`:
+Defined in a single consolidated migration file `migrations/01_schema_init.sql`, applied automatically on startup:
 
 | Table                      | Purpose                                    |
 |----------------------------|--------------------------------------------|

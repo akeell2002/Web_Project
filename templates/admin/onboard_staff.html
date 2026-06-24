@@ -1,55 +1,61 @@
 {% extends "shared/layout.html" %}
-
 {% block title %}Onboard Staff - HealthHub Admin{% endblock %}
 {% block page_title %}Onboard Staff Member{% endblock %}
 {% block nav_admin_onboard %}class="active"{% endblock %}
-
-{% block extra_head %}
-{% endblock %}
-
+{% block extra_head %}{% endblock %}
 {% block content %}
-<div class="onboard-card">
-    <h3>Onboard Staff Member</h3>
-    <p>Create a secure account for a doctor, nurse, receptionist, or admin.</p>
-
-    <div class="notice-box">
-        <strong>Administrator Notice:</strong>
-        Choose the correct staff role before submitting.
-        Admin accounts are granted the same system access protections as other staff roles.
+    <div class="onboard-card">
+        <h3>Onboard Staff Member</h3>
+        <p>Create a secure account for a doctor, nurse, receptionist, or admin.</p>
+        <div class="alert alert-info">
+            <strong>Administrator Notice:</strong> Choose the correct staff role before submitting.
+            Admin accounts are granted the same system access protections as other staff roles.
+        </div>
+        <form method="POST" action="/admin/staff/onboard">
+            <div class="mb-3">
+                <select class="form-select" name="role" required>
+                    <option value="" disabled selected>Select Staff Role</option>
+                    <option value="doctor">Doctor</option>
+                    <option value="nurse">Nurse</option>
+                    <option value="receptionist">Receptionist</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <input class="form-control"
+                       type="email"
+                       name="email"
+                       placeholder="Staff Email Address"
+                       required>
+            </div>
+            <div class="mb-3">
+                <input class="form-control"
+                       type="password"
+                       name="password"
+                       placeholder="Password"
+                       required>
+            </div>
+            <div class="mb-3">
+                <input class="form-control"
+                       type="text"
+                       name="first_name"
+                       placeholder="First Name"
+                       required>
+            </div>
+            <div class="mb-3">
+                <input class="form-control"
+                       type="text"
+                       name="last_name"
+                       placeholder="Last Name"
+                       required>
+            </div>
+            <div class="mb-3">
+                <input class="form-control"
+                       type="text"
+                       name="phone_number"
+                       placeholder="Phone Number (optional)">
+            </div>
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">Create Staff Account</button>
+        </form>
     </div>
-
-    <form method="POST" action="/admin/staff/onboard">
-        <div class="input-field">
-            <select name="role" required>
-                <option value="" disabled selected>Select Staff Role</option>
-                <option value="doctor">Doctor</option>
-                <option value="nurse">Nurse</option>
-                <option value="receptionist">Receptionist</option>
-                <option value="admin">Admin</option>
-            </select>
-        </div>
-
-        <div class="input-field">
-            <input type="email" name="email" placeholder="Staff Email Address" required>
-        </div>
-
-        <div class="input-field">
-            <input type="password" name="password" placeholder="Password" required>
-        </div>
-
-        <div class="input-field">
-            <input type="text" name="first_name" placeholder="First Name" required>
-        </div>
-
-        <div class="input-field">
-            <input type="text" name="last_name" placeholder="Last Name" required>
-        </div>
-
-        <div class="input-field">
-            <input type="text" name="phone_number" placeholder="Phone Number (optional)">
-        </div>
-
-        <button type="submit" class="btn-submit">Create Staff Account</button>
-    </form>
-</div>
 {% endblock %}

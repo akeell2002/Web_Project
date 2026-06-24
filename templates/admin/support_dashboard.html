@@ -1,73 +1,64 @@
 {% extends "shared/layout.html" %}
-
 {% block title %}Support Tickets – HealthHub{% endblock %}
 {% block page_title %}Support Tickets{% endblock %}
-
 {% block nav_admin_support %}class="active"{% endblock %}
-
-{% block extra_head %}
-{% endblock %}
-
+{% block extra_head %}{% endblock %}
 {% block content %}
-
-{% if replied %}
-<div class="success-banner">✅ Reply sent and ticket marked as resolved.</div>
-{% endif %}
-
-<div class="page-header">
-    <h2>📩 Support Tickets</h2>
-    <p>Messages submitted from the public contact form. Reply to mark as resolved.</p>
-</div>
-
-{% if tickets %}
-    {% for t in tickets %}
-    <div class="ticket-card">
-        <div class="ticket-top">
-            <div>
-                <div class="ticket-name">{{ t.submitter_name }}</div>
-                <div class="ticket-email">{{ t.submitter_email }}</div>
-            </div>
-            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                <span class="status-badge status-{{ t.status }}">{{ t.status | replace(from="_", to=" ") }}</span>
-                <span class="ticket-date">{{ t.created_at }}</span>
-            </div>
-        </div>
-
-        <div class="ticket-body">
-            <p>{{ t.issue_description }}</p>
-        </div>
-
-        <div class="ticket-reply">
-            {% if t.reply_notes %}
-            <div class="reply-existing">
-                <strong>Your reply · {{ t.replied_at }}</strong>
-                {{ t.reply_notes }}
-            </div>
-            {% endif %}
-
-            <form method="POST" action="/admin/support/reply" class="reply-form">
-                <input type="hidden" name="ticket_id" value="{{ t.id }}">
-                <textarea name="reply_notes" placeholder="{% if t.reply_notes %}Update reply...{% else %}Write a reply...{% endif %}"></textarea>
-                <button type="submit" class="btn-reply">
-                    {% if t.reply_notes %}Update Reply{% else %}Send Reply{% endif %}
-                </button>
-            </form>
-        </div>
+    {% if replied %}
+        <div class="alert alert-success">Reply sent and ticket marked as resolved.</div>
+    {% endif %}
+    <div class="page-header">
+        <h2>Support Tickets</h2>
+        <p>Messages submitted from the public contact form. Reply to mark as resolved.</p>
     </div>
-    {% endfor %}
-{% else %}
-<div class="empty-state">
-    <div style="font-size: 40px;">📩</div>
-    <p style="margin-top: 8px;">No support tickets yet.</p>
-</div>
-{% endif %}
-
-<script>
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('replied') === '1') {
-        const banner = document.querySelector('.success-banner');
-        if (banner) banner.style.display = 'block';
-    }
-</script>
-
+    {% if tickets %}
+        {% for t in tickets %}
+            <div class="ticket-card">
+                <div class="ticket-top">
+                    <div>
+                        <div class="ticket-name">{{ t.submitter_name }}</div>
+                        <div class="ticket-email">{{ t.submitter_email }}</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;"> <span class="status-badge status-{{ t.status }}">{{ t.status | replace(from="_", to=" ") }}</span> <span class="ticket-date">{{ t.created_at }}</span> </div>
+                </div>
+                <div class="ticket-body">
+                    <p>{{ t.issue_description }}</p>
+                </div>
+                <div class="ticket-reply">
+                    {% if t.reply_notes %}
+                        <div class="reply-existing">
+                            <strong>Your reply · {{ t.replied_at }}</strong> {{ t.reply_notes }}
+                        </div>
+                    {% endif %}
+                    <form method="POST" action="/admin/support/reply" class="reply-form">
+                        <input class="form-control"
+                               type="hidden"
+                               name="ticket_id"
+                               value="{{ t.id }}">
+                        <textarea class="form-control"
+                                  name="reply_notes"
+                                  placeholder="{% if t.reply_notes %}Update reply...{% else %}Write a reply...{% endif %}"></textarea>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            {% if t.reply_notes %}
+                                Update Reply
+                            {% else %}
+                                Send Reply
+                            {% endif %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center text-muted py-5">
+            <div style="font-size: 40px;"></div>
+            <p style="margin-top: 8px;">No support tickets yet.</p>
+        </div>
+    {% endif %}
+    <script> const params = new URLSearchParams(window.location.search);
+ if (params.get('replied') === '1') {
+ const banner = document.querySelector('.success-banner');
+ if (banner) banner.style.display = 'block';
+ }
+    </script>
 {% endblock %}

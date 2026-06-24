@@ -1,135 +1,89 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account - HealthHub Clinical Systems</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-</head>
+{% extends "shared/base.html" %}
+
+{% block title %}Create Account - HealthHub{% endblock %}
+
+{% block body %}
 <body class="page-auth">
 
-    <div class="portal-wrapper patient-portal">
-        
-        <!-- Left Branding Panel -->
-        <div class="brand-panel" style="background: linear-gradient(135deg, #047857 0%, #065f46 100%);">
+<div class="portal-wrapper">
 
-            <div class="system-tag" style="color: #DFF7EE;">
-                HEALTHHUB PATIENT REGISTRATION
-            </div>
-            
-            <div class="brand-message">
-                <h2>Create Your<br>Patient Account.</h2>
-
-                <p>
-                    Register for a HealthHub account to book appointments,
-                    manage healthcare visits, and securely access your
-                    patient information online anytime.
+    <div class="brand-panel" style="background:linear-gradient(135deg,#047857 0%,#065f46 100%);">
+        <div class="system-tag" style="color:#DFF7EE;">HEALTHHUB PATIENT REGISTRATION</div>
+        <div class="brand-message">
+            <h2>Create Your<br>Patient Account.</h2>
+            <p>
+                Register for a HealthHub account to book appointments,
+                manage healthcare visits, and securely access your
+                patient information online anytime.
+            </p>
+            <div style="margin-top:25px; padding:12px; background:rgba(0,0,0,0.15); border-left:3px solid #065f46; border-radius:4px;">
+                <p style="font-size:11px; line-height:1.4; color:#E6F0F9; margin:0;">
+                    <strong>Privacy & Security:</strong> Your account information is securely
+                    encrypted and protected according to healthcare privacy standards.
                 </p>
-                
-                <div style="margin-top: 25px; padding: 12px; background: rgba(0,0,0,0.15); border-left: 3px solid #065f46; border-radius: 4px;">
-                    <p style="font-size: 11px; line-height: 1.4; color: #E6F0F9; margin: 0;">
-                        <strong>Privacy & Security:</strong> Your account information
-                        is securely encrypted and protected according to healthcare
-                        privacy and patient data protection standards.
-                    </p>
-                </div>
             </div>
-            
-            <div class="panel-footer">
-                &copy; 2026 HealthHub Medical Infrastructure.
-            </div>
-
         </div>
+        <div class="panel-footer">&copy; 2026 HealthHub Medical Infrastructure.</div>
+    </div>
 
-        <!-- Right Registration Form -->
-        <div class="form-panel">
-
+    <div class="form-panel">
+        <div class="gateway-inner-content">
             <div class="form-header">
                 <h3>Create New Account</h3>
                 <p>Please fill in your details to register.</p>
             </div>
-            
+
             <form method="POST" action="/patient/register">
-
-                <div class="input-field">
-                    <input type="text" name="first_name" placeholder="First Name" required>
+                <div class="mb-3">
+                    <input class="form-control" type="text" name="first_name" placeholder="First Name" required>
                 </div>
-
-                <div class="input-field">
-                    <input type="text" name="last_name" placeholder="Last Name" required>
+                <div class="mb-3">
+                    <input class="form-control" type="text" name="last_name" placeholder="Last Name" required>
                 </div>
-
-                <div class="input-field">
-                    <input 
-                        type="email"
-                        name="email"
-                        placeholder="Email Address"
-                        required
-                    >
+                <div class="mb-3">
+                    <input class="form-control" type="email" name="email" placeholder="Email Address" required>
                 </div>
-                
-                <div class="input-field">
-                    <input type="text" name="date_of_birth" title="Date of Birth (DD/MM/YYYY)" placeholder="DD/MM/YYYY" pattern="\d{2}/\d{2}/\d{4}" required>
-                </div>     
-                <div class="input-field">
-                    <select name="gender" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #E5E7EB; margin-bottom: 15px;">
+                <div class="mb-3">
+                    <input class="form-control" type="text" name="date_of_birth"
+                           placeholder="DD/MM/YYYY" pattern="\d{2}/\d{2}/\d{4}"
+                           title="Date of Birth (DD/MM/YYYY)" required>
+                </div>
+                <div class="mb-3">
+                    <select class="form-select" name="gender">
                         <option value="">Select Gender (Optional)</option>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
                         <option value="other">Other</option>
                     </select>
                 </div>
-
-                <div class="input-field">
-                    <input 
-                        type="password"
-                        name="password"
-                        placeholder="Create Password"
-                        required
-                    >
+                <div class="mb-3">
+                    <input class="form-control" type="password" name="password" placeholder="Create Password" required>
+                </div>
+                <div class="mb-3">
+                    <input class="form-control" type="password" name="confirm_password" placeholder="Confirm Password" required>
+                </div>
+                <div class="mb-3">
+                    <input class="form-control" type="text" name="phone_number" placeholder="Phone Number (Optional)">
+                </div>
+                <div class="mb-3">
+                    <input class="form-control" type="text" name="emergency_contact_name" placeholder="Emergency Contact Name (Optional)">
+                </div>
+                <div class="mb-3">
+                    <input class="form-control" type="text" name="emergency_contact_phone" placeholder="Emergency Contact Phone (Optional)">
                 </div>
 
-                <div class="input-field">
-                    <input 
-                        type="password"
-                        name="confirm_password"
-                        placeholder="Confirm Password"
-                        required
-                    >
-                </div>
-
-                <div class="input-field">
-                    <input type="text" name="phone_number" placeholder="Phone Number (Optional)">
-                </div>
-
-                <div class="input-field">
-                    <input type="text" name="emergency_contact_name" placeholder="Emergency Contact Name (Optional)">
-                </div>
-
-                <div class="input-field">
-                    <input type="text" name="emergency_contact_phone" placeholder="Emergency Contact Phone (Optional)">
-                </div>
-                
-                <button 
-                    type="submit"
-                    class="btn-submit"
-                    style="margin-top: 15px;"
-                >
+                <button type="submit" class="btn-submit" style="margin-top:15px;">
                     Create Account
                 </button>
-
             </form>
 
-            <div class="switch-auth" style="margin-top: 25px;">
-                <p>
-                    Already have an account?
-                    <a href="/patient/login">Sign In</a>
-                </p>
+            <div class="switch-auth" style="margin-top:25px; text-align:center;">
+                <p>Already have an account? <a href="/patient/login">Sign In</a></p>
             </div>
-
         </div>
-
     </div>
 
+</div>
+
 </body>
-</html>
+{% endblock %}

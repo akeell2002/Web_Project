@@ -1,2 +1,0 @@
-ALTER TABLE appointment 
-ADD COLUMN priority_level INTEGER NOT NULL DEFAULT 4;

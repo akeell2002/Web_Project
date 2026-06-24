@@ -1,89 +1,145 @@
 {% extends "shared/layout.html" %}
-
 {% block title %}Nurse Triage - HealthHub EHR{% endblock %}
 {% block page_title %}Nurse Triage Station{% endblock %}
 {% block nav_nurse_triage %}class="active"{% endblock %}
-
-{% block extra_head %}
-{% endblock %}
-
+{% block extra_head %}{% endblock %}
 {% block content %}
-<p class="triage-date">Date: {{ date }}</p>
-
-<div class="triage-card">
-    {% if queue | length == 0 %}
-        <div class="empty-triage">No patients are currently waiting for triage.</div>
-    {% else %}
-    <table>
-        <thead>
-            <tr>
-                <th>Queue #</th>
-                <th>Patient Name</th>
-                <th>Room</th>
-                <th>Details</th>
-                <th>Record Vitals &amp; Send to Doctor</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for appt in queue %}
-            <tr>
-                <td><h2 style="margin:0; color: #0EA5E9;">#{{ appt.queue_number }}</h2></td>
-                <td>
-                    <strong>{{ appt.patient_name }}</strong><br>
-                    <small style="color:#6B7280;">{{ appt.time }}</small>
-                </td>
-                <td>
-                    <span style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #374151;">
-                        {{ appt.room }}
-                    </span>
-                </td>
-                <td>
-                    <div style="margin-bottom: 5px; font-weight: bold;">
-                        {% if appt.priority == 1 %}<span style="color: #DC2626;">🚨 Emergency (1)</span>
-                        {% elif appt.priority == 2 %}<span style="color: #EA580C;">🟠 Urgent (2)</span>
-                        {% elif appt.priority == 3 %}<span style="color: #D97706;">🟡 Semi-Urgent (3)</span>
-                        {% elif appt.priority == 4 %}<span style="color: #16A34A;">🟢 Routine (4)</span>
-                        {% else %}<span style="color: #6B7280;">⚪ Non-Urgent (5)</span>{% endif %}
-                    </div>
-                    {{ appt.gender }}<br>
-                    <small style="color:#6B7280;">DOB: {{ appt.dob }}</small>
-                </td>
-                <td>
-                    <form action="/staff/nurse/queue/triage/{{ appt.id }}" method="POST"
-                          style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin: 0;">
-                        <div>
-                            <label style="font-size: 12px; font-weight: bold; color: #374151;">Verify Priority</label><br>
-                            <select name="priority_level" class="vitals-input" required style="width: 110px;">
-                                <option value="1" {% if appt.priority == 1 %}selected{% endif %}>1 - Emergency</option>
-                                <option value="2" {% if appt.priority == 2 %}selected{% endif %}>2 - Urgent</option>
-                                <option value="3" {% if appt.priority == 3 %}selected{% endif %}>3 - Semi-Urgent</option>
-                                <option value="4" {% if appt.priority == 4 %}selected{% endif %}>4 - Routine</option>
-                                <option value="5" {% if appt.priority == 5 %}selected{% endif %}>5 - Non-Urgent</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; font-weight: bold; color: #374151;">BP</label><br>
-                            <input type="text" name="blood_pressure" class="vitals-input" required placeholder="120/80">
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; font-weight: bold; color: #374151;">Temp (°C)</label><br>
-                            <input type="number" step="0.1" name="temperature" class="vitals-input" required placeholder="36.5">
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; font-weight: bold; color: #374151;">Wgt (kg)</label><br>
-                            <input type="number" step="0.1" name="weight_kg" class="vitals-input" required placeholder="70.5">
-                        </div>
-                        <div>
-                            <label style="font-size: 12px; font-weight: bold; color: #374151;">Hgt (cm)</label><br>
-                            <input type="number" step="0.1" name="height_cm" class="vitals-input" required placeholder="175">
-                        </div>
-                        <button type="submit" class="btn-vitals" style="margin-bottom: 4px;">Submit Vitals</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% endif %}
-</div>
+    <p class="triage-date">Date: {{ date }}</p>
+    <div class="triage-card">
+        {% if queue | length == 0 %}
+            <div class="empty-triage">No patients are currently waiting for triage.</div>
+        {% else %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Queue #</th>
+                        <th>Patient Name</th>
+                        <th>Room</th>
+                        <th>Details</th>
+                        <th>Record Vitals & Send to Doctor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appt in queue %}
+                        <tr>
+                            <td>
+                                <h2 style="margin:0; color: #0EA5E9;">#{{ appt.queue_number }}</h2>
+                            </td>
+                            <td>
+                                <strong>{{ appt.patient_name }}</strong>
+                                <br>
+                                <small style="color:#6B7280;">{{ appt.time }}</small>
+                            </td>
+                            <td>
+                                <span style="background: #f3f4f6;
+                                             padding: 4px 8px;
+                                             border-radius: 4px;
+                                             font-weight: bold;
+                                             color: #374151">{{ appt.room }}</span>
+                            </td>
+                            <td>
+                                <div style="margin-bottom: 5px; font-weight: bold;">
+                                    {% if appt.priority == 1 %}
+                                        <span style="color: #DC2626;">Emergency (1)</span>
+                                    {% elif appt.priority == 2 %}
+                                        <span style="color: #EA580C;">Urgent (2)</span>
+                                    {% elif appt.priority == 3 %}
+                                        <span style="color: #D97706;">Semi-Urgent (3)</span>
+                                    {% elif appt.priority == 4 %}
+                                        <span style="color: #16A34A;">Routine (4)</span>
+                                    {% else %}
+                                        <span style="color: #6B7280;">Non-Urgent (5)</span>
+                                    {% endif %}
+                                </div>
+                                {{ appt.gender }}
+                                <br>
+                                <small style="color:#6B7280;">DOB: {{ appt.dob }}</small>
+                            </td>
+                            <td>
+                                <form action="/staff/nurse/queue/triage/{{ appt.id }}"
+                                      method="POST"
+                                      style="display: flex;
+                                             flex-wrap: wrap;
+                                             gap: 12px;
+                                             align-items: flex-end;
+                                             margin: 0">
+                                    <div>
+                                        <label class="form-label fw-semibold small"
+                                               style="font-size: 12px;
+                                                      font-weight: bold;
+                                                      color: #374151">Verify Priority</label>
+                                        <br>
+                                        <select name="priority_level"
+                                                class="vitals-input"
+                                                required
+                                                style="width: 110px">
+                                            <option value="1" {% if appt.priority == 1 %}selected{% endif %}>1 - Emergency</option>
+                                            <option value="2" {% if appt.priority == 2 %}selected{% endif %}>2 - Urgent</option>
+                                            <option value="3" {% if appt.priority == 3 %}selected{% endif %}>3 - Semi-Urgent</option>
+                                            <option value="4" {% if appt.priority == 4 %}selected{% endif %}>4 - Routine</option>
+                                            <option value="5" {% if appt.priority == 5 %}selected{% endif %}>5 - Non-Urgent</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label fw-semibold small"
+                                               style="font-size: 12px;
+                                                      font-weight: bold;
+                                                      color: #374151">BP</label>
+                                        <br>
+                                        <input type="text"
+                                               name="blood_pressure"
+                                               class="vitals-input"
+                                               required
+                                               placeholder="120/80">
+                                    </div>
+                                    <div>
+                                        <label class="form-label fw-semibold small"
+                                               style="font-size: 12px;
+                                                      font-weight: bold;
+                                                      color: #374151">Temp (°C)</label>
+                                        <br>
+                                        <input type="number"
+                                               step="0.1"
+                                               name="temperature"
+                                               class="vitals-input"
+                                               required
+                                               placeholder="36.5">
+                                    </div>
+                                    <div>
+                                        <label class="form-label fw-semibold small"
+                                               style="font-size: 12px;
+                                                      font-weight: bold;
+                                                      color: #374151">Wgt (kg)</label>
+                                        <br>
+                                        <input type="number"
+                                               step="0.1"
+                                               name="weight_kg"
+                                               class="vitals-input"
+                                               required
+                                               placeholder="70.5">
+                                    </div>
+                                    <div>
+                                        <label class="form-label fw-semibold small"
+                                               style="font-size: 12px;
+                                                      font-weight: bold;
+                                                      color: #374151">Hgt (cm)</label>
+                                        <br>
+                                        <input type="number"
+                                               step="0.1"
+                                               name="height_cm"
+                                               class="vitals-input"
+                                               required
+                                               placeholder="175">
+                                    </div>
+                                    <button type="submit"
+                                            class="btn btn-primary btn-sm"
+                                            style="margin-bottom: 4px">Submit Vitals</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
 {% endblock %}

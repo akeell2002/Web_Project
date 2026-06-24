@@ -1,185 +1,221 @@
 {% extends "shared/layout.html" %}
-
 {% block title %}{{ patient.full_name }} - Patient Profile{% endblock %}
 {% block page_title %}Patient Profile{% endblock %}
-
 {% block nav_admin_patients %}class="active"{% endblock %}
 {% block nav_doctor_patients %}class="active"{% endblock %}
 {% block nav_nurse_patients %}class="active"{% endblock %}
 {% block nav_recep_patients %}class="active"{% endblock %}
-
-{% block extra_head %}
-{% endblock %}
-
+{% block extra_head %}{% endblock %}
 {% block content %}
-
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-    <a href="/staff/patients" class="back-link" style="margin-bottom:0;">← Back to Patient Directory</a>
-    <div style="display:flex; gap:10px;">
-        <a href="/staff/patients/{{ patient.id }}/edit"
-           style="background:#F3F4F6; color:#374151; text-decoration:none; padding:9px 18px; border-radius:8px; font-size:14px; font-weight:600; border:1px solid #D1D5DB;">
-            ✏️ Edit Patient
-        </a>
-        <a href="/staff/patients/{{ patient.id }}/report" target="_blank"
-           style="background:#005999; color:white; text-decoration:none; padding:9px 18px; border-radius:8px; font-size:14px; font-weight:600;">
-            🖨️ Generate Report
-        </a>
+    <div style="display:flex;
+                justify-content:space-between;
+                align-items:center;
+                margin-bottom:20px">
+        <a href="/staff/patients"
+           class="text-secondary text-decoration-none small"
+           style="margin-bottom:0">Back to Patient Directory</a>
+        <div style="display:flex; gap:10px;">
+            <a href="/staff/patients/{{ patient.id }}/edit"
+               style="background:#F3F4F6;
+                      color:#374151;
+                      text-decoration:none;
+                      padding:9px 18px;
+                      border-radius:8px;
+                      font-size:14px;
+                      font-weight:600;
+                      border:1px solid #D1D5DB">Edit Patient</a> <a href="/staff/patients/{{ patient.id }}/report"
+    target="_blank"
+    style="background:#005999;
+           color:white;
+           text-decoration:none;
+           padding:9px 18px;
+           border-radius:8px;
+           font-size:14px;
+           font-weight:600">Generate Report</a>
         {% if specific_role == "admin" %}
-        <form method="POST" action="/staff/patients/{{ patient.id }}/delete"
-              onsubmit="return confirm('Permanently delete this patient record? This cannot be undone.');"
-              style="margin:0;">
-            <button type="submit"
-                    style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA; padding:9px 18px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">
-                🗑️ Delete
-            </button>
-        </form>
+            <form method="POST"
+                  action="/staff/patients/{{ patient.id }}/delete"
+                  onsubmit="return confirm('Permanently delete this patient record? This cannot be undone.');"
+                  style="margin:0">
+                <button type="submit"
+                        style="background:#FEF2F2;
+                               color:#DC2626;
+                               border:1px solid #FECACA;
+                               padding:9px 18px;
+                               border-radius:8px;
+                               font-size:14px;
+                               font-weight:600;
+                               cursor:pointer">Delete</button>
+            </form>
         {% endif %}
     </div>
 </div>
-
 <!-- Profile Header -->
 <div class="profile-header">
     <div class="profile-avatar">{{ patient.first_name | truncate(length=1, end="") | upper }}</div>
     <div class="profile-header-info">
         <h2>{{ patient.full_name }}</h2>
         <p>
-            {% if patient.email %}{{ patient.email }}{% else %}No email on file{% endif %}
+            {% if patient.email %}
+                {{ patient.email }}
+            {% else %}
+                No email on file
+            {% endif %}
             &nbsp;·&nbsp; Registered {{ patient.registered_at }}
         </p>
     </div>
     <div class="profile-header-meta">
         <span class="meta-pill">
-            {% if patient.gender %}{{ patient.gender }}{% else %}Gender Unknown{% endif %}
-        </span>
-        <span class="meta-pill">{{ patient.visit_count }} visit{% if patient.visit_count != 1 %}s{% endif %}</span>
-    </div>
+            {% if patient.gender %}
+                {{ patient.gender }}
+            {% else %}
+                Gender Unknown
+            {% endif %}
+        </span> <span class="meta-pill">{{ patient.visit_count }} visit
+        {% if patient.visit_count != 1 %}s{% endif %}
+    </span>
 </div>
-
+</div>
 <!-- Demographics + Emergency Contact -->
 <div class="detail-grid">
     <div class="detail-card">
         <h3>Demographics</h3>
-
+        <div class="detail-row"> <span class="detail-label">Full Name</span> <span class="detail-value">{{ patient.full_name }}</span> </div>
+        <div class="detail-row"> <span class="detail-label">Date of Birth</span> <span class="detail-value">{{ patient.date_of_birth }}</span> </div>
         <div class="detail-row">
-            <span class="detail-label">Full Name</span>
-            <span class="detail-value">{{ patient.full_name }}</span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-label">Date of Birth</span>
-            <span class="detail-value">{{ patient.date_of_birth }}</span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-label">Gender</span>
-            <span class="detail-value {% if not patient.gender %}muted{% endif %}">
-                {% if patient.gender %}{{ patient.gender }}{% else %}Not recorded{% endif %}
-            </span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-label">Phone Number</span>
-            <span class="detail-value {% if not patient.phone %}muted{% endif %}">
-                {% if patient.phone %}{{ patient.phone }}{% else %}Not recorded{% endif %}
-            </span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-label">Email Address</span>
-            <span class="detail-value {% if not patient.email %}muted{% endif %}">
-                {% if patient.email %}{{ patient.email }}{% else %}Not recorded{% endif %}
-            </span>
-        </div>
+            <span class="detail-label">Gender</span> <span class="detail-value {% if not patient.gender %}muted{% endif %}">
+            {% if patient.gender %}
+                {{ patient.gender }}
+            {% else %}
+                Not recorded
+            {% endif %}
+        </span>
     </div>
-
-    <div class="detail-card">
-        <h3>Emergency Contact</h3>
-
-        <div class="detail-row">
-            <span class="detail-label">Contact Name</span>
-            <span class="detail-value {% if not patient.emergency_contact_name %}muted{% endif %}">
-                {% if patient.emergency_contact_name %}{{ patient.emergency_contact_name }}{% else %}Not provided{% endif %}
-            </span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-label">Contact Phone</span>
-            <span class="detail-value {% if not patient.emergency_contact_phone %}muted{% endif %}">
-                {% if patient.emergency_contact_phone %}{{ patient.emergency_contact_phone }}{% else %}Not provided{% endif %}
-            </span>
-        </div>
-        <div class="detail-row" style="margin-top: 20px;">
-            <span class="detail-label">Patient ID</span>
-            <span class="detail-value" style="font-family: monospace; font-size: 12px; color: #64748B;">
-                {{ patient.id }}
-            </span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-label">Registered</span>
-            <span class="detail-value">{{ patient.registered_at }}</span>
-        </div>
-    </div>
+    <div class="detail-row">
+        <span class="detail-label">Phone Number</span> <span class="detail-value {% if not patient.phone %}muted{% endif %}">
+        {% if patient.phone %}
+            {{ patient.phone }}
+        {% else %}
+            Not recorded
+        {% endif %}
+    </span>
 </div>
-
+<div class="detail-row">
+    <span class="detail-label">Email Address</span> <span class="detail-value {% if not patient.email %}muted{% endif %}">
+    {% if patient.email %}
+        {{ patient.email }}
+    {% else %}
+        Not recorded
+    {% endif %}
+</span>
+</div>
+</div>
+<div class="detail-card">
+    <h3>Emergency Contact</h3>
+    <div class="detail-row">
+        <span class="detail-label">Contact Name</span> <span class="detail-value {% if not patient.emergency_contact_name %}muted{% endif %}">
+        {% if patient.emergency_contact_name %}
+            {{ patient.emergency_contact_name }}
+        {% else %}
+            Not provided
+        {% endif %}
+    </span>
+</div>
+<div class="detail-row">
+    <span class="detail-label">Contact Phone</span> <span class="detail-value {% if not patient.emergency_contact_phone %}muted{% endif %}">
+    {% if patient.emergency_contact_phone %}
+        {{ patient.emergency_contact_phone }}
+    {% else %}
+        Not provided
+    {% endif %}
+</span>
+</div>
+<div class="detail-row" style="margin-top: 20px;">
+    <span class="detail-label">Patient ID</span> <span class="detail-value"
+       style="font-family: monospace;
+              font-size: 12px;
+              color: #64748B">{{ patient.id }}</span>
+</div>
+<div class="detail-row"> <span class="detail-label">Registered</span> <span class="detail-value">{{ patient.registered_at }}</span> </div>
+</div>
+</div>
 <!-- Visit History -->
 <div class="history-card">
     <div class="history-card-header">
         <h3>Visit History</h3>
-        <span class="visit-count-badge">{{ patient.visit_count }} record{% if patient.visit_count != 1 %}s{% endif %}</span>
+        <span class="badge bg-secondary fs-6">{{ patient.visit_count }} record
+            {% if patient.visit_count != 1 %}s{% endif %}
+        </span>
     </div>
-
     {% if patient.visits %}
-    <table class="visit-table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Doctor</th>
-                <th>Room</th>
-                <th>Status</th>
-                <th>Diagnosis &amp; Prescription</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for visit in patient.visits %}
-            <tr>
-                <td style="font-weight: 600; color: #111827;">{{ visit.appointment_date }}</td>
-                <td style="color: #6B7280;">
-                    {{ visit.start_time }}<br>
-                    <span style="font-size: 11px;">– {{ visit.end_time }}</span>
-                </td>
-                <td style="font-weight: 500; color: #374151;">{{ visit.doctor_name }}</td>
-                <td style="color: #0EA5E9; font-weight: 600;">
-                    {% if visit.room %}{{ visit.room }}{% else %}<span style="color:#9CA3AF;">–</span>{% endif %}
-                </td>
-                <td>
-                    <span class="status-pill status-{{ visit.status }}">{{ visit.status }}</span>
-                    {% if visit.queue_number %}
-                    <br><span style="font-size: 11px; color:#64748B; margin-top:4px; display:block;">#{{ visit.queue_number }}</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if visit.diagnosis %}
-                        <div style="font-weight: 600; color: #111827; margin-bottom: 4px;">{{ visit.diagnosis }}</div>
-                        {% if visit.treatment_notes %}
-                            <div style="font-size: 12px; color: #6B7280; margin-bottom: 6px;">{{ visit.treatment_notes }}</div>
-                        {% endif %}
-                        {% if visit.medicine_name %}
-                        <div class="rx-block">
-                            💊 <strong>{{ visit.medicine_name }}</strong>
-                            {% if visit.dosage %} · {{ visit.dosage }}{% endif %}
-                            {% if visit.frequency %} · {{ visit.frequency }}{% endif %}
-                            {% if visit.duration %} · {{ visit.duration }}{% endif %}
-                        </div>
-                        {% endif %}
-                    {% else %}
-                        <span style="color: #9CA3AF; font-style: italic; font-size: 14px;">
-                            {% if visit.status == "completed" %}No notes recorded{% else %}Pending consultation{% endif %}
-                        </span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+        <table class="table table-bordered table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Doctor</th>
+                    <th>Room</th>
+                    <th>Status</th>
+                    <th>Diagnosis & Prescription</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for visit in patient.visits %}
+                    <tr>
+                        <td style="font-weight: 600; color: #111827;">{{ visit.appointment_date }}</td>
+                        <td style="color: #6B7280;">
+                            {{ visit.start_time }}
+                            <br>
+                            <span style="font-size: 11px;">– {{ visit.end_time }}</span>
+                        </td>
+                        <td style="font-weight: 500; color: #374151;">{{ visit.doctor_name }}</td>
+                        <td style="color: #0EA5E9; font-weight: 600;">
+                            {% if visit.room %}
+                                {{ visit.room }}
+                            {% else %}
+                                <span style="color:#9CA3AF;">–</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="status-pill status-{{ visit.status }}">{{ visit.status }}</span>
+                            {% if visit.queue_number %}
+                                <br>
+                                <span style="font-size: 11px;
+                                             color:#64748B;
+                                             margin-top:4px;
+                                             display:block">#{{ visit.queue_number }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if visit.diagnosis %}
+                                <div style="font-weight: 600; color: #111827; margin-bottom: 4px;">{{ visit.diagnosis }}</div>
+                                {% if visit.treatment_notes %}
+                                    <div style="font-size: 12px; color: #6B7280; margin-bottom: 6px;">{{ visit.treatment_notes }}</div>
+                                {% endif %}
+                                {% if visit.medicine_name %}
+                                    <div class="rx-block">
+                                        <strong>{{ visit.medicine_name }}</strong>
+                                        {% if visit.dosage %}· {{ visit.dosage }}{% endif %}
+                                        {% if visit.frequency %}· {{ visit.frequency }}{% endif %}
+                                        {% if visit.duration %}· {{ visit.duration }}{% endif %}
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #9CA3AF; font-style: italic; font-size: 14px;">
+                                    {% if visit.status == "completed" %}
+                                        No notes recorded
+                                    {% else %}
+                                        Pending consultation
+                                    {% endif %}
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     {% else %}
-    <div class="empty-visits">No visit records found for this patient.</div>
+        <div class="empty-visits">No visit records found for this patient.</div>
     {% endif %}
 </div>
-
 {% endblock %}
