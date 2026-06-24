@@ -71,8 +71,7 @@
             {% else %}
                 Gender Unknown
             {% endif %}
-        </span> <span class="meta-pill">{{ patient.visit_count }} visit
-        {% if patient.visit_count != 1 %}s{% endif %}
+        </span> <span class="meta-pill">{{ patient.visit_count }} visit{% if patient.visit_count != 1 %}s{% endif %}
     </span>
 </div>
 </div>
@@ -143,8 +142,7 @@
 <div class="history-card">
     <div class="history-card-header">
         <h3>Visit History</h3>
-        <span class="badge bg-secondary fs-6">{{ patient.visit_count }} record
-            {% if patient.visit_count != 1 %}s{% endif %}
+        <span class="badge bg-secondary fs-6">{{ patient.visit_count }} record{% if patient.visit_count != 1 %}s{% endif %}
         </span>
     </div>
     {% if patient.visits %}
