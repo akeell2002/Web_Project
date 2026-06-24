@@ -47,6 +47,7 @@ document.addEventListener('mousemove', function (e) {
         'login':                 'Welcome back! You have logged in successfully.',
         'updated':               'Profile updated successfully.',
         'appointment_updated':   'Appointment updated successfully. Your new booking is confirmed.',
+        'checked_in':            'Patient checked in successfully.',
         'doctor_created':        'Doctor account created successfully.',
         'nurse_created':         'Nurse account created successfully.',
         'receptionist_created':  'Receptionist account created successfully.',

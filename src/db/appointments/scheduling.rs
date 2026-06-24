@@ -170,11 +170,13 @@ pub async fn get_today_clinic_schedule(pool: &PgPool) -> Result<Vec<serde_json::
                a.priority_level,
                p.first_name as patient_first, p.last_name as patient_last,
                s.first_name as doc_first,     s.last_name as doc_last,
-               r.room_name  as "room_name?"
+               r.room_name  as "room_name?",
+               b.payment_status::text as "payment_status?"
         FROM appointment a
         JOIN patient p ON a.patient_id = p.id
         JOIN staff   s ON a.doctor_id  = s.id
         LEFT JOIN room r ON a.room_id  = r.id
+        LEFT JOIN bills b ON b.appointment_id = a.id
         WHERE a.date = $1
         ORDER BY a.start_time ASC
         "#,
@@ -196,6 +198,7 @@ pub async fn get_today_clinic_schedule(pool: &PgPool) -> Result<Vec<serde_json::
                 "patient_name": format!("{} {}", row.patient_first, row.patient_last),
                 "doctor_name":  format!("Dr. {}", row.doc_last),
                 "room":         row.room_name.unwrap_or_else(|| "Unassigned".to_string()),
+                "payment_status": row.payment_status,
             })
         })
         .collect())
