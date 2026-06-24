@@ -7,12 +7,12 @@ use crate::db::staff::get_staff_dashboard_counts;
 
 pub async fn patient_dashboard(
     session: Session,
-    pool:    web::Data<PgPool>,
-    tera:    web::Data<Tera>,
+    pool:web::Data<PgPool>,
+    tera:web::Data<Tera>,
 ) -> impl Responder {
     if let Ok(Some(role)) = session.get::<String>("role") {
         if role == "patient" {
-            let email      = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+            let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
             let patient_id = session.get::<uuid::Uuid>("user_id").unwrap_or_default().unwrap_or_default();
             let display_name = crate::handlers::get_display_name(&session);
 
@@ -24,14 +24,14 @@ pub async fn patient_dashboard(
                 }
             };
 
-            let upcoming:   Vec<_> = appointments.iter().filter(|a|  a["is_upcoming"].as_bool().unwrap_or(false)).collect();
-            let historical: Vec<_> = appointments.iter().filter(|a| !a["is_upcoming"].as_bool().unwrap_or(false)).collect();
+            let upcoming:Vec<_> = appointments.iter().filter(|a|  a["is_upcoming"].as_bool().unwrap_or(false)).collect();
+            let historical:Vec<_> = appointments.iter().filter(|a| !a["is_upcoming"].as_bool().unwrap_or(false)).collect();
 
             let mut ctx = Context::new();
-            ctx.insert("email",                   &email);
-            ctx.insert("specific_role",           "patient");
-            ctx.insert("display_name",            &display_name);
-            ctx.insert("upcoming_appointments",   &upcoming);
+            ctx.insert("email",&email);
+            ctx.insert("specific_role", "patient");
+            ctx.insert("display_name", &display_name);
+            ctx.insert("upcoming_appointments", &upcoming);
             ctx.insert("historical_appointments", &historical);
 
             return match tera.render("shared/dashboard.html", &ctx) {
