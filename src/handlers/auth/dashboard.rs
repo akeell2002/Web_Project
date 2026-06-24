@@ -28,7 +28,7 @@ pub async fn patient_dashboard(
             let historical:Vec<_> = appointments.iter().filter(|a| !a["is_upcoming"].as_bool().unwrap_or(false)).collect();
 
             let mut ctx = Context::new();
-            ctx.insert("email",&email);
+            ctx.insert("email", &email);
             ctx.insert("specific_role", "patient");
             ctx.insert("display_name", &display_name);
             ctx.insert("upcoming_appointments", &upcoming);
@@ -53,7 +53,7 @@ pub async fn staff_dashboard(session: Session, tera: web::Data<Tera>) -> impl Re
             let display_name = crate::handlers::get_display_name(&session);
 
             let mut ctx = Context::new();
-            ctx.insert("email",         &email);
+            ctx.insert("email", &email);
             ctx.insert("display_name", &display_name);
             ctx.insert("specific_role", &role);
 
