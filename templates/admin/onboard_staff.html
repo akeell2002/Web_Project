@@ -4,13 +4,17 @@
 {% block nav_admin_onboard %}class="active"{% endblock %}
 {% block extra_head %}{% endblock %}
 {% block content %}
-    <div class="onboard-card">
+<div class="d-flex justify-content-center align-items-start py-4">
+    <div class="onboard-card w-100" style="max-width:520px">
         <h3>Onboard Staff Member</h3>
         <p>Create a secure account for a doctor, nurse, receptionist, or admin.</p>
         <div class="alert alert-info">
             <strong>Administrator Notice:</strong> Choose the correct staff role before submitting.
             Admin accounts are granted the same system access protections as other staff roles.
         </div>
+        {% if error_message %}
+        <div class="alert alert-danger">{{ error_message }}</div>
+        {% endif %}
         <form method="POST" action="/admin/staff/onboard">
             <div class="mb-3">
                 <select class="form-select" name="role" required>
@@ -58,4 +62,5 @@
             <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">Create Staff Account</button>
         </form>
     </div>
+</div>
 {% endblock %}

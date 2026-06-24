@@ -4,6 +4,7 @@
 {% block nav_patient_home %}{% endblock %}
 {% block extra_head %}{% endblock %}
 {% block content %}
+
     <div class="profile-card">
         <div class="profile-header">
             <div class="profile-avatar">{{ profile.first_name | truncate(length=1, end="") | upper }}</div>
@@ -199,20 +200,20 @@
                                       box-sizing:border-box">
                     </div>
                 </div>
-                <button type="submit"
-                        style="background:#005999;
-                               color:white;
-                               border:none;
-                               padding:10px 22px;
-                               border-radius:7px;
-                               font-size:14px;
-                               font-weight:600;
-                               cursor:pointer">Save Changes</button>
+                <div class="d-flex align-items-center justify-content-between mt-2">
+                    <a href="/patient/dashboard"
+                       class="text-secondary text-decoration-none small">← Back to Dashboard</a>
+                    <button type="submit"
+                            style="background:#005999;
+                                   color:white;
+                                   border:none;
+                                   padding:10px 22px;
+                                   border-radius:7px;
+                                   font-size:14px;
+                                   font-weight:600;
+                                   cursor:pointer">Save Changes</button>
+                </div>
             </form>
-            <a href="/patient/dashboard"
-               class="text-secondary text-decoration-none small"
-               style="margin-top:16px;
-                      display:inline-block">Back to Dashboard</a>
         </div>
     </div>
 {% endblock %}

@@ -32,6 +32,22 @@ pub async fn login(
 ) -> impl Responder {
     match authenticate_user(&pool, &form.email, &form.password).await {
         Ok(Some(user)) => {
+            // Portal enforcement: patient portal → patients only, staff portal → staff only.
+            // Use the same generic error as a wrong password to avoid revealing
+            // whether the account exists on this portal (user enumeration).
+            let is_patient_portal = req.path().starts_with("/patient");
+            let is_patient_role   = user.role == UserRole::Patient;
+            if is_patient_portal != is_patient_role {
+                let mut ctx = Context::new();
+                ctx.insert("email",          &form.email);
+                ctx.insert("error_message",  &"Invalid email or password.");
+                let template = if is_patient_portal { "patient/login.html" } else { "staff/login.html" };
+                return match tera.render(template, &ctx) {
+                    Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
+                    Err(e)   => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
+                };
+            }
+
             let _ = session.insert("user_id", user.id);
             let _ = session.insert("email", &user.email);
 
@@ -84,9 +100,9 @@ pub async fn login(
             }
 
             let redirect_target = match user.role {
-                UserRole::Admin                                              => "/admin/dashboard",
-                UserRole::Doctor | UserRole::Nurse | UserRole::Receptionist => "/staff/dashboard",
-                UserRole::Patient                                            => "/patient/dashboard",
+                UserRole::Admin                                              => "/admin/dashboard?success=login",
+                UserRole::Doctor | UserRole::Nurse | UserRole::Receptionist => "/staff/dashboard?success=login",
+                UserRole::Patient                                            => "/patient/dashboard?success=login",
             };
 
             HttpResponse::SeeOther().append_header(("Location", redirect_target)).finish()

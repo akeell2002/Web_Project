@@ -42,13 +42,14 @@ pub async fn onboard_staff_submit(
     pool:    web::Data<PgPool>,
     session: Session,
     form:    web::Form<OnboardStaffForm>,
+    tmpl:    web::Data<Tera>,
 ) -> impl Responder {
     if let Err(response) = admin_only(&session) {
         return response;
     }
 
     let role = match parse_role(&form.role) {
-        Ok(r)        => r,
+        Ok(r)         => r,
         Err(response) => return response,
     };
 
@@ -79,7 +80,30 @@ pub async fn onboard_staff_submit(
                 .append_header(("Location", format!("/admin/dashboard?success={}", success_key)))
                 .finish()
         }
-        Err(err_msg) => HttpResponse::BadRequest().body(format!("Failed to onboard staff member: {}", err_msg)),
+        Err(err_msg) => {
+            // Show a friendly inline error instead of a raw 400 page
+            let friendly = if err_msg.contains("duplicate key") || err_msg.contains("unique constraint") {
+                format!("An account with the email '{}' already exists. Please use a different email.", form.email)
+            } else {
+                format!("Failed to create account: {}", err_msg)
+            };
+
+            let email        = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+            let display_name = crate::handlers::get_display_name(&session);
+
+            let mut ctx = Context::new();
+            ctx.insert("specific_role",  "admin");
+            ctx.insert("email",          &email);
+            ctx.insert("display_name",   &display_name);
+            ctx.insert("error_message",  &friendly);
+
+            match tmpl.render("admin/onboard_staff.html", &ctx) {
+                Ok(html) => HttpResponse::Ok()
+                    .content_type("text/html; charset=utf-8")
+                    .body(html),
+                Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
+            }
+        }
     }
 }
 

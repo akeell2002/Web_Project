@@ -100,12 +100,10 @@
                 {% for slot in slots %}
                     {% if slot.is_available %}
                         <label class="slot-available">
-                            <input class="form-control"
-                                   type="radio"
+                            <input type="radio"
                                    name="start_time"
                                    value="{{ slot.raw_time }}"
-                                   required
-                                   style="margin-right: 5px">
+                                   required>
                             {{ slot.time_string }}
                         </label>
                     {% else %}

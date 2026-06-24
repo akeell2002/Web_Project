@@ -157,6 +157,20 @@ body.page-auth-support .btn-glass-submit {
 
 .sidebar-footer { padding: 14px 12px; border-top: 1px solid #1e293b; }
 
+/* ── PATIENT PORTAL — green accent overrides ─────────────────────── */
+body.page-app-patient .sidebar { background: #052e16; }
+body.page-app-patient .sidebar-brand { border-bottom-color: #14532d; }
+body.page-app-patient .sidebar-footer { border-top-color: #14532d; }
+body.page-app-patient .sidebar-nav a.active { background: #16a34a; }
+body.page-app-patient .sidebar-nav a:hover  { background: rgba(22,163,74,0.15); }
+body.page-app-patient .topbar-logout        { background: #16a34a; color: white; }
+body.page-app-patient .topbar-logout:hover  { background: #15803d; color: white; }
+body.page-app-patient .welcome-banner       { background: linear-gradient(135deg, #047857, #065f46); }
+body.page-app-patient .slot-available       { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+body.page-app-patient .slot-available:hover { background: #dcfce7; border-color: #4ade80; }
+body.page-app-patient .slot-available:has(input:checked) { background: #16a34a; color: white; border-color: #16a34a; }
+body.page-app-patient .slot-available input[type="radio"] { accent-color: #16a34a; }
+
 .role-badge {
     display: flex; align-items: center; gap: 10px;
     padding: 10px 12px; border-radius: 8px;
@@ -395,7 +409,7 @@ body.page-auth-support .btn-glass-submit {
 /* ── PROFILE CARD ───────────────────────────────────────────────── */
 .profile-card {
     background: white; border-radius: 14px; overflow: hidden;
-    border: 1px solid #E5E7EB; max-width: 680px;
+    border: 1px solid #E5E7EB; max-width: 680px; margin: 0 auto;
     box-shadow: 0 4px 24px rgba(0,0,0,0.08);
 }
 .profile-header {
@@ -514,15 +528,17 @@ body.page-auth-support .btn-glass-submit {
 .onboard-card > p  { color: #64748B; font-size: 14px; margin: 0 0 16px; }
 
 /* ── BOOKING ────────────────────────────────────────────────────── */
-.booking-card { padding: 28px; max-width: 700px; }
+.booking-card { padding: 28px; max-width: 700px; margin: 0 auto; }
 .booking-card h2 { font-size: 18px; font-weight: 700; margin: 0 0 20px; }
 .slots-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 20px; }
 .slot-available {
     padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600;
     background: #EFF6FF; border: 2px solid #BFDBFE; color: #1E40AF; font-size: 13px;
-    transition: background 0.15s;
+    transition: background 0.15s; display: inline-flex; align-items: center; gap: 6px;
 }
-.slot-available:hover { background: #DBEAFE; }
+.slot-available:hover { background: #DBEAFE; border-color: #93C5FD; }
+.slot-available input[type="radio"] { accent-color: #1E40AF; width: 14px; height: 14px; cursor: pointer; }
+.slot-available:has(input:checked) { background: #1E40AF; color: white; border-color: #1E40AF; }
 .slot-unavailable {
     padding: 8px 14px; border-radius: 8px; font-weight: 500;
     background: #F3F4F6; color: #9CA3AF; font-size: 13px;

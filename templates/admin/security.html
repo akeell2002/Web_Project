@@ -9,20 +9,47 @@
         <p>Track staff onboarding activity, including which account created each nurse, doctor, receptionist, or admin profile.</p>
     </div>
     <div class="monitor-panel">
-        <div class="monitor-count">{{ log_count }} event
-            {% if log_count != 1 %}s{% endif %}
-        found</div>
-        <table class="table table-bordered table-hover align-middle">
+
+        {# ── Filter bar ── #}
+        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+            <input id="sec-search"
+                   type="text"
+                   class="form-control form-control-sm"
+                   style="max-width:220px"
+                   placeholder="Search actor / target / details…">
+            <select id="sec-action" class="form-select form-select-sm" style="max-width:180px">
+                <option value="">All actions</option>
+            </select>
+            <select id="sec-role" class="form-select form-select-sm" style="max-width:160px">
+                <option value="">All roles</option>
+            </select>
+            <button id="sec-clear" class="btn btn-sm btn-outline-secondary ms-auto">Clear filters</button>
+        </div>
+
+        {# ── Count line (no space before "s") ── #}
+        <div class="monitor-count" id="sec-count">
+            {{ log_count }} event{% if log_count != 1 %}s{% endif %} found
+        </div>
+
+        <table class="table table-bordered table-hover align-middle" id="sec-table">
             <thead>
                 <tr>
-                    <th>Time</th>
-                    <th>Action</th>
-                    <th>Actor</th>
-                    <th>Target Account</th>
+                    <th class="sec-sortable" data-col="0" style="cursor:pointer; user-select:none;">
+                        Time <span class="sec-arrow">↕</span>
+                    </th>
+                    <th class="sec-sortable" data-col="1" style="cursor:pointer; user-select:none;">
+                        Action <span class="sec-arrow">↕</span>
+                    </th>
+                    <th class="sec-sortable" data-col="2" style="cursor:pointer; user-select:none;">
+                        Actor <span class="sec-arrow">↕</span>
+                    </th>
+                    <th class="sec-sortable" data-col="3" style="cursor:pointer; user-select:none;">
+                        Target Account <span class="sec-arrow">↕</span>
+                    </th>
                     <th>Details</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="sec-tbody">
                 {% for log in access_logs %}
                     <tr>
                         <td>{{ log.created_at }}</td>
@@ -37,12 +64,12 @@
                         <td>
                             {{ log.target_email }}
                             <br>
-                            <span style="color:#64748B; font-size: 12px;">{{ log.target_role }}</span>
+                            <span style="color:#64748B; font-size:12px;">{{ log.target_role }}</span>
                         </td>
                         <td>{{ log.details }}</td>
                     </tr>
                 {% else %}
-                    <tr>
+                    <tr id="sec-empty-row">
                         <td colspan="5">
                             <div class="text-center text-muted py-5">No access log events yet.</div>
                         </td>
@@ -50,5 +77,112 @@
                 {% endfor %}
             </tbody>
         </table>
+        <div id="sec-no-results" class="text-center text-muted py-4" style="display:none;">
+            No events match the current filters.
+        </div>
     </div>
+
+    <script>
+    (function () {
+        var tbody   = document.getElementById('sec-tbody');
+        var rows    = Array.from(tbody.querySelectorAll('tr:not(#sec-empty-row)'));
+        var countEl = document.getElementById('sec-count');
+        var noRes   = document.getElementById('sec-no-results');
+        var searchEl = document.getElementById('sec-search');
+        var actionEl = document.getElementById('sec-action');
+        var roleEl   = document.getElementById('sec-role');
+        var clearBtn = document.getElementById('sec-clear');
+
+        // ── Populate filter dropdowns from live data ──────────────────
+        // Normalise to lowercase keys to avoid Admin/admin duplicates.
+        var actions = {}, roles = {};
+        rows.forEach(function (row) {
+            var cells  = row.querySelectorAll('td');
+            var action = cells[1].textContent.trim();
+            var role   = cells[3].querySelector('span') ? cells[3].querySelector('span').textContent.trim() : '';
+            if (action) actions[action.toLowerCase()] = action;
+            if (role)   roles[role.toLowerCase()]     = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+        });
+        // Also write the normalised lowercase back into each row's role span
+        // so filtering matches correctly against the normalised value.
+        rows.forEach(function (row) {
+            var span = row.querySelectorAll('td')[3].querySelector('span');
+            if (span) span.textContent = span.textContent.trim().toLowerCase();
+        });
+        Object.keys(actions).sort().forEach(function (key) {
+            var opt = document.createElement('option');
+            opt.value = key; opt.textContent = actions[key];
+            actionEl.appendChild(opt);
+        });
+        Object.keys(roles).sort().forEach(function (key) {
+            var opt = document.createElement('option');
+            opt.value = key; opt.textContent = roles[key];
+            roleEl.appendChild(opt);
+        });
+
+        // ── Filter ────────────────────────────────────────────────────
+        function applyFilters() {
+            var q      = searchEl.value.trim().toLowerCase();
+            var action = actionEl.value;
+            var role   = roleEl.value;
+            var visible = 0;
+
+            rows.forEach(function (row) {
+                var cells     = row.querySelectorAll('td');
+                var text      = row.textContent.toLowerCase();
+                var rowAction = cells[1].textContent.trim().toLowerCase();
+                var rowRole   = cells[3].querySelector('span') ? cells[3].querySelector('span').textContent.trim().toLowerCase() : '';
+
+                var show = (!q || text.includes(q))
+                        && (!action || rowAction === action)
+                        && (!role   || rowRole   === role);
+
+                row.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+
+            var word = visible === 1 ? 'event' : 'events';
+            countEl.textContent = visible + ' ' + word + ' found';
+            noRes.style.display = (visible === 0 && rows.length > 0) ? 'block' : 'none';
+        }
+
+        searchEl.addEventListener('input',  applyFilters);
+        actionEl.addEventListener('change', applyFilters);
+        roleEl.addEventListener('change',   applyFilters);
+        clearBtn.addEventListener('click', function () {
+            searchEl.value = ''; actionEl.value = ''; roleEl.value = '';
+            applyFilters();
+        });
+
+        // ── Sort ──────────────────────────────────────────────────────
+        var sortState = { col: -1, asc: true };
+
+        document.querySelectorAll('.sec-sortable').forEach(function (th) {
+            th.addEventListener('click', function () {
+                var col = parseInt(th.dataset.col);
+                if (sortState.col === col) {
+                    sortState.asc = !sortState.asc;
+                } else {
+                    sortState.col = col;
+                    sortState.asc = true;
+                }
+
+                // Update arrow indicators
+                document.querySelectorAll('.sec-sortable .sec-arrow').forEach(function (a) { a.textContent = '↕'; });
+                th.querySelector('.sec-arrow').textContent = sortState.asc ? '↑' : '↓';
+
+                rows.sort(function (a, b) {
+                    var aText = a.querySelectorAll('td')[col].textContent.trim().toLowerCase();
+                    var bText = b.querySelectorAll('td')[col].textContent.trim().toLowerCase();
+                    if (aText < bText) return sortState.asc ? -1 :  1;
+                    if (aText > bText) return sortState.asc ?  1 : -1;
+                    return 0;
+                });
+
+                rows.forEach(function (r) { tbody.appendChild(r); });
+                applyFilters();
+            });
+        });
+    }());
+    </script>
 {% endblock %}

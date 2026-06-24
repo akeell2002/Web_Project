@@ -1,14 +1,14 @@
 {% extends "shared/base.html" %}
 
 {% block body %}
-<body class="page-app">
+<body class="page-app{% if specific_role == 'patient' %} page-app-patient{% endif %}">
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-brand">
             <div class="sidebar-brand-name">HealthHub</div>
             <div class="sidebar-brand-sub">
-                {% if specific_role == "patient" %}Client Portal
+                {% if specific_role == "patient" %}Patient Portal
                 {% elif specific_role == "admin" %}Admin Console
                 {% else %}Staff Portal
                 {% endif %}

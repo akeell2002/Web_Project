@@ -35,11 +35,11 @@ pub async fn register(
     };
 
     match register_patient(&pool, &form.email, &form.password, profile).await {
-        Ok(user) => {
-            let _ = session.insert("user_id", user.id);
-            let _ = session.insert("email", &user.email);
-            let _ = session.insert("role", "patient");
-            HttpResponse::SeeOther().append_header(("Location", "/patient/dashboard")).finish()
+        Ok(_user) => {
+            // Don't auto-login — send to login page with a success banner instead
+            HttpResponse::SeeOther()
+                .append_header(("Location", "/patient/login?registered=1"))
+                .finish()
         }
         Err(e) => HttpResponse::InternalServerError().body(format!("Registration transactional error: {}", e)),
     }

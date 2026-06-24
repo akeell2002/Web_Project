@@ -3,6 +3,7 @@
 {% block page_title %}My Profile{% endblock %}
 {% block extra_head %}{% endblock %}
 {% block content %}
+
     <div class="profile-card">
         <div class="profile-header">
             <div class="profile-avatar">{{ profile.full_name | truncate(length=1, end="") | upper }}</div>
@@ -95,23 +96,25 @@
                                   font-size:14px;
                                   box-sizing:border-box">
                 </div>
-                <button type="submit"
-                        style="background:#005999;
-                               color:white;
-                               border:none;
-                               padding:10px 22px;
-                               border-radius:7px;
-                               font-size:14px;
-                               font-weight:600;
-                               cursor:pointer">Save Changes</button>
+                <div class="d-flex align-items-center justify-content-between mt-2">
+                    {% if specific_role == "admin" %}
+                        <a href="/admin/dashboard"
+                           class="text-secondary text-decoration-none small">← Back to Dashboard</a>
+                    {% else %}
+                        <a href="/staff/dashboard"
+                           class="text-secondary text-decoration-none small">← Back to Dashboard</a>
+                    {% endif %}
+                    <button type="submit"
+                            style="background:#005999;
+                                   color:white;
+                                   border:none;
+                                   padding:10px 22px;
+                                   border-radius:7px;
+                                   font-size:14px;
+                                   font-weight:600;
+                                   cursor:pointer">Save Changes</button>
+                </div>
             </form>
-            {% if specific_role == "admin" %}
-                <a href="/admin/dashboard"
-                   class="text-secondary text-decoration-none small">Back to Dashboard</a>
-            {% else %}
-                <a href="/staff/dashboard"
-                   class="text-secondary text-decoration-none small">Back to Dashboard</a>
-            {% endif %}
         </div>
     </div>
 {% endblock %}
