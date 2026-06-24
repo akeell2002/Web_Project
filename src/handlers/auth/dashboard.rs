@@ -82,10 +82,10 @@ pub async fn admin_dashboard(session: Session, pool: web::Data<PgPool>, tera: we
             };
 
             let mut ctx = Context::new();
-            ctx.insert("email",         &email);
+            ctx.insert("email", &email);
             ctx.insert("specific_role", "admin");
             ctx.insert("display_name", &display_name);
-            ctx.insert("staff_counts",  &counts);
+            ctx.insert("staff_counts", &counts);
 
             return match tera.render("shared/dashboard.html", &ctx) {
                 Ok(html) => HttpResponse::Ok()
