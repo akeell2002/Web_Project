@@ -266,21 +266,32 @@
                                 </td>
                                 <td>
                                     {% if app.status == "scheduled" %}
-                                        <form method="POST"
-                                              action="/patient/appointments/{{ app.id }}/cancel"
-                                              onsubmit="return confirm('Cancel this appointment?');"
-                                              style="margin:0;">
-                                            <button type="submit"
-                                                    style="background:#FEE2E2;
-                                                           color:#DC2626;
-                                                           border:none;
-                                                           padding:5px 12px;
-                                                           border-radius:6px;
-                                                           font-size:12px;
-                                                           font-weight:600;
-                                                           cursor:pointer;">Cancel
-                                            </button>
-                                        </form>
+                                        <div style="display:flex; align-items:center; gap:6px;">
+                                            <a href="/patient/appointments/{{ app.id }}/edit"
+                                               style="background:#DBEAFE;
+                                                      color:#1E40AF;
+                                                      border:none;
+                                                      padding:5px 12px;
+                                                      border-radius:6px;
+                                                      font-size:12px;
+                                                      font-weight:600;
+                                                      text-decoration:none;">Edit</a>
+                                            <form method="POST"
+                                                  action="/patient/appointments/{{ app.id }}/cancel"
+                                                  onsubmit="return confirm('Cancel this appointment?');"
+                                                  style="margin:0;">
+                                                <button type="submit"
+                                                        style="background:#FEE2E2;
+                                                               color:#DC2626;
+                                                               border:none;
+                                                               padding:5px 12px;
+                                                               border-radius:6px;
+                                                               font-size:12px;
+                                                               font-weight:600;
+                                                               cursor:pointer;">Cancel
+                                                </button>
+                                            </form>
+                                        </div>
                                     {% endif %}
                                 </td>
                             </tr>
