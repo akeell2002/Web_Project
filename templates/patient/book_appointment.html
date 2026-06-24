@@ -48,7 +48,7 @@
                 <select id="visit_type" class="form-select" onchange="reloadAvailableSlots()">
                     <option value="" disabled {% if not selected_visit_type %}selected{% endif %}>-- Select a reason --</option>
                     <option value="emergency"    data-duration="30" {% if selected_visit_type == 'emergency'  %}selected{% endif %}>Urgent Care (30 min)</option>
-                    <option value="sick_visit"   data-duration="15" {% if selected_visit_type == 'sick_visit' %}selected{% endif %}>Sick Visit / Fever / Flu (15 min)</option>
+                    <option value="sick_visit"   data-duration="15" {% if selected_visit_type == 'sick_visit' or not selected_visit_type %}selected{% endif %}>Sick Visit / Fever / Flu (15 min)</option>
                     <option value="specialist"   data-duration="30" {% if selected_visit_type == 'specialist' %}selected{% endif %}>Specialist Consultation (30 min)</option>
                     <option value="routine"      data-duration="15" {% if selected_visit_type == 'routine'    %}selected{% endif %}>Routine Checkup (15 min)</option>
                     <option value="procedure"    data-duration="60" {% if selected_visit_type == 'procedure'  %}selected{% endif %}>Extended Procedure (60 min)</option>
@@ -59,8 +59,8 @@
         <form action="/patient/appointments/create" method="POST">
             <input type="hidden" name="doctor_id"        value="{{ selected_doctor_id }}">
             <input type="hidden" name="date"             value="{{ selected_date }}">
-            <input type="hidden" name="duration_minutes" value="{{ selected_duration }}">
-            <input type="hidden" name="visit_type"       value="{{ selected_visit_type }}">
+            <input type="hidden" name="duration_minutes" value="{{ selected_duration }}" required>
+            <input type="hidden" name="visit_type"       value="{{ selected_visit_type }}" required>
 
             <div style="margin-bottom:10px;">
                 <span class="form-label fw-semibold">Available Slots</span>
