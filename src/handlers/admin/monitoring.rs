@@ -23,12 +23,12 @@ pub async fn security_monitoring_page(
     };
 
     let email      = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-    let staff_name = email.split('@').next().unwrap_or("Admin").to_string();
+    let display_name = crate::handlers::get_display_name(&session);
 
     let mut ctx = Context::new();
     ctx.insert("specific_role", "admin");
     ctx.insert("email",         &email);
-    ctx.insert("staff_name",    &staff_name);
+    ctx.insert("display_name", &display_name);
     ctx.insert("access_logs",   &access_logs);
     ctx.insert("log_count",     &access_logs.len());
 
@@ -56,12 +56,12 @@ pub async fn analytics_page(
     };
 
     let email      = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-    let staff_name = email.split('@').next().unwrap_or("Admin").to_string();
+    let display_name = crate::handlers::get_display_name(&session);
 
     let mut ctx = Context::new();
     ctx.insert("specific_role",       "admin");
     ctx.insert("email",               &email);
-    ctx.insert("staff_name",          &staff_name);
+    ctx.insert("display_name", &display_name);
     ctx.insert("total_patients",      &analytics.total_patients);
     ctx.insert("total_appointments",  &analytics.total_appointments);
     ctx.insert("appts_today",         &analytics.appts_today);

@@ -84,12 +84,12 @@ pub async fn show_booking_form(
     }
 
     let email      = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-    let staff_name = email.split('@').next().unwrap_or("Patient").to_string();
+    let display_name = crate::handlers::get_display_name(&session);
 
     let mut ctx = Context::new();
     ctx.insert("specific_role",       "patient");
     ctx.insert("email",               &email);
-    ctx.insert("staff_name",          &staff_name);
+    ctx.insert("display_name", &display_name);
     ctx.insert("doctors",             &doctors);
     ctx.insert("slots",               &slots_grid);
     ctx.insert("selected_doctor_id",  &selected_doctor_id);
@@ -166,12 +166,12 @@ pub async fn reception_desk_page(
     let schedule     = crate::db::appointments::get_today_clinic_schedule(&pool).await.unwrap_or_default();
     let current_role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
     let email        = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-    let staff_name   = email.split('@').next().unwrap_or("Staff").to_string();
+    let display_name = crate::handlers::get_display_name(&session);
 
     let mut ctx = Context::new();
     ctx.insert("specific_role", &current_role);
     ctx.insert("email",         &email);
-    ctx.insert("staff_name",    &staff_name);
+    ctx.insert("display_name", &display_name);
     ctx.insert("schedule",      &schedule);
     ctx.insert("date",          &chrono::Local::now().format("%A, %B %d, %Y").to_string());
 

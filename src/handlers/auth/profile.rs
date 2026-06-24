@@ -21,14 +21,14 @@ pub async fn patient_profile_page(
         Some(id) => id,
         None     => return HttpResponse::SeeOther().append_header(("Location", "/patient/login")).finish(),
     };
-    let staff_name = email.split('@').next().unwrap_or("Patient").to_string();
+    let display_name = crate::handlers::get_display_name(&session);
 
     match crate::db::patients::get_patient_detail(&pool, patient_id).await {
         Ok(Some(profile)) => {
             let mut ctx = Context::new();
             ctx.insert("specific_role", "patient");
             ctx.insert("email",         &email);
-            ctx.insert("staff_name",    &staff_name);
+            ctx.insert("display_name",  &display_name);
             ctx.insert("profile",       &profile);
             match tera.render("patient/my_profile.html", &ctx) {
                 Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
@@ -84,9 +84,13 @@ pub async fn update_patient_profile_handler(
         form.emergency_contact_name.clone(),
         form.emergency_contact_phone.clone(),
     ).await {
-        Ok(_)  => HttpResponse::SeeOther()
-            .append_header(("Location", "/patient/profile?success=updated"))
-            .finish(),
+        Ok(_)  => {
+            let new_name = format!("{} {}", form.first_name.trim(), form.last_name.trim());
+            let _ = session.insert("name", new_name);
+            HttpResponse::SeeOther()
+                .append_header(("Location", "/patient/profile?success=updated"))
+                .finish()
+        },
         Err(e) => HttpResponse::InternalServerError().body(format!("Update failed: {}", e)),
     }
 }
@@ -114,9 +118,13 @@ pub async fn update_staff_profile_handler(
         &form.last_name,
         form.phone_number.clone(),
     ).await {
-        Ok(_)  => HttpResponse::SeeOther()
-            .append_header(("Location", "/staff/profile?success=updated"))
-            .finish(),
+        Ok(_)  => {
+            let new_name = format!("{} {}", form.first_name.trim(), form.last_name.trim());
+            let _ = session.insert("name", new_name);
+            HttpResponse::SeeOther()
+                .append_header(("Location", "/staff/profile?success=updated"))
+                .finish()
+        },
         Err(e) => HttpResponse::InternalServerError().body(format!("Update failed: {}", e)),
     }
 }
@@ -137,7 +145,7 @@ pub async fn patient_medical_history_page(
         Some(id) => id,
         None     => return HttpResponse::SeeOther().append_header(("Location", "/patient/login")).finish(),
     };
-    let staff_name = email.split('@').next().unwrap_or("Patient").to_string();
+    let display_name = crate::handlers::get_display_name(&session);
 
     match crate::db::patients::get_patient_detail(&pool, patient_id).await {
         Ok(Some(profile)) => {
@@ -146,7 +154,7 @@ pub async fn patient_medical_history_page(
             let mut ctx = Context::new();
             ctx.insert("specific_role", "patient");
             ctx.insert("email",         &email);
-            ctx.insert("staff_name",    &staff_name);
+            ctx.insert("display_name",  &display_name);
             ctx.insert("visits",        &visits);
             match tera.render("patient/medical_history.html", &ctx) {
                 Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
@@ -174,14 +182,14 @@ pub async fn staff_profile_page(
         Some(id) => id,
         None     => return HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish(),
     };
-    let staff_name = email.split('@').next().unwrap_or("Staff").to_string();
+    let display_name = crate::handlers::get_display_name(&session);
 
     match crate::db::staff::get_staff_profile(&pool, user_id).await {
         Ok(Some(profile)) => {
             let mut ctx = Context::new();
             ctx.insert("specific_role", &role);
             ctx.insert("email",         &email);
-            ctx.insert("staff_name",    &staff_name);
+            ctx.insert("display_name",  &display_name);
             ctx.insert("profile",       &profile);
             match tera.render("staff/my_profile.html", &ctx) {
                 Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),

@@ -28,12 +28,12 @@ pub async fn nurse_triage_page(
     let queue        = crate::db::appointments::get_triage_queue(&pool).await.unwrap_or_default();
     let current_role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
     let email        = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-    let staff_name   = email.split('@').next().unwrap_or("Nurse").to_string();
+    let display_name = crate::handlers::get_display_name(&session);
 
     let mut ctx = Context::new();
     ctx.insert("specific_role", &current_role);
     ctx.insert("email",         &email);
-    ctx.insert("staff_name",    &staff_name);
+    ctx.insert("display_name", &display_name);
     ctx.insert("queue",         &queue);
     ctx.insert("date",          &chrono::Local::now().format("%A, %B %d, %Y").to_string());
 
@@ -86,7 +86,7 @@ pub async fn medication_administration_page(
     }
 
     let email        = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-    let staff_name   = email.split('@').next().unwrap_or("Nurse").to_string();
+    let display_name = crate::handlers::get_display_name(&session);
     let current_role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
 
     let prescriptions = match crate::db::appointments::get_active_prescriptions_for_nurse(&pool).await {
@@ -97,7 +97,7 @@ pub async fn medication_administration_page(
     let mut ctx = Context::new();
     ctx.insert("specific_role",  &current_role);
     ctx.insert("email",          &email);
-    ctx.insert("staff_name",     &staff_name);
+    ctx.insert("display_name", &display_name);
     ctx.insert("prescriptions",  &prescriptions);
 
     match tmpl.render("staff/nurse/medications.html", &ctx) {

@@ -21,7 +21,7 @@ pub async fn show_billing_dashboard(
 
     let current_role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
     let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-    let staff_name = email.split('@').next().unwrap_or("Staff").to_string();
+    let display_name = crate::handlers::get_display_name(&session);
 
     // Query pending invoices
     match get_unpaid_bills(&pool).await {
@@ -29,7 +29,7 @@ pub async fn show_billing_dashboard(
             let mut ctx = Context::new();
             ctx.insert("specific_role", &current_role);
             ctx.insert("email", &email);
-            ctx.insert("staff_name", &staff_name);
+            ctx.insert("display_name", &display_name);
             ctx.insert("bills", &unpaid_items);
 
             match tmpl.render("staff/receptionist/billing_dashboard.html", &ctx) {

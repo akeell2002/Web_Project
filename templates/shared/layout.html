@@ -65,10 +65,10 @@
                      onmouseover="this.style.background='rgba(255,255,255,0.08)'"
                      onmouseout="this.style.background='rgba(255,255,255,0.04)'">
                     <div class="role-badge-avatar">
-                        {{ staff_name | truncate(length=1, end="") | upper }}
+                        {{ display_name | truncate(length=1, end="") | upper }}
                     </div>
                     <div>
-                        <div class="role-badge-name">{{ staff_name }}</div>
+                        <div class="role-badge-name">{{ display_name }}</div>
                         <div class="role-badge-role">{{ specific_role }}</div>
                     </div>
                 </div>

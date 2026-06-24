@@ -14,7 +14,7 @@ pub async fn patient_dashboard(
         if role == "patient" {
             let email      = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
             let patient_id = session.get::<uuid::Uuid>("user_id").unwrap_or_default().unwrap_or_default();
-            let staff_name = email.split('@').next().unwrap_or("Patient").to_string();
+            let display_name = crate::handlers::get_display_name(&session);
 
             let appointments = match crate::db::appointments::get_patient_appointments(&pool, patient_id).await {
                 Ok(list) => list,
@@ -30,7 +30,7 @@ pub async fn patient_dashboard(
             let mut ctx = Context::new();
             ctx.insert("email",                 &email);
             ctx.insert("specific_role",         "patient");
-            ctx.insert("staff_name",            &staff_name);
+            ctx.insert("display_name", &display_name);
             ctx.insert("upcoming_appointments", &upcoming);
             ctx.insert("historical_appointments", &historical);
 
@@ -50,11 +50,11 @@ pub async fn staff_dashboard(session: Session, tera: web::Data<Tera>) -> impl Re
     if let Ok(Some(role)) = session.get::<String>("role") {
         if role == "doctor" || role == "nurse" || role == "receptionist" {
             let email        = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-            let display_name = email.split('@').next().unwrap_or("Staff Member").to_string();
+            let display_name = crate::handlers::get_display_name(&session);
 
             let mut ctx = Context::new();
             ctx.insert("email",         &email);
-            ctx.insert("staff_name",    &display_name);
+            ctx.insert("display_name", &display_name);
             ctx.insert("specific_role", &role);
 
             return match tera.render("shared/dashboard.html", &ctx) {
@@ -74,7 +74,7 @@ pub async fn admin_dashboard(session: Session, pool: web::Data<PgPool>, tera: we
     if let Ok(Some(role)) = session.get::<String>("role") {
         if role == "admin" {
             let email        = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-            let display_name = email.split('@').next().unwrap_or("Admin").to_string();
+            let display_name = crate::handlers::get_display_name(&session);
 
             let counts = match get_staff_dashboard_counts(&pool).await {
                 Ok(c)    => c,
@@ -84,14 +84,13 @@ pub async fn admin_dashboard(session: Session, pool: web::Data<PgPool>, tera: we
             let mut ctx = Context::new();
             ctx.insert("email",         &email);
             ctx.insert("specific_role", "admin");
-            ctx.insert("staff_name",    &display_name);
+            ctx.insert("display_name", &display_name);
             ctx.insert("staff_counts",  &counts);
 
             return match tera.render("shared/dashboard.html", &ctx) {
                 Ok(html) => HttpResponse::Ok()
                     .content_type("text/html")
                     .append_header(("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"))
-                    .append_header(("Pragma", "no-cache"))
                     .body(html),
                 Err(e) => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
             };

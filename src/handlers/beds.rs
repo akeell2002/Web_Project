@@ -20,7 +20,7 @@ pub async fn bed_management_page(
 
     let role  = session.get::<String>("role").unwrap_or(None).unwrap_or_default();
     let email = session.get::<String>("email").unwrap_or(None).unwrap_or_default();
-    let name  = email.split('@').next().unwrap_or("Staff").to_string();
+    let display_name = crate::handlers::get_display_name(&session);
 
     // Fetch all data in parallel (sequentially for simplicity)
     let beds = db::beds::get_bed_overview(&pool).await.unwrap_or_default();
@@ -35,7 +35,7 @@ pub async fn bed_management_page(
 
     let mut ctx = Context::new();
     ctx.insert("specific_role", &role);
-    ctx.insert("staff_name",    &name);
+    ctx.insert("display_name", &display_name);
     ctx.insert("email",         &email);
     ctx.insert("beds",          &beds);
     ctx.insert("bed_stats",     &bed_stats);

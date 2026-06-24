@@ -71,7 +71,7 @@ pub async fn support_dashboard(
     }
 
     let email        = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-    let staff_name   = email.split('@').next().unwrap_or("Staff").to_string();
+    let display_name = crate::handlers::get_display_name(&session);
     let current_role = session.get::<String>("role").unwrap_or_default().unwrap_or_default();
 
     let tickets = match crate::db::support::get_all_tickets(&pool).await {
@@ -84,7 +84,7 @@ pub async fn support_dashboard(
     let mut ctx = Context::new();
     ctx.insert("tickets",       &tickets);
     ctx.insert("email",         &email);
-    ctx.insert("staff_name",    &staff_name);
+    ctx.insert("display_name", &display_name);
     ctx.insert("specific_role", &current_role);
     ctx.insert("replied",       &replied);
 

@@ -22,12 +22,12 @@ pub async fn onboard_staff_page(tmpl: web::Data<Tera>, session: Session) -> impl
     }
 
     let email      = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-    let staff_name = email.split('@').next().unwrap_or("Admin").to_string();
+    let display_name = crate::handlers::get_display_name(&session);
 
     let mut ctx = Context::new();
     ctx.insert("specific_role", "admin");
     ctx.insert("email",         &email);
-    ctx.insert("staff_name",    &staff_name);
+    ctx.insert("display_name", &display_name);
 
     match tmpl.render("admin/onboard_staff.html", &ctx) {
         Ok(html) => HttpResponse::Ok()
@@ -106,12 +106,12 @@ pub async fn staff_directory_page(
     let (title, role_label) = staff_role_title(role_filter.as_ref());
 
     let email      = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-    let staff_name = email.split('@').next().unwrap_or("Admin").to_string();
+    let display_name = crate::handlers::get_display_name(&session);
 
     let mut ctx = Context::new();
     ctx.insert("specific_role",    "admin");
     ctx.insert("email",            &email);
-    ctx.insert("staff_name",       &staff_name);
+    ctx.insert("display_name", &display_name);
     ctx.insert("directory_title",  &title);
     ctx.insert("selected_role",    &role_label);
     ctx.insert("staff_members",    &staff_members);

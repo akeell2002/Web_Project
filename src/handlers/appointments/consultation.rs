@@ -34,7 +34,7 @@ pub async fn doctor_daily_queue_page(
 
     let today      = chrono::Local::now().date_naive();
     let email      = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-    let staff_name = email.split('@').next().unwrap_or("Doctor").to_string();
+    let display_name = crate::handlers::get_display_name(&session);
 
     let appointments = match crate::db::appointments::get_doctor_daily_appointments(&pool, doctor_id, filter_mode).await {
         Ok(data) => data,
@@ -44,7 +44,7 @@ pub async fn doctor_daily_queue_page(
     let mut ctx = Context::new();
     ctx.insert("specific_role",   "doctor");
     ctx.insert("email",           &email);
-    ctx.insert("staff_name",      &staff_name);
+    ctx.insert("display_name", &display_name);
     ctx.insert("formatted_date",  &today.format("%A, %B %d, %Y").to_string());
     ctx.insert("queue",           &appointments);
     ctx.insert("queue_count",     &appointments.len());
@@ -69,12 +69,12 @@ pub async fn show_consultation_form(
 
     let appointment_id = path.into_inner();
     let email          = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-    let staff_name     = email.split('@').next().unwrap_or("Doctor").to_string();
+    let display_name = crate::handlers::get_display_name(&session);
 
     let mut ctx = Context::new();
     ctx.insert("specific_role",    "doctor");
     ctx.insert("email",            &email);
-    ctx.insert("staff_name",       &staff_name);
+    ctx.insert("display_name", &display_name);
     ctx.insert("appointment_id",   &appointment_id.to_string());
     ctx.insert("symptoms",         "");
     ctx.insert("diagnosis",        "");
@@ -137,7 +137,7 @@ pub async fn prescribe_medication_page(
     };
 
     let email      = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
-    let staff_name = email.split('@').next().unwrap_or("Doctor").to_string();
+    let display_name = crate::handlers::get_display_name(&session);
 
     let appointments = match crate::db::appointments::get_doctor_prescribable_appointments(&pool, doctor_id).await {
         Ok(list) => list,
@@ -147,7 +147,7 @@ pub async fn prescribe_medication_page(
     let mut ctx = Context::new();
     ctx.insert("specific_role", "doctor");
     ctx.insert("email",         &email);
-    ctx.insert("staff_name",    &staff_name);
+    ctx.insert("display_name", &display_name);
     ctx.insert("appointments",  &appointments);
     ctx.insert("success",       &false);
 

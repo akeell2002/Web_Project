@@ -44,6 +44,30 @@ pub async fn login(
             };
             let _ = session.insert("role", role_str);
 
+            // Cache the user's real name in the session so every page can show it
+            // without an extra DB query, and so name changes take effect immediately.
+            let name: String = match user.role {
+                UserRole::Patient => {
+                    sqlx::query_scalar::<_, String>(
+                        "SELECT first_name || ' ' || last_name FROM patient WHERE id = $1"
+                    )
+                    .bind(user.id)
+                    .fetch_one(pool.get_ref())
+                    .await
+                    .unwrap_or_else(|_| user.email.split('@').next().unwrap_or("Patient").to_string())
+                }
+                _ => {
+                    sqlx::query_scalar::<_, String>(
+                        "SELECT first_name || ' ' || last_name FROM staff WHERE id = $1"
+                    )
+                    .bind(user.id)
+                    .fetch_one(pool.get_ref())
+                    .await
+                    .unwrap_or_else(|_| user.email.split('@').next().unwrap_or("Staff").to_string())
+                }
+            };
+            let _ = session.insert("name", &name);
+
             if let Err(err) = log_access_event(
                 pool.get_ref(),
                 Some(user.id),
