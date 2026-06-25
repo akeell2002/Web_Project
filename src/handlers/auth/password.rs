@@ -1,4 +1,4 @@
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse, Responder, HttpRequest};
 use tera::{Context, Tera};
 use sqlx::PgPool;
 use uuid::Uuid;
@@ -23,8 +23,22 @@ pub struct ResetTokenQuery {
     pub token: Option<String>,
 }
 
-pub async fn forgot_password_page(tera: web::Data<Tera>) -> impl Responder {
-    let ctx = Context::new();
+pub async fn forgot_password_page(tera: web::Data<Tera>, req: HttpRequest) -> impl Responder {
+    let mut ctx = Context::new();
+    let referer = req
+        .headers()
+        .get("Referer")
+        .and_then(|val| val.to_str().ok())
+        .unwrap_or("");
+
+    let from_value = if referer.contains("/patient/login") {
+        "patient"
+        } else {
+            "staff"
+        };
+    println!("Forgot password page accessed from: {}", from_value);
+    ctx.insert("from_page", &from_value);
+
     match tera.render("auth/forgot_password.html", &ctx) {
         Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
         Err(e)   => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
