@@ -398,10 +398,47 @@ body.page-app-patient .slot-available input[type="radio"] { accent-color: #16a34
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 20px; margin-bottom: 28px;
 }
-.action-card { padding: 24px; display: flex; flex-direction: column; gap: 8px; }
+.action-card {
+    padding: 24px; display: flex; flex-direction: column; gap: 8px;
+    transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease;
+}
+.action-card:hover { box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08); transform: translateY(-2px); }
 .action-card h3 { font-size: 16px; font-weight: 700; color: #0F172A; margin: 0; }
 .action-card p  { font-size: 13px; color: #64748B; margin: 0; flex: 1; }
 .action-icon    { font-size: 28px; }
+.action-icon:empty { display: none; }
+
+/* Clean, full-width action buttons (override Bootstrap btn-sm sizing) */
+.action-card .btn {
+    align-self: stretch;
+    width: 100%;
+    text-align: center;
+    margin-top: 14px;
+    padding: 11px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    box-shadow: none;
+    transition: filter .15s ease, transform .1s ease;
+}
+.action-card .btn:hover  { filter: brightness(1.08); }
+.action-card .btn:active { transform: translateY(1px); }
+
+/* Module tag pill (e.g. "Nurse Module") — small, left-aligned, soft */
+.action-card .badge {
+    align-self: flex-start;
+    width: auto;
+    background: #EEF2F7 !important;
+    color: #5B6675 !important;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin-bottom: 2px;
+}
 
 /* ── CONTENT CARD ───────────────────────────────────────────────── */
 .content-card {
