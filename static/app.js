@@ -1,6 +1,7 @@
+/*GENERAL  ·  runs on every page / shared across all roles*/
 
-/* This the mouse glow, will track the cursor position as CSS variables used by the radial-gradient 
-   glow on both auth and app pages (body::before in style.css).        */
+/* Mouse glow — tracks the cursor position as CSS variables used by the
+   radial-gradient glow on both auth and app pages (body::before in style.css). */
 document.addEventListener('mousemove', function (e) {
     document.body.style.setProperty('--mouse-x', e.clientX + 'px');
     document.body.style.setProperty('--mouse-y', e.clientY + 'px');
@@ -39,7 +40,8 @@ document.addEventListener('mousemove', function (e) {
 /* APP TOAST FLASH
    Shows a Bootstrap dismissible alert (top-right) on app pages when
    ?success=<key> is present in the URL. Only runs on .page-app pages
-   so it doesn't interfere with auth page flash banners.               */
+   so it doesn't interfere with auth page flash banners.
+   The messages below are grouped by the role that triggers them. */
 (function () {
     if (!document.body.classList.contains('page-app')) return;
 
@@ -75,7 +77,7 @@ document.addEventListener('mousemove', function (e) {
 
         // Nurse
         'vitals_saved':          'Patient vitals saved successfully.',
-        'logged':                'Medication administeredsuccessfully.',
+        'logged':                'Medication administered successfully.',
 
         // Patient
         'booked':                'Appointment booked successfully. See you soon!',
@@ -108,6 +110,8 @@ document.addEventListener('mousemove', function (e) {
     history.replaceState(null, '', window.location.pathname);
 }());
 
+
+/*ADMIN */
 (function () {
     var tbody        = document.getElementById('sec-tbody');
     if (!tbody) return; // Security-log page only; skip on every other page.
@@ -147,80 +151,83 @@ document.addEventListener('mousemove', function (e) {
         roleEl.appendChild(opt);
     });
 
-// Filter
-function applyFilters() {
-    var q      = searchEl.value.trim().toLowerCase();
-    var action = actionEl.value;
-    var role   = roleEl.value;
-    var visible = 0;
+    // Filter
+    function applyFilters() {
+        var q      = searchEl.value.trim().toLowerCase();
+        var action = actionEl.value;
+        var role   = roleEl.value;
+        var visible = 0;
 
-    rows.forEach(function (row) {
-        var cells     = row.querySelectorAll('td');
-        var text      = row.textContent.toLowerCase();
-        var rowAction = cells[1].textContent.trim().toLowerCase();
-        var rowRole   = cells[3].querySelector('span') ? cells[3].querySelector('span').textContent.trim().toLowerCase() : '';
+        rows.forEach(function (row) {
+            var cells     = row.querySelectorAll('td');
+            var text      = row.textContent.toLowerCase();
+            var rowAction = cells[1].textContent.trim().toLowerCase();
+            var rowRole   = cells[3].querySelector('span') ? cells[3].querySelector('span').textContent.trim().toLowerCase() : '';
 
-        var show = (!q || text.includes(q))
-                && (!action || rowAction === action)
-                && (!role   || rowRole   === role);
+            var show = (!q || text.includes(q))
+                    && (!action || rowAction === action)
+                    && (!role   || rowRole   === role);
 
-        row.style.display = show ? '' : 'none';
-        if (show) visible++;
-    });
-
-    var word = visible === 1 ? 'event' : 'events';
-    countEl.textContent = visible + ' ' + word + ' found';
-    noRes.style.display = (visible === 0 && rows.length > 0) ? 'block' : 'none';
-}
-
-searchEl.addEventListener('input',  applyFilters);
-actionEl.addEventListener('change', applyFilters);
-roleEl.addEventListener('change',   applyFilters);
-clearBtn.addEventListener('click', function () {
-    searchEl.value = '';
-    actionEl.selectedIndex = 0;
-    roleEl.selectedIndex = 0;
-    // Restore original row order
-    originalOrder.forEach(function (r) { tbody.appendChild(r); });
-    rows = originalOrder.slice();
-    // Reset sort arrows
-    sortState.col = -1; sortState.asc = true;
-    document.querySelectorAll('.sec-sortable .sec-arrow').forEach(function (a) { a.textContent = '↕'; });
-    applyFilters();
-});
-
-// Sort
-var sortState = { col: -1, asc: true };
-
-document.querySelectorAll('.sec-sortable').forEach(function (th) {
-    th.addEventListener('click', function () {
-        var col = parseInt(th.dataset.col);
-        if (sortState.col === col) {
-            sortState.asc = !sortState.asc;
-        } else {
-            sortState.col = col;
-            sortState.asc = true;
-        }
-
-        // Update arrow indicators
-        document.querySelectorAll('.sec-sortable .sec-arrow').forEach(function (a) { a.textContent = '↕'; });
-        th.querySelector('.sec-arrow').textContent = sortState.asc ? '↑' : '↓';
-
-        rows.sort(function (a, b) {
-            var aText = a.querySelectorAll('td')[col].textContent.trim().toLowerCase();
-            var bText = b.querySelectorAll('td')[col].textContent.trim().toLowerCase();
-            if (aText < bText) return sortState.asc ? -1 :  1;
-            if (aText > bText) return sortState.asc ?  1 : -1;
-            return 0;
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
         });
 
-        rows.forEach(function (r) { tbody.appendChild(r); });
+        var word = visible === 1 ? 'event' : 'events';
+        countEl.textContent = visible + ' ' + word + ' found';
+        noRes.style.display = (visible === 0 && rows.length > 0) ? 'block' : 'none';
+    }
+
+    searchEl.addEventListener('input',  applyFilters);
+    actionEl.addEventListener('change', applyFilters);
+    roleEl.addEventListener('change',   applyFilters);
+    clearBtn.addEventListener('click', function () {
+        searchEl.value = '';
+        actionEl.selectedIndex = 0;
+        roleEl.selectedIndex = 0;
+        // Restore original row order
+        originalOrder.forEach(function (r) { tbody.appendChild(r); });
+        rows = originalOrder.slice();
+        // Reset sort arrows
+        sortState.col = -1; sortState.asc = true;
+        document.querySelectorAll('.sec-sortable .sec-arrow').forEach(function (a) { a.textContent = '↕'; });
         applyFilters();
     });
-});
+
+    // Sort
+    var sortState = { col: -1, asc: true };
+
+    document.querySelectorAll('.sec-sortable').forEach(function (th) {
+        th.addEventListener('click', function () {
+            var col = parseInt(th.dataset.col);
+            if (sortState.col === col) {
+                sortState.asc = !sortState.asc;
+            } else {
+                sortState.col = col;
+                sortState.asc = true;
+            }
+
+            // Update arrow indicators
+            document.querySelectorAll('.sec-sortable .sec-arrow').forEach(function (a) { a.textContent = '↕'; });
+            th.querySelector('.sec-arrow').textContent = sortState.asc ? '↑' : '↓';
+
+            rows.sort(function (a, b) {
+                var aText = a.querySelectorAll('td')[col].textContent.trim().toLowerCase();
+                var bText = b.querySelectorAll('td')[col].textContent.trim().toLowerCase();
+                if (aText < bText) return sortState.asc ? -1 :  1;
+                if (aText > bText) return sortState.asc ?  1 : -1;
+                return 0;
+            });
+
+            rows.forEach(function (r) { tbody.appendChild(r); });
+            applyFilters();
+        });
+    });
 }());
 
-        // Tab switching for doctor consultation page
+
+/*DOCTOR  */
+
+/* Consultation for the tab switching (General Info / Past Diagnoses / Prescriptions) */
 function switchTab(id) {
     ['tab-general','tab-history','tab-rx'].forEach(t => {
         document.getElementById(t).style.display = t === id ? 'block' : 'none';
@@ -236,104 +243,7 @@ function switchTab(id) {
     });
 }
 
-function toggleCard(id) {
-    const card = document.getElementById('card-' + id);
-    card.classList.toggle('open');
-}
-
-function updateFormAction(patientId) {
-    const select = document.getElementById('appt-select-' + patientId);
-    const form = document.getElementById('form-' + patientId);
-    const appointmentId = select.value;
-    form.action = '/staff/doctor/prescribe/' + appointmentId;
-}
-
-function filterPatients() {
-    const query = document.getElementById('patient-search').value.toLowerCase().trim();
-    const cards = document.querySelectorAll('#appt-list .appt-card');
-    let visibleCount = 0;
-
-    cards.forEach(card => {
-    const name = card.querySelector('.appt-patient').textContent.toLowerCase();
-    const match = name.includes(query);
-    card.style.display = match ? '' : 'none';
-    if (match) visibleCount++;
-    });
-    document.getElementById('no-results').style.display = visibleCount === 0 ? 'block' : 'none';
-}
-
-// Filter patient at patient directory page
-function filterPatients(query) {
-   const q = query.toLowerCase();
-   const rows = document.querySelectorAll('#patient-table tbody tr[data-searchable]');
-   let visible = 0;
-   rows.forEach(row => {
-   const text = row.getAttribute('data-searchable');
-   if (text.includes(q)) { row.style.display = ''; visible++; }
-   else { row.style.display = 'none'; }
-   });
-   document.getElementById('no-results').style.display = (visible === 0 && q.length > 0) ? 'block' : 'none';
-}
-
-function filterRows(filter, btn) {
-    document.querySelectorAll('.bm-tab').forEach(t => t.classList.remove('active'));
-    btn.classList.add('active');
-
-    const rows = document.querySelectorAll('#patientTableBody tr');
-    rows.forEach(row => {
-    const status = row.dataset.status || '';
-    const show = filter === 'all'
-    || (filter === 'waiting' && status === 'checked_in')
-    || (filter === 'vitals_taken' && status === 'vitals_taken')
-    || (filter === 'completed' && status === 'completed');
-    row.style.display = show ? '' : 'none';
-    });
-}
-
-// Search
-function searchTable(q) {
-    const query = q.toLowerCase();
-    document.querySelectorAll('#patientTableBody tr').forEach(row => {
-    const name = row.dataset.name || '';
-    const room = row.dataset.room || '';
-    row.style.display = (name.includes(query) || room.includes(query)) ? '' : 'none';
-});
-
-// Also filter bed cards if visible
-    document.querySelectorAll('.bed-card').forEach(card => {
-    const name = card.dataset.name || '';
-    const patient = card.dataset.patient || '';
-    card.style.display = (name.includes(query) || patient.includes(query)) ? '' : 'none';
-    });
-}
-
-/* APPOINTMENT SLOT RELOAD 
-   Reloads the page with the chosen doctor / date / visit type so the
-   backend can render available time slots. Shared by the booking page
-   and the reschedule page — if a hidden #appointment_id field is present
-   we target the reschedule (edit) route, otherwise the booking route.   */
-function reloadAvailableSlots() {
-    const docId   = document.getElementById("doctor_select").value;
-    const dateVal = document.getElementById("date_select").value;
-    const visitDd = document.getElementById("visit_type");
-
-    if (!docId || !dateVal || !visitDd.value) return;
-
-    const durationVal  = visitDd.options[visitDd.selectedIndex].getAttribute("data-duration");
-    const visitTypeVal = visitDd.value;
-    const apptEl       = document.getElementById("appointment_id");
-
-    const base = apptEl
-        ? `/patient/appointments/${apptEl.value}/edit`
-        : `/patient/appointments/book`;
-
-    window.location.href =
-        `${base}?doctor_id=${docId}&date=${dateVal}&duration_minutes=${durationVal}&visit_type=${visitTypeVal}`;
-}
-
-/* CONSULTATION ADMIT TOGGLE
-   On the doctor consultation page, the "Need to admit?" Yes/No choice
-   enables exactly one of the two submit buttons. No-op on other pages.  */
+/* Consultation "Need to admit?" Yes/No choice enables exactly one of thetwo submit buttons. */
 function updateAdmitButtons() {
     var btnAdmit = document.getElementById('btn-admit');
     var btnSign  = document.getElementById('btn-sign');
@@ -353,13 +263,44 @@ function updateAdmitButtons() {
 // Set the initial enabled/disabled state once the page has loaded.
 document.addEventListener('DOMContentLoaded', updateAdmitButtons);
 
-/* NURSE TRIAGE VITALS — LIVE RANGE VALIDATION
-   Flags a vitals value the moment it exceeds what the column can store
+/* Prescribe expand/collapse a patient card */
+function toggleCard(id) {
+    const card = document.getElementById('card-' + id);
+    card.classList.toggle('open');
+}
+
+/* Prescribe point the form at the selected appointment */
+function updateFormAction(patientId) {
+    const select = document.getElementById('appt-select-' + patientId);
+    const form = document.getElementById('form-' + patientId);
+    const appointmentId = select.value;
+    form.action = '/staff/doctor/prescribe/' + appointmentId;
+}
+
+/* Filter the appointment cards by patient name */
+function filterPatients() {
+    const query = document.getElementById('patient-search').value.toLowerCase().trim();
+    const cards = document.querySelectorAll('#appt-list .appt-card');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+    const name = card.querySelector('.appt-patient').textContent.toLowerCase();
+    const match = name.includes(query);
+    card.style.display = match ? '' : 'none';
+    if (match) visibleCount++;
+    });
+    document.getElementById('no-results').style.display = visibleCount === 0 ? 'block' : 'none';
+}
+
+
+/*NURSE */
+
+/* Flags a vitals value the moment it exceeds what the column can store
    (so the DB never throws a numeric overflow) and disables that row's
    "Submit Vitals" button while anything is out of range. No-op on pages
-   without vitals inputs. */
-// Single source of truth for triage vitals limits — tweak these values here.
-// Numeric fields use {min, max}; text fields (BP) use {maxLength, pattern}.
+   without vitals inputs.
+   Single source of truth for triage vitals limits — tweak these here.
+   Numeric fields use {min, max}; text fields (BP) use {maxLength, pattern}. */
 var VITALS_LIMITS = {
     'temperature':    { min: 0, max: 50.00,  label: 'Temperature' },
     'weight_kg':      { min: 0, max: 999.99, label: 'Weight' },
@@ -442,3 +383,82 @@ document.addEventListener('DOMContentLoaded', function () {
         input.addEventListener('input', function () { validateVitalsInput(input); });
     });
 });
+
+
+/*PATIENT */
+
+/* Reloads the page with the chosen doctor / date / visit type so the
+   backend can render available time slots. Shared by the booking page
+   and the reschedule page — if a hidden #appointment_id field is present
+   we target the reschedule (edit) route, otherwise the booking route. */
+function reloadAvailableSlots() {
+    const docId   = document.getElementById("doctor_select").value;
+    const dateVal = document.getElementById("date_select").value;
+    const visitDd = document.getElementById("visit_type");
+
+    if (!docId || !dateVal || !visitDd.value) return;
+
+    const durationVal  = visitDd.options[visitDd.selectedIndex].getAttribute("data-duration");
+    const visitTypeVal = visitDd.value;
+    const apptEl       = document.getElementById("appointment_id");
+
+    const base = apptEl
+        ? `/patient/appointments/${apptEl.value}/edit`
+        : `/patient/appointments/book`;
+
+    window.location.href =
+        `${base}?doctor_id=${docId}&date=${dateVal}&duration_minutes=${durationVal}&visit_type=${visitTypeVal}`;
+}
+
+
+/* SHARED STAFF  ·  patient directory & bed management
+   (used by admin / doctor / nurse / receptionist) */
+
+/* Patient directory search/filter rows.
+   NOTE: shares the name filterPatients with the doctor prescribe filter
+   above; this one is defined last, so it is the global winner on the
+   directory page. */
+function filterPatients(query) {
+   const q = query.toLowerCase();
+   const rows = document.querySelectorAll('#patient-table tbody tr[data-searchable]');
+   let visible = 0;
+   rows.forEach(row => {
+   const text = row.getAttribute('data-searchable');
+   if (text.includes(q)) { row.style.display = ''; visible++; }
+   else { row.style.display = 'none'; }
+   });
+   document.getElementById('no-results').style.display = (visible === 0 && q.length > 0) ? 'block' : 'none';
+}
+
+/* Bed management status tab filter (All / Waiting / Vitals Taken / Completed) */
+function filterRows(filter, btn) {
+    document.querySelectorAll('.bm-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+
+    const rows = document.querySelectorAll('#patientTableBody tr');
+    rows.forEach(row => {
+    const status = row.dataset.status || '';
+    const show = filter === 'all'
+    || (filter === 'waiting' && status === 'checked_in')
+    || (filter === 'vitals_taken' && status === 'vitals_taken')
+    || (filter === 'completed' && status === 'completed');
+    row.style.display = show ? '' : 'none';
+    });
+}
+
+/* Bed management search patients (table) and bed cards */
+function searchTable(q) {
+    const query = q.toLowerCase();
+    document.querySelectorAll('#patientTableBody tr').forEach(row => {
+    const name = row.dataset.name || '';
+    const room = row.dataset.room || '';
+    row.style.display = (name.includes(query) || room.includes(query)) ? '' : 'none';
+});
+
+// Also filter bed cards if visible
+    document.querySelectorAll('.bed-card').forEach(card => {
+    const name = card.dataset.name || '';
+    const patient = card.dataset.patient || '';
+    card.style.display = (name.includes(query) || patient.includes(query)) ? '' : 'none';
+    });
+}
