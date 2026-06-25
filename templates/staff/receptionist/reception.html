@@ -33,6 +33,8 @@
                                 Waiting for Nurse
                             {% elif appt.status == "vitals_taken" %}
                                 Ready for Doctor
+                            {% elif appt.status == "admitted" %}
+                                <span style="background:#DBEAFE; color:#1E40AF; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:600;">Admitted</span>
                             {% elif appt.status == "completed" %}
                                 {% if appt.payment_status and appt.payment_status != "paid" %}
                                     <span style="background:#FEF3C7; color:#92400E; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:600;">Awaiting Payment</span>

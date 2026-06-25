@@ -147,6 +147,7 @@ pub async fn get_active_prescriptions_for_nurse(
         JOIN staff       s ON rx.prescribed_by_doctor_id = s.id
         LEFT JOIN medication_administration_log mal ON mal.prescription_id = rx.id
         WHERE rx.created_at >= NOW() - INTERVAL '3 days'
+          AND a.status = 'admitted'
         GROUP BY rx.id, rx.medicine_name, rx.dosage, rx.frequency, rx.duration,
                  rx.instructions, rx.created_at, a.date,
                  p.first_name, p.last_name, s.first_name, s.last_name

@@ -7,7 +7,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TYPE user_role AS ENUM ('admin', 'doctor', 'nurse', 'receptionist', 'patient');
 CREATE TYPE bill_status AS ENUM ('unpaid', 'paid', 'partially_paid', 'refunded');
 CREATE TYPE ticket_status AS ENUM ('open', 'in_progress', 'resolved');
-CREATE TYPE appointment_status AS ENUM ('scheduled', 'checked_in', 'vitals_taken', 'completed', 'cancelled', 'no_show');
+CREATE TYPE appointment_status AS ENUM ('scheduled', 'checked_in', 'vitals_taken', 'completed', 'cancelled', 'no_show', 'admitted');
 
 ---
 --- 1. USER SYSTEM
@@ -205,9 +205,16 @@ CREATE INDEX idx_bed_transfers_patient ON bed_transfers(patient_id);
 ---
 --- 11. SEED DATA
 ---
+-- 5 triage stations
 INSERT INTO room (room_name, room_type, location) VALUES
 ('Triage Station 1', 'triage', 'Level 1 Lobby'),
 ('Triage Station 2', 'triage', 'Level 1 Lobby'),
+('Triage Station 3', 'triage', 'Level 1 Lobby'),
+('Triage Station 4', 'triage', 'Level 1 Lobby'),
+('Triage Station 5', 'triage', 'Level 1 Lobby');
+
+-- 10 consultation rooms
+INSERT INTO room (room_name, room_type, location) VALUES
 ('Room 101', 'consultation', 'Clinic Wing A'),
 ('Room 102', 'consultation', 'Clinic Wing A'),
 ('Room 103', 'consultation', 'Clinic Wing A'),
@@ -215,4 +222,12 @@ INSERT INTO room (room_name, room_type, location) VALUES
 ('Room 105', 'consultation', 'Clinic Wing B'),
 ('Room 106', 'consultation', 'Clinic Wing B'),
 ('Room 107', 'consultation', 'Clinic Wing C'),
-('Room 108', 'consultation', 'Clinic Wing C');
+('Room 108', 'consultation', 'Clinic Wing C'),
+('Room 109', 'consultation', 'Clinic Wing C'),
+('Room 110', 'consultation', 'Clinic Wing C');
+
+-- 20 admission beds (inpatient ward)
+INSERT INTO room (room_name, room_type, location)
+SELECT 'Admission Bed ' || g, 'admission', 'Inpatient Ward ' ||
+       CASE WHEN g <= 10 THEN 'A' ELSE 'B' END
+FROM generate_series(1, 20) AS g;

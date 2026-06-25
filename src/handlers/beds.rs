@@ -113,6 +113,34 @@ pub async fn reject_transfer_handler(
     }
 }
 
+// ─── DISCHARGE ADMITTED PATIENT (doctor only) ────────────────────────────────
+
+pub async fn discharge_patient_handler(
+    pool: web::Data<PgPool>,
+    session: Session,
+    path: web::Path<Uuid>,
+) -> impl Responder {
+    // Doctor-only gate: nurses and receptionists cannot discharge.
+    match session.get::<String>("role") {
+        Ok(Some(r)) if r == "doctor" || r == "admin" => {}
+        _ => return HttpResponse::Forbidden().body("Only doctors can discharge patients"),
+    }
+
+    let appointment_id = path.into_inner();
+
+    match db::beds::discharge_patient(&pool, appointment_id).await {
+        Ok(_) => HttpResponse::SeeOther()
+            .append_header(("Location", "/staff/beds?success=discharged"))
+            .finish(),
+        Err(e) => {
+            eprintln!("discharge_patient error: {}", e);
+            HttpResponse::SeeOther()
+                .append_header(("Location", "/staff/beds?error=discharge_failed"))
+                .finish()
+        }
+    }
+}
+
 // ─── REQUEST TRANSFER (POST form) ────────────────────────────────────────────
 
 #[derive(Deserialize)]

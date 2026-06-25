@@ -26,8 +26,10 @@ pub async fn get_bed_overview(pool: &PgPool) -> Result<Vec<Value>, String> {
         FROM room r
         LEFT JOIN appointment a
             ON  a.room_id = r.id
-            AND a.date    = CURRENT_DATE
-            AND a.status IN ('checked_in', 'vitals_taken')
+            AND (
+                  (a.date = CURRENT_DATE AND a.status IN ('checked_in', 'vitals_taken'))
+                  OR a.status = 'admitted'
+                )
         LEFT JOIN patient p ON a.patient_id = p.id
         ORDER BY r.room_type, r.room_name
         "#,
@@ -70,8 +72,10 @@ pub async fn get_bed_stats(pool: &PgPool) -> Result<Value, String> {
         FROM room r
         LEFT JOIN appointment a
             ON  a.room_id = r.id
-            AND a.date    = CURRENT_DATE
-            AND a.status IN ('checked_in', 'vitals_taken')
+            AND (
+                  (a.date = CURRENT_DATE AND a.status IN ('checked_in', 'vitals_taken'))
+                  OR a.status = 'admitted'
+                )
         "#,
     )
     .fetch_one(pool)
@@ -109,8 +113,8 @@ pub async fn get_patient_census(pool: &PgPool) -> Result<Vec<Value>, String> {
         LEFT JOIN room r         ON a.room_id   = r.id
         LEFT JOIN staff s        ON a.doctor_id = s.id
         LEFT JOIN medical_records mr ON mr.appointment_id = a.id
-        WHERE a.date   = CURRENT_DATE
-          AND a.status IN ('checked_in', 'vitals_taken', 'completed')
+        WHERE (a.date = CURRENT_DATE AND a.status IN ('checked_in', 'vitals_taken', 'completed'))
+           OR a.status = 'admitted'
         ORDER BY a.priority_level ASC NULLS LAST, a.queue_number ASC NULLS LAST
         "#,
     )
@@ -127,6 +131,7 @@ pub async fn get_patient_census(pool: &PgPool) -> Result<Vec<Value>, String> {
             let status_label = match status.as_str() {
                 "checked_in"   => "Waiting",
                 "vitals_taken" => "Vitals Taken",
+                "admitted"     => "Admitted",
                 "completed"    => "Discharged",
                 _              => "Scheduled",
             };
@@ -370,5 +375,31 @@ pub async fn set_room_status(pool: &PgPool, room_id: Uuid, status: &str) -> Resu
         .execute(pool)
         .await
         .map_err(|e| format!("set_room_status: {}", e))?;
+    Ok(())
+}
+
+// ─── DISCHARGE ADMITTED PATIENT (doctor only) ────────────────────────────────
+
+/// Discharge an admitted patient: close the case ('completed') and free the bed.
+/// Only affects appointments currently in the 'admitted' state.
+pub async fn discharge_patient(pool: &PgPool, appointment_id: Uuid) -> Result<(), String> {
+    let result = sqlx::query(
+        r#"
+        UPDATE appointment
+        SET    status     = 'completed'::appointment_status,
+               room_id    = NULL,
+               updated_at = NOW()
+        WHERE  id     = $1
+          AND  status = 'admitted'::appointment_status
+        "#,
+    )
+    .bind(appointment_id)
+    .execute(pool)
+    .await
+    .map_err(|e| format!("discharge_patient: {}", e))?;
+
+    if result.rows_affected() == 0 {
+        return Err("Patient is not currently admitted.".to_string());
+    }
     Ok(())
 }

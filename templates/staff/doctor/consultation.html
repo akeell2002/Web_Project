@@ -149,6 +149,25 @@
     </div>
 
     <form action="/staff/doctor/consultation/{{ appointment_id }}" method="POST">
+
+        <!-- Admission decision -->
+        <div style="background:#FFFBEB; border:1px solid #FDE68A; border-radius:12px; padding:16px 24px; margin-bottom:20px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <div style="font-size:14px; font-weight:700; color:#92400E;">Admit this patient?</div>
+                    <div style="font-size:12px; color:#B45309;">Choosing "Yes" assigns an available inpatient admission bed automatically.</div>
+                </div>
+                <div style="display:flex; gap:18px; align-items:center;">
+                    <label style="display:flex; align-items:center; gap:6px; font-size:14px; font-weight:600; color:#374151; cursor:pointer;">
+                        <input type="radio" name="admit" value="no" checked> No
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px; font-size:14px; font-weight:600; color:#374151; cursor:pointer;">
+                        <input type="radio" name="admit" value="yes"> Yes, admit
+                    </label>
+                </div>
+            </div>
+        </div>
+
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:stretch;">
 
             <!-- LEFT: Clinical Assessment -->

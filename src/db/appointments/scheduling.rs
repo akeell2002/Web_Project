@@ -242,6 +242,34 @@ pub async fn check_in_patient(pool: &PgPool, appointment_id: Uuid) -> Result<i32
     .await
     .map_err(|e| format!("Failed to update check-in status: {}", e))?;
 
+    // 4b. Assign an available triage station (best-effort). If every station is
+    //     occupied the patient simply waits with no room until one frees up.
+    sqlx::query!(
+        r#"
+        UPDATE appointment
+        SET room_id = (
+            SELECT r.id
+            FROM room r
+            WHERE r.room_type = 'triage'
+              AND r.bed_status <> 'maintenance'
+              AND r.id NOT IN (
+                  SELECT a2.room_id
+                  FROM appointment a2
+                  WHERE a2.room_id IS NOT NULL
+                    AND a2.date   = CURRENT_DATE
+                    AND a2.status = 'checked_in'
+              )
+            ORDER BY r.room_name
+            LIMIT 1
+        )
+        WHERE id = $1 AND status = 'checked_in'
+        "#,
+        appointment_id
+    )
+    .execute(&mut *tx)
+    .await
+    .map_err(|e| format!("Failed to assign triage station: {}", e))?;
+
     // 5. Commit the transaction (which automatically releases the lock)
     tx.commit().await.map_err(|e| e.to_string())?;
 

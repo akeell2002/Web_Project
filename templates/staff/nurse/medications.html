@@ -9,7 +9,7 @@
     {% endif %}
     <div class="med-header">
         <h2>Medication Administration Log</h2>
-        <p>Active prescriptions from the past 3 days. Log each dose administered to the patient.</p>
+        <p>Active prescriptions for currently <strong>admitted</strong> patients. Log each dose administered to the patient.</p>
     </div>
     {% if prescriptions %}
         {% for rx in prescriptions %}
@@ -46,7 +46,7 @@
     {% else %}
         <div class="text-center text-muted py-5">
             <div style="font-size: 40px;"></div>
-            <p style="margin-top: 8px;">No active prescriptions in the past 3 days.</p>
+            <p style="margin-top: 8px;">No admitted patients with active prescriptions right now.</p>
         </div>
     {% endif %}
 {% endblock %}

@@ -11,46 +11,25 @@
         <h1>Bed & Patient Management</h1>
         <p>Monitor room occupancy and manage patient transfers across the clinic.</p>
     </div>
-    <!-- Stats row - show patient stats for nurses, bed stats for others -->
-    {% if specific_role == "nurse" %}
-        <div class="bm-stats">
-            <div class="bm-stat">
-                <div class="bm-stat-label">Total Patients Today</div>
-                <div class="bm-stat-value">{{ patient_stats.total_patients }}</div>
-            </div>
-            <div class="bm-stat stat-emergency">
-                <div class="bm-stat-label">Emergency</div>
-                <div class="bm-stat-value">{{ patient_stats.emergency }}</div>
-            </div>
-            <div class="bm-stat">
-                <div class="bm-stat-label">Vitals Taken</div>
-                <div class="bm-stat-value">{{ patient_stats.vitals_taken }}</div>
-            </div>
-            <div class="bm-stat stat-available">
-                <div class="bm-stat-label">Discharged Today</div>
-                <div class="bm-stat-value">{{ patient_stats.discharged_today }}</div>
-            </div>
+    <!-- Stats row - identical for doctor, nurse and receptionist -->
+    <div class="bm-stats">
+        <div class="bm-stat">
+            <div class="bm-stat-label">Total Beds</div>
+            <div class="bm-stat-value">{{ bed_stats.total_beds }}</div>
         </div>
-    {% else %}
-        <div class="bm-stats">
-            <div class="bm-stat">
-                <div class="bm-stat-label">Total Beds</div>
-                <div class="bm-stat-value">{{ bed_stats.total_beds }}</div>
-            </div>
-            <div class="bm-stat stat-occupied">
-                <div class="bm-stat-label">Occupied</div>
-                <div class="bm-stat-value">{{ bed_stats.occupied }}</div>
-            </div>
-            <div class="bm-stat stat-available">
-                <div class="bm-stat-label">Available</div>
-                <div class="bm-stat-value">{{ bed_stats.available }}</div>
-            </div>
-            <div class="bm-stat stat-maint">
-                <div class="bm-stat-label">Maintenance</div>
-                <div class="bm-stat-value">{{ bed_stats.maintenance }}</div>
-            </div>
+        <div class="bm-stat stat-occupied">
+            <div class="bm-stat-label">Occupied</div>
+            <div class="bm-stat-value">{{ bed_stats.occupied }}</div>
         </div>
-    {% endif %}
+        <div class="bm-stat stat-available">
+            <div class="bm-stat-label">Available</div>
+            <div class="bm-stat-value">{{ bed_stats.available }}</div>
+        </div>
+        <div class="bm-stat stat-maint">
+            <div class="bm-stat-label">Maintenance</div>
+            <div class="bm-stat-value">{{ bed_stats.maintenance }}</div>
+        </div>
+    </div>
     <!-- Two-column body -->
     <div class="bm-body">
         <!-- LEFT: Main content -->
@@ -75,10 +54,9 @@
                     ↔ Request Transfer
                 </button>
             </div>
-            {% if specific_role == "doctor" %}
-                <!-- Doctor view: bed grid -->
-                <div class="bed-grid" id="bedGrid">
-                    {% for bed in beds %}
+            <!-- Bed grid: shown to all clinical staff -->
+            <div class="bed-grid" id="bedGrid">
+                {% for bed in beds %}
                         <div class="bed-card {{ bed.computed_status }}"
                              data-name="{{ bed.room_name | lower }}"
                              data-patient="{{ bed.patient_name | default(value='') | lower }}">
@@ -101,9 +79,8 @@
                                 <p>No rooms found. Rooms are seeded from the database.</p>
                             </div>
                         </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
+                {% endfor %}
+            </div>
             <!-- All roles: patient table -->
             {% if patients %}
                 <table class="table table-hover align-middle" id="patientTable">
@@ -144,6 +121,8 @@
                                         <span class="pill pill-waiting">Waiting</span>
                                     {% elif p.status_label == "Vitals Taken" %}
                                         <span class="pill pill-vitals">Vitals Taken</span>
+                                    {% elif p.status_label == "Admitted" %}
+                                        <span class="pill pill-occupied">Admitted</span>
                                     {% elif p.status_label == "Discharged" %}
                                         <span class="pill pill-discharged">Discharged</span>
                                     {% else %}
@@ -152,8 +131,20 @@
                                 </td>
                                 <td>{{ p.room_name }}</td>
                                 <td>{{ p.doctor_name }}</td>
-                                <td> <a href="/staff/patients/{{ p.patient_id }}"
-    class="btn btn-outline-primary btn-sm">View</a> </td>
+                                <td>
+                                    <div style="display:flex; gap:6px; align-items:center;">
+                                        <a href="/staff/patients/{{ p.patient_id }}"
+                                           class="btn btn-outline-primary btn-sm">View</a>
+                                        {% if p.status == "admitted" and (specific_role == "doctor" or specific_role == "admin") %}
+                                            <form method="POST"
+                                                  action="/staff/beds/{{ p.appointment_id }}/discharge"
+                                                  onsubmit="return confirm('Discharge this patient and free the bed?');"
+                                                  style="margin:0;">
+                                                <button type="submit" class="btn btn-success btn-sm">Discharge</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>

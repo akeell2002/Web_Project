@@ -107,10 +107,17 @@ pub async fn show_consultation_form(
 
 /// POST - submit consultation, create medical record, bill, close appointment
 pub async fn submit_consultation(
-    pool: web::Data<PgPool>,
-    path: web::Path<Uuid>,
-    form: web::Form<crate::models::appointment::EncounterForm>,
+    pool:    web::Data<PgPool>,
+    session: Session,
+    path:    web::Path<Uuid>,
+    form:    web::Form<crate::models::appointment::EncounterForm>,
 ) -> impl Responder {
+    // Only a doctor may finalize a consultation (and decide on admission).
+    match session.get::<String>("role") {
+        Ok(Some(role)) if role == "doctor" => {}
+        _ => return HttpResponse::Forbidden().body("Access Denied: Doctor access required."),
+    }
+
     let appointment_id = path.into_inner();
 
     match crate::db::appointments::finalize_consultation_and_bill(&pool, appointment_id, form.into_inner()).await {

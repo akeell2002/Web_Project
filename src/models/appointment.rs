@@ -42,4 +42,7 @@ pub struct EncounterForm {
     pub frequency: Option<String>,
     pub duration: Option<String>,
     pub instructions: Option<String>,
+
+    // Admission decision ("yes" admits the patient to an inpatient bed)
+    pub admit: Option<String>,
 }

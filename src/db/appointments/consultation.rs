@@ -37,7 +37,7 @@ pub async fn get_doctor_daily_appointments(
             LEFT JOIN room         r  ON a.room_id      = r.id
             LEFT JOIN triage_vitals tv ON a.id           = tv.appointment_id
             WHERE a.doctor_id = $1 AND a.date = $2
-              AND a.status NOT IN ('cancelled', 'no_show')
+              AND a.status NOT IN ('cancelled', 'no_show', 'admitted')
             ORDER BY
                 CASE WHEN a.status IN ('vitals_taken', 'checked_in') THEN 1
                      WHEN a.status = 'scheduled' THEN 2
@@ -144,16 +144,54 @@ pub async fn finalize_consultation_and_bill(
     .execute(&mut *tx)
     .await?;
 
-    sqlx::query!(
-        r#"
-        UPDATE appointment
-        SET status = 'completed'::appointment_status, room_id = NULL, updated_at = NOW()
-        WHERE id = $1
-        "#,
-        appointment_id
-    )
-    .execute(&mut *tx)
-    .await?;
+    // Admission decision: when the doctor chose "yes" we admit the patient to a
+    // free inpatient bed and keep the case open as 'admitted'. Otherwise we close
+    // the encounter as usual ('completed') and release the consultation room.
+    let admit = form.admit.as_deref() == Some("yes");
+
+    if admit {
+        // Find a free admission bed (not in maintenance, not already holding an
+        // admitted patient). May be None if the ward is full.
+        let bed = sqlx::query!(
+            r#"
+            SELECT id
+            FROM room
+            WHERE room_type = 'admission'
+              AND bed_status <> 'maintenance'
+              AND id NOT IN (
+                  SELECT room_id FROM appointment
+                  WHERE room_id IS NOT NULL AND status = 'admitted'
+              )
+            ORDER BY room_name
+            LIMIT 1
+            "#
+        )
+        .fetch_optional(&mut *tx)
+        .await?;
+
+        sqlx::query!(
+            r#"
+            UPDATE appointment
+            SET status = 'admitted'::appointment_status, room_id = $2, updated_at = NOW()
+            WHERE id = $1
+            "#,
+            appointment_id,
+            bed.map(|b| b.id)
+        )
+        .execute(&mut *tx)
+        .await?;
+    } else {
+        sqlx::query!(
+            r#"
+            UPDATE appointment
+            SET status = 'completed'::appointment_status, room_id = NULL, updated_at = NOW()
+            WHERE id = $1
+            "#,
+            appointment_id
+        )
+        .execute(&mut *tx)
+        .await?;
+    }
 
     tx.commit().await?;
     Ok(())

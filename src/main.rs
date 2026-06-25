@@ -116,6 +116,7 @@ async fn main() -> std::io::Result<()> {
             .route("/staff/beds/transfer/request", web::post().to(handlers::beds::request_transfer_handler))
             .route("/staff/beds/transfer/{id}/approve", web::post().to(handlers::beds::approve_transfer_handler))
             .route("/staff/beds/transfer/{id}/reject", web::post().to(handlers::beds::reject_transfer_handler))
+            .route("/staff/beds/{id}/discharge", web::post().to(handlers::beds::discharge_patient_handler))
 
             // --- Nurse Routes ---
             .route("/staff/nurse/triage", web::get().to(handlers::appointments::nurse_triage_page))
