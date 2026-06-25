@@ -70,11 +70,11 @@ pub async fn onboard_staff_submit(
     {
         Ok(user) => {
             let success_key = match user.role {
-                UserRole::Admin        => "admin_added",
-                UserRole::Doctor       => "doctor_added",
-                UserRole::Nurse        => "nurse_added",
-                UserRole::Receptionist => "receptionist_added",
-                UserRole::Patient      => "staff_added",
+                UserRole::Admin        => "admin_created",
+                UserRole::Doctor       => "doctor_created",
+                UserRole::Nurse        => "nurse_created",
+                UserRole::Receptionist => "receptionist_created",
+                UserRole::Patient      => "staff_created",
             };
             HttpResponse::SeeOther()
                 .append_header(("Location", format!("/admin/dashboard?success={}", success_key)))
