@@ -146,7 +146,7 @@ pub async fn process_add_patient(
     ).await {
         Ok(_) => {
             HttpResponse::SeeOther()
-                .append_header(("Location", "/staff/patients?success=patient_registered"))
+                .append_header(("Location", "/staff/patients?success=patient_created"))
                 .finish()
         }
         Err(e) => HttpResponse::BadRequest().body(format!("Database transactional update failed: {}", e)),

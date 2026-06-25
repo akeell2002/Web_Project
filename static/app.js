@@ -46,13 +46,22 @@ document.addEventListener('mousemove', function (e) {
     var MESSAGES = {
         'login':                 'Welcome back! You have logged in successfully.',
         'updated':               'Profile updated successfully.',
-        'appointment_updated':   'Appointment updated successfully. Your new booking is confirmed.',
+        'patient_created':       'Patient account created successfully.',
+        'booked':                'Appointment booked successfully. See you soon!',
+        'appointment_updated':   'Appointment updated successfully.',
+        'appointment_cancelled': 'Appointment cancelled successfully.',
         'checked_in':            'Patient checked in successfully.',
+        'no_show':               'Patient marked as no-show successfully.',
         'doctor_created':        'Doctor account created successfully.',
         'nurse_created':         'Nurse account created successfully.',
         'receptionist_created':  'Receptionist account created successfully.',
         'admin_created':         'Admin account created successfully.',
         'staff_created':         'Staff account created successfully.',
+        'patient_created':       'Patient account created successfully.',
+        'booked':                'Appointment booked successfully. See you soon!',
+        'appointment_updated':   'Appointment updated successfully.',
+        'appointment_cancelled': 'Appointment cancelled successfully.',
+        'vitals_saved':          'Patient vitals saved successfully.',
     };
 
     var params = new URLSearchParams(window.location.search);

@@ -370,7 +370,7 @@ pub async fn submit_update_appointment(
         form.doctor_id, form.date, form.start_time, end_time, priority,
     ).await {
         Ok(_) => HttpResponse::SeeOther()
-            .append_header(("Location", "/patient/dashboard?success=updated"))
+            .append_header(("Location", "/patient/dashboard?success=appointment_updated"))
             .finish(),
         Err(e) => HttpResponse::BadRequest().body(format!("Failed to reschedule: {}", e)),
     }
@@ -395,7 +395,7 @@ pub async fn cancel_appointment(
 
     match crate::db::appointments::cancel_patient_appointment(&pool, appointment_id, patient_id).await {
         Ok(_) => HttpResponse::SeeOther()
-            .append_header(("Location", "/patient/dashboard?success=cancelled"))
+            .append_header(("Location", "/patient/dashboard?success=appointment_cancelled"))
             .finish(),
         Err(e) => HttpResponse::InternalServerError().body(format!("Failed to cancel: {}", e)),
     }
