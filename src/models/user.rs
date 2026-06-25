@@ -54,11 +54,56 @@ pub struct AccessLogEntry {
     pub actor_user_id: Option<Uuid>,
     pub actor_email: Option<String>,
     pub action_type: String,
+    pub action_label: String, // human-friendly label, e.g. "Staff Deleted"
+    pub action_kind: String,  // colour group: created | updated | deleted | admitted | discharged | access
     pub target_user_id: Option<Uuid>,
     pub target_email: String,
     pub target_role: String,
     pub details: String,
     pub created_at: String,
+}
+
+/// Turn a raw action_type key into a readable label.
+fn humanize_action(action_type: &str) -> String {
+    match action_type {
+        "staff_account_created"   => "Staff Created".to_string(),
+        "staff_account_updated"   => "Staff Updated".to_string(),
+        "staff_account_deleted"   => "Staff Deleted".to_string(),
+        "patient_account_created" => "Patient Created".to_string(),
+        "patient_account_updated" => "Patient Updated".to_string(),
+        "patient_account_deleted" => "Patient Deleted".to_string(),
+        "admin_created"           => "Admin Created".to_string(),
+        "doctor_created"          => "Doctor Created".to_string(),
+        "nurse_created"           => "Nurse Created".to_string(),
+        "receptionist_created"    => "Receptionist Created".to_string(),
+        "seed_account_created"    => "Seed Account Created".to_string(),
+        "staff_created"           => "Staff Created".to_string(),
+        "patient_checked_in"      => "Patient Checked In".to_string(),
+        "patient_admitted"        => "Patient Admitted".to_string(),
+        "patient_discharged"      => "Patient Discharged".to_string(),
+        // Fallback: title-case the snake_case key.
+        other => other
+            .split('_')
+            .map(|w| {
+                let mut chars = w.chars();
+                match chars.next() {
+                    Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+                    None => String::new(),
+                }
+            })
+            .collect::<Vec<_>>()
+            .join(" "),
+    }
+}
+
+/// Colour group for the action badge.
+fn action_colour(action_type: &str) -> &'static str {
+    if action_type.ends_with("_deleted") { "deleted" }
+    else if action_type.ends_with("_updated") { "updated" }
+    else if action_type.ends_with("_created") { "created" }
+    else if action_type.contains("admitted") { "admitted" }
+    else if action_type.contains("discharged") { "discharged" }
+    else { "access" }
 }
 
 impl AccessLogEntry {
@@ -73,11 +118,15 @@ impl AccessLogEntry {
         details: String,
         created_at: DateTime<Utc>,
     ) -> Self {
+        let action_label = humanize_action(&action_type);
+        let action_kind = action_colour(&action_type).to_string();
         Self {
             id,
             actor_user_id,
             actor_email,
             action_type,
+            action_label,
+            action_kind,
             target_user_id,
             target_email,
             target_role,

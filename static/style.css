@@ -887,6 +887,19 @@ body.page-app-patient .slot-available input[type="radio"] { accent-color: #16a34
 .bm-empty      { text-align: center; padding: 40px; color: #9CA3AF; }
 .bm-empty-icon { font-size: 40px; margin-bottom: 8px; }
 
+/* ── SECURITY LOG ACTION BADGES ─────────────────────────────────── */
+.action-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 12px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
+    white-space: nowrap;
+}
+.action-created    { background: #D1FAE5; color: #065F46; }
+.action-updated    { background: #DBEAFE; color: #1E40AF; }
+.action-deleted    { background: #FEE2E2; color: #B91C1C; }
+.action-admitted   { background: #EDE9FE; color: #6D28D9; }
+.action-discharged { background: #CCFBF1; color: #0F766E; }
+.action-access     { background: #F1F5F9; color: #475569; }
+
 /* ── PATIENT MEDICAL REPORT ─────────────────────────────────────── */
 .print-bar {
     display: flex; justify-content: space-between; align-items: center;

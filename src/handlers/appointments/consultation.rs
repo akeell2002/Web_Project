@@ -123,6 +123,9 @@ pub async fn submit_consultation(
 
     match crate::db::appointments::finalize_consultation_and_bill(&pool, appointment_id, form.into_inner()).await {
         Ok(_)  => {
+            if admitted {
+                crate::handlers::audit_clinical_action(&pool, &session, appointment_id, "patient_admitted", "admitted").await;
+            }
             let location = if admitted {
                 "/staff/doctor/queue?success=admitted"
             } else {

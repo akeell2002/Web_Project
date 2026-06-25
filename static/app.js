@@ -97,6 +97,7 @@ document.addEventListener('mousemove', function (e) {
 
 (function () {
     var tbody        = document.getElementById('sec-tbody');
+    if (!tbody) return; // Security-log page only; skip on every other page.
     var rows         = Array.from(tbody.querySelectorAll('tr:not(#sec-empty-row)'));
     var originalOrder = rows.slice(); // snapshot original DOM order
     var countEl = document.getElementById('sec-count');
