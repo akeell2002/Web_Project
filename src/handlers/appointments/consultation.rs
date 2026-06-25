@@ -209,7 +209,7 @@ pub async fn submit_prescription(
                 "\n[MOCK EMAIL] Prescription: {} ({} x {} for {}) -- appt {}\n",
                 form.medicine_name, form.dosage, form.frequency, form.duration, appointment_id
             );
-            HttpResponse::SeeOther().append_header(("Location", "/staff/doctor/prescribe?success=1")).finish()
+            HttpResponse::SeeOther().append_header(("Location", "/staff/doctor/prescribe?success=prescription_saved")).finish()
         }
         Err(e) => HttpResponse::InternalServerError().body(format!("Failed to save prescription: {}", e)),
     }

@@ -6,7 +6,7 @@ document.addEventListener('mousemove', function (e) {
     document.body.style.setProperty('--mouse-y', e.clientY + 'px');
 });
 
-/* ── AUTH PAGE FLASH BANNER ─────────────────────────────────────────
+/* AUTH PAGE FLASH BANNER
    Reads URL params and shows a message inside #auth-flash on auth
    pages (patient/login, staff/login). Messages are defined via the
    element's data-messages attribute (JSON: "param=value" → message). */
@@ -36,7 +36,7 @@ document.addEventListener('mousemove', function (e) {
     }
 }());
 
-/* ── APP TOAST FLASH ────────────────────────────────────────────────
+/* APP TOAST FLASH
    Shows a Bootstrap dismissible alert (top-right) on app pages when
    ?success=<key> is present in the URL. Only runs on .page-app pages
    so it doesn't interfere with auth page flash banners.               */
@@ -44,30 +44,43 @@ document.addEventListener('mousemove', function (e) {
     if (!document.body.classList.contains('page-app')) return;
 
     var MESSAGES = {
+        // For all roles
         'login':                 'Welcome back! You have logged in successfully.',
         'updated':               'Profile updated successfully.',
-        'patient_created':       'Patient account created successfully.',
-        'booked':                'Appointment booked successfully. See you soon!',
-        'appointment_updated':   'Appointment updated successfully.',
-        'appointment_cancelled': 'Appointment cancelled successfully.',
-        'checked_in':            'Patient checked in successfully.',
-        'admitted':              'Patient admitted, an admission bed has been assigned.',
-        'consultation_saved':    'Consultation saved and bill generated.',
-        'discharged':            'Patient discharged successfully. Bed is now free.',
-        'staff_updated':         'Staff account updated successfully.',
-        'staff_deleted':         'Staff account deleted successfully.',
-        'reply_sent':            'Reply sent and ticket marked as resolved.',
-        'no_show':               'Patient marked as no-show successfully.',
+        'password_reset':        'Password reset successfully. Please log in.',
+
+        // Admin
+        'staff_created':         'Staff account created successfully.',
         'doctor_created':        'Doctor account created successfully.',
         'nurse_created':         'Nurse account created successfully.',
         'receptionist_created':  'Receptionist account created successfully.',
         'admin_created':         'Admin account created successfully.',
-        'staff_created':         'Staff account created successfully.',
+        'staff_updated':         'Staff account updated successfully.',
+        'staff_deleted':         'Staff account deleted successfully.',
+        'patient_deleted':       'Patient account deleted successfully.',
+        'reply_sent':            'Reply sent and ticket marked as resolved.',
+
+        // Receptionist
         'patient_created':       'Patient account created successfully.',
+        'patient_updated':       'Patient details updated successfully.',
+        'checked_in':            'Patient checked in successfully.',
+        'no_show':               'Patient marked as no-show successfully.',
+        'bill_paid':             'Payment collected. Bill marked as paid.',
+
+        // Doctor
+        'consultation_saved':    'Consultation saved and bill generated.',
+        'admitted':              'Patient admitted, an admission bed has been assigned.',
+        'discharged':            'Patient has been discharged successfully.',
+        'prescription_saved':    'Prescription saved successfully.',
+
+        // Nurse
+        'vitals_saved':          'Patient vitals saved successfully.',
+        'logged':                'Medication administeredsuccessfully.',
+
+        // Patient
         'booked':                'Appointment booked successfully. See you soon!',
         'appointment_updated':   'Appointment updated successfully.',
         'appointment_cancelled': 'Appointment cancelled successfully.',
-        'vitals_saved':          'Patient vitals saved successfully.',
     };
 
     var params = new URLSearchParams(window.location.search);
@@ -107,7 +120,7 @@ document.addEventListener('mousemove', function (e) {
     var roleEl   = document.getElementById('sec-role');
     var clearBtn = document.getElementById('sec-clear');
 
-    // ── Populate filter dropdowns from live data ──────────────────
+    // Populate filter dropdowns from live data
     // Normalise to lowercase keys to avoid Admin/admin duplicates.
     var actions = {}, roles = {};
     rows.forEach(function (row) {
@@ -134,7 +147,7 @@ document.addEventListener('mousemove', function (e) {
         roleEl.appendChild(opt);
     });
 
-// ── Filter ────────────────────────────────────────────────────
+// Filter
 function applyFilters() {
     var q      = searchEl.value.trim().toLowerCase();
     var action = actionEl.value;
@@ -176,7 +189,7 @@ clearBtn.addEventListener('click', function () {
     applyFilters();
 });
 
-// ── Sort ──────────────────────────────────────────────────────
+// Sort
 var sortState = { col: -1, asc: true };
 
 document.querySelectorAll('.sec-sortable').forEach(function (th) {
@@ -294,7 +307,7 @@ function searchTable(q) {
     });
 }
 
-/* ── APPOINTMENT SLOT RELOAD ─────────────────────────────────────────
+/* APPOINTMENT SLOT RELOAD 
    Reloads the page with the chosen doctor / date / visit type so the
    backend can render available time slots. Shared by the booking page
    and the reschedule page — if a hidden #appointment_id field is present
@@ -318,7 +331,7 @@ function reloadAvailableSlots() {
         `${base}?doctor_id=${docId}&date=${dateVal}&duration_minutes=${durationVal}&visit_type=${visitTypeVal}`;
 }
 
-/* ── CONSULTATION ADMIT TOGGLE ───────────────────────────────────────
+/* CONSULTATION ADMIT TOGGLE
    On the doctor consultation page, the "Need to admit?" Yes/No choice
    enables exactly one of the two submit buttons. No-op on other pages.  */
 function updateAdmitButtons() {
@@ -340,7 +353,7 @@ function updateAdmitButtons() {
 // Set the initial enabled/disabled state once the page has loaded.
 document.addEventListener('DOMContentLoaded', updateAdmitButtons);
 
-/* ── NURSE TRIAGE VITALS — LIVE RANGE VALIDATION ─────────────────────
+/* NURSE TRIAGE VITALS — LIVE RANGE VALIDATION
    Flags a vitals value the moment it exceeds what the column can store
    (so the DB never throws a numeric overflow) and disables that row's
    "Submit Vitals" button while anything is out of range. No-op on pages

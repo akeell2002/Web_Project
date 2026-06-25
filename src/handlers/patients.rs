@@ -209,7 +209,7 @@ pub async fn process_edit_patient(
         form.emergency_contact_phone.clone(),
     ).await {
         Ok(_)  => HttpResponse::SeeOther()
-            .append_header(("Location", format!("/staff/patients/{}", patient_id)))
+            .append_header(("Location", format!("/staff/patients/{}?success=patient_updated", patient_id)))
             .finish(),
         Err(e) => HttpResponse::InternalServerError().body(format!("Update failed: {}", e)),
     }

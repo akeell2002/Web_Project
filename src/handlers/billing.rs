@@ -69,7 +69,7 @@ pub async fn checkout_bill_submit(
         Ok(_) => {
             // Successfully collected! Refresh the screen tracking directory grid
             HttpResponse::SeeOther()
-                .insert_header(("Location", "/staff/receptionist/billing"))
+                .insert_header(("Location", "/staff/receptionist/billing?success=bill_paid"))
                 .finish()
         }
         Err(e) => {
