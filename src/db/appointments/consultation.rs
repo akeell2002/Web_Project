@@ -226,8 +226,9 @@ pub async fn get_doctor_prescribable_appointments(
         FROM appointment a
         JOIN patient p ON a.patient_id = p.id
         WHERE a.doctor_id = $1
-          AND a.date >= CURRENT_DATE - INTERVAL '7 days'
-          AND a.status NOT IN ('cancelled'::appointment_status, 'no_show'::appointment_status)
+          -- Only admitted (inpatient) cases can be prescribed extra medicine
+          -- after consultation; those meds are billed at discharge.
+          AND a.status = 'admitted'::appointment_status
         ORDER BY a.patient_id, a.date DESC, a.start_time DESC
         "#,
     )

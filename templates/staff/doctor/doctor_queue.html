@@ -107,11 +107,13 @@
                     <td style="padding: 16px 12px; font-weight: bold; color: #0ea5e9;">{{ item.room }}</td>
                     <td style="padding: 16px 12px;">
                         {% if item.status == 'checked_in' %}
-                            <span class="status-pill status-checked_in">Ready Outside</span>
+                            <span class="status-pill status-checked_in">Awaiting Triage</span>
                         {% elif item.status == 'scheduled' %}
                             <span class="status-pill status-scheduled">Scheduled</span>
+                        {% elif item.status == 'vitals_taken' %}
+                            <span class="status-pill status-vitals_taken">Ready to Consult</span>
                         {% else %}
-                            <span class="status-pill status-completed">Encounter Logged</span>
+                            <span class="status-pill status-completed">Consultation Done</span>
                         {% endif %}
                     </td>
                     <td style="padding: 16px 12px; text-align: right;">
