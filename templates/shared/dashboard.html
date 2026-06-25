@@ -265,6 +265,7 @@
                                         {% if app.status == "no_show" %}No Show
                                         {% elif app.status == "cancelled" %}Cancelled
                                         {% elif app.status == "completed" %}Completed
+                                        {% elif app.status == "admitted" %}Admitted
                                         {% elif app.status == "checked_in" %}Checked In
                                         {% elif app.status == "vitals_taken" %}Ready for Doctor
                                         {% else %}Scheduled
@@ -338,6 +339,7 @@
                                                  text-transform:uppercase;">
                                         {% if app.status == "no_show" %}No Show
                                         {% elif app.status == "cancelled" %}Cancelled
+                                        {% elif app.status == "admitted" %}Admitted
                                         {% else %}Completed
                                         {% endif %}
                                     </span>

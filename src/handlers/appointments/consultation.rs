@@ -119,9 +119,17 @@ pub async fn submit_consultation(
     }
 
     let appointment_id = path.into_inner();
+    let admitted = form.action.as_deref() == Some("admit");
 
     match crate::db::appointments::finalize_consultation_and_bill(&pool, appointment_id, form.into_inner()).await {
-        Ok(_)  => HttpResponse::SeeOther().insert_header(("Location", "/staff/doctor/queue")).finish(),
+        Ok(_)  => {
+            let location = if admitted {
+                "/staff/doctor/queue?success=admitted"
+            } else {
+                "/staff/doctor/queue?success=consultation_saved"
+            };
+            HttpResponse::SeeOther().insert_header(("Location", location)).finish()
+        }
         Err(e) => {
             eprintln!("Consultation transaction failed: {}", e);
             HttpResponse::InternalServerError().body("Failed to finalize consultation and billing.")

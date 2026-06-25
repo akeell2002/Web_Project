@@ -15,6 +15,7 @@
                     <th>Patient Name</th>
                     <th>Consultation Fee</th>
                     <th>Medicine Fee</th>
+                    <th>Admission Fee</th>
                     <th>Total Amount Due</th>
                     <th>Action</th>
                 </tr>
@@ -25,6 +26,7 @@
                         <td><strong>{{ bill.patient_first_name }} {{ bill.patient_last_name }}</strong></td>
                         <td>${{ bill.consultation_fee }}</td>
                         <td>${{ bill.medicine_fee }}</td>
+                        <td>${{ bill.admission_fee }}</td>
                         <td class="amount-due">${{ bill.total_amount }}</td>
                         <td>
                             <form method="POST" action="/staff/receptionist/billing/checkout">
@@ -38,7 +40,7 @@
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-5">
+                        <td colspan="6" class="text-center text-muted py-5">
                             No outstanding invoices found. All patient accounts are currently settled.
                         </td>
                     </tr>

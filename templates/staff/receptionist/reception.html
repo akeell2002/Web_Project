@@ -58,15 +58,15 @@
                         </td>
                         <td style="font-weight: bold;">
                             {% if appt.priority == 1 %}
-                                <span style="color: #DC2626;">Emergency</span>
+                                <span style="color: #DC2626;">Critical</span>
                             {% elif appt.priority == 2 %}
-                                <span style="color: #EA580C;">Urgent</span>
+                                <span style="color: #EA580C;">Severe</span>
                             {% elif appt.priority == 3 %}
-                                <span style="color: #D97706;">Semi-Urgent</span>
+                                <span style="color: #D97706;">Moderate</span>
                             {% elif appt.priority == 4 %}
-                                <span style="color: #16A34A;">Routine</span>
+                                <span style="color: #16A34A;">Minor</span>
                             {% else %}
-                                <span style="color: #6B7280;">Non-Urgent</span>
+                                <span style="color: #6B7280;">Routine</span>
                             {% endif %}
                         </td>
                         <td style="display:flex; gap:8px; align-items:center;">

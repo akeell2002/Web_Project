@@ -106,14 +106,16 @@
                                 </td>
                                 <td>{{ p.condition }}</td>
                                 <td>
-                                    {% if p.priority_label == "Emergency" %}
-                                        <span class="pill pill-emergency">Emergency</span>
-                                    {% elif p.priority_label == "High Risk" %}
-                                        <span class="pill pill-high-risk">High Risk</span>
+                                    {% if p.priority_label == "Critical" %}
+                                        <span class="pill pill-emergency">Critical</span>
+                                    {% elif p.priority_label == "Severe" %}
+                                        <span class="pill pill-high-risk">Severe</span>
                                     {% elif p.priority_label == "Moderate" %}
                                         <span class="pill pill-moderate">Moderate</span>
+                                    {% elif p.priority_label == "Minor" %}
+                                        <span class="pill pill-stable">Minor</span>
                                     {% else %}
-                                        <span class="pill pill-stable">Stable</span>
+                                        <span class="pill pill-stable">Routine</span>
                                     {% endif %}
                                 </td>
                                 <td>

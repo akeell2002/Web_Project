@@ -43,6 +43,7 @@ pub struct EncounterForm {
     pub duration: Option<String>,
     pub instructions: Option<String>,
 
-    // Admission decision ("yes" admits the patient to an inpatient bed)
-    pub admit: Option<String>,
+    // Which submit button was pressed: "admit" admits the patient to an
+    // inpatient bed (no bill yet); anything else signs off and bills now.
+    pub action: Option<String>,
 }

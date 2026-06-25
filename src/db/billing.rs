@@ -14,6 +14,7 @@ pub async fn get_unpaid_bills(pool: &PgPool) -> Result<Vec<PendingBillItem>, Err
             p.last_name as "patient_last_name!",
             b.consultation_fee as "consultation_fee!",
             b.medicine_fee as "medicine_fee!",
+            b.admission_fee as "admission_fee!",
             b.total_amount as "total_amount!",
             b.created_at as "created_at"
         FROM bills b
@@ -36,6 +37,7 @@ pub async fn get_patient_bills(pool: &PgPool, patient_id: Uuid) -> Result<Vec<se
             b.id,
             b.consultation_fee as "consultation_fee!",
             b.medicine_fee     as "medicine_fee!",
+            b.admission_fee    as "admission_fee!",
             b.total_amount     as "total_amount!",
             b.payment_status::text as "payment_status!",
             b.created_at,
@@ -56,6 +58,7 @@ pub async fn get_patient_bills(pool: &PgPool, patient_id: Uuid) -> Result<Vec<se
             "appointment_date": r.appointment_date.format("%A, %b %d, %Y").to_string(),
             "consultation_fee": r.consultation_fee.to_string(),
             "medicine_fee":     r.medicine_fee.to_string(),
+            "admission_fee":    r.admission_fee.to_string(),
             "total_amount":     r.total_amount.to_string(),
             "payment_status":   r.payment_status,
             "created_at":       r.created_at.map(|d| d.format("%b %d, %Y").to_string()).unwrap_or_else(|| "N/A".to_string()),

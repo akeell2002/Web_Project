@@ -1,6 +1,7 @@
 pub mod db;
 pub mod models;
 pub mod utils;
+pub mod pricing;
 pub mod handlers;
 
 use actix_web::{App, HttpServer, HttpResponse, Responder, web};

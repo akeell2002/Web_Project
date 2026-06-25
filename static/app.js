@@ -51,6 +51,8 @@ document.addEventListener('mousemove', function (e) {
         'appointment_updated':   'Appointment updated successfully.',
         'appointment_cancelled': 'Appointment cancelled successfully.',
         'checked_in':            'Patient checked in successfully.',
+        'admitted':              'Patient admitted, an admission bed has been assigned.',
+        'consultation_saved':    'Consultation saved and bill generated.',
         'discharged':            'Patient discharged successfully. Bed is now free.',
         'no_show':               'Patient marked as no-show successfully.',
         'doctor_created':        'Doctor account created successfully.',

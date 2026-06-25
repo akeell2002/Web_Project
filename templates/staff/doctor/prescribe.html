@@ -70,11 +70,13 @@
                             <div class="row g-2 mb-2">
                                 <div class="mb-3 col-12">
                                     <label class="form-label fw-semibold small">Medicine Name *</label>
-                                    <input class="form-control"
-                                           type="text"
-                                           name="medicine_name"
-                                           placeholder="e.g. Amoxicillin 500mg"
-                                           required>
+                                    <select class="form-select" name="medicine_name" required>
+                                        <option value="" disabled selected>Select medicine...</option>
+                                        <option value="Amoxicillin">Amoxicillin — $30</option>
+                                        <option value="Paracetamol">Paracetamol — $12</option>
+                                        <option value="Ibuprofen">Ibuprofen — $15</option>
+                                        <option value="Loratadine">Loratadine — $18</option>
+                                    </select>
                                 </div>
                                 <div class="col mb-3">
                                     <label class="form-label fw-semibold small">Dosage *</label>

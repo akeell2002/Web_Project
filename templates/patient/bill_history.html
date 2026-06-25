@@ -24,6 +24,7 @@
                         <th>Appointment Date</th>
                         <th>Consultation Fee</th>
                         <th>Medicine Fee</th>
+                        <th>Admission Fee</th>
                         <th>Total</th>
                         <th>Status</th>
                     </tr>
@@ -34,6 +35,7 @@
                             <td>{{ bill.appointment_date }}</td>
                             <td>S${{ bill.consultation_fee }}</td>
                             <td>S${{ bill.medicine_fee }}</td>
+                            <td>S${{ bill.admission_fee }}</td>
                             <td style="font-weight:600;">S${{ bill.total_amount }}</td>
                             <td>
                                 {% if bill.payment_status == "paid" %}

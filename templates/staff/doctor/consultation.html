@@ -149,25 +149,6 @@
     </div>
 
     <form action="/staff/doctor/consultation/{{ appointment_id }}" method="POST">
-
-        <!-- Admission decision -->
-        <div style="background:#FFFBEB; border:1px solid #FDE68A; border-radius:12px; padding:16px 24px; margin-bottom:20px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-                <div>
-                    <div style="font-size:14px; font-weight:700; color:#92400E;">Admit this patient?</div>
-                    <div style="font-size:12px; color:#B45309;">Choosing "Yes" assigns an available inpatient admission bed automatically.</div>
-                </div>
-                <div style="display:flex; gap:18px; align-items:center;">
-                    <label style="display:flex; align-items:center; gap:6px; font-size:14px; font-weight:600; color:#374151; cursor:pointer;">
-                        <input type="radio" name="admit" value="no" checked> No
-                    </label>
-                    <label style="display:flex; align-items:center; gap:6px; font-size:14px; font-weight:600; color:#374151; cursor:pointer;">
-                        <input type="radio" name="admit" value="yes"> Yes, admit
-                    </label>
-                </div>
-            </div>
-        </div>
-
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:stretch;">
 
             <!-- LEFT: Clinical Assessment -->
@@ -207,8 +188,13 @@
                 <div style="display:flex; gap:12px;">
                     <div class="mb-3" style="flex:1;">
                         <label class="form-label fw-semibold small">Medicine Name</label>
-                        <input class="form-control" type="text" name="medicine_name"
-                               value="{{ medicine_name }}" placeholder="E.g., Amoxicillin">
+                        <select class="form-select" name="medicine_name">
+                            <option value=""            {% if medicine_name == "" %}selected{% endif %}>No medication</option>
+                            <option value="Amoxicillin" {% if medicine_name == "Amoxicillin" %}selected{% endif %}>Amoxicillin — $30</option>
+                            <option value="Paracetamol" {% if medicine_name == "Paracetamol" %}selected{% endif %}>Paracetamol — $12</option>
+                            <option value="Ibuprofen"   {% if medicine_name == "Ibuprofen" %}selected{% endif %}>Ibuprofen — $15</option>
+                            <option value="Loratadine"  {% if medicine_name == "Loratadine" %}selected{% endif %}>Loratadine — $18</option>
+                        </select>
                     </div>
                     <div class="mb-3" style="flex:1;">
                         <label class="form-label fw-semibold small">Dosage</label>
@@ -233,11 +219,47 @@
                     <textarea class="form-control" name="instructions" rows="4"
                               placeholder="E.g., Take after meals">{{ instructions }}</textarea>
                 </div>
-                <div style="display:flex; justify-content:flex-end; margin-top:8px;">
-                    <button type="submit" class="btn-submit-encounter">
+                <!-- Admit decision toggle: default "No" so only Sign Notes is active -->
+                <div style="display:flex; align-items:center; justify-content:flex-end; gap:18px; margin-top:8px; margin-bottom:14px;">
+                    <span style="font-size:14px; font-weight:600; color:#374151;">Need to admit patient?</span>
+                    <label style="display:flex; align-items:center; gap:6px; font-size:14px; font-weight:600; color:#374151; cursor:pointer;">
+                        <input type="radio" name="admit_choice" value="yes" onchange="updateAdmitButtons()"> Yes
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px; font-size:14px; font-weight:600; color:#374151; cursor:pointer;">
+                        <input type="radio" name="admit_choice" value="no" checked onchange="updateAdmitButtons()"> No
+                    </label>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:40px;">
+                    <button type="submit" name="action" value="admit" id="btn-admit"
+                            onclick="return confirm('Admit this patient to an inpatient bed? They will be billed at discharge.');"
+                            style="background:#1D4ED8; color:white; border:none; width:240px; padding:13px 0;
+                                   border-radius:8px; font-size:15px; font-weight:700; cursor:pointer; text-align:center;">
+                        Admit Patient
+                    </button>
+                    <button type="submit" name="action" value="complete" id="btn-sign" class="btn-submit-encounter"
+                            style="width:240px; padding:13px 0; font-size:15px; text-align:center; margin-top:0;">
                         Sign Notes &amp; Generate Bill
                     </button>
                 </div>
+
+                <script>
+                    function updateAdmitButtons() {
+                        var choice = document.querySelector('input[name="admit_choice"]:checked');
+                        var admit  = choice && choice.value === 'yes';
+                        var btnAdmit = document.getElementById('btn-admit');
+                        var btnSign  = document.getElementById('btn-sign');
+
+                        btnAdmit.disabled = !admit;
+                        btnSign.disabled  = admit;
+
+                        btnAdmit.style.opacity = admit ? '1' : '0.45';
+                        btnAdmit.style.cursor  = admit ? 'pointer' : 'not-allowed';
+                        btnSign.style.opacity  = admit ? '0.45' : '1';
+                        btnSign.style.cursor   = admit ? 'not-allowed' : 'pointer';
+                    }
+                    updateAdmitButtons();
+                </script>
             </div>
         </div>
     </form>

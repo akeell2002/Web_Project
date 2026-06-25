@@ -137,10 +137,11 @@ pub async fn get_patient_census(pool: &PgPool) -> Result<Vec<Value>, String> {
             };
 
             let priority_label = match priority {
-                1 => "Emergency",
-                2 => "High Risk",
+                1 => "Critical",
+                2 => "Severe",
                 3 => "Moderate",
-                _ => "Stable",
+                4 => "Minor",
+                _ => "Routine",
             };
 
             serde_json::json!({
@@ -380,26 +381,85 @@ pub async fn set_room_status(pool: &PgPool, room_id: Uuid, status: &str) -> Resu
 
 // ─── DISCHARGE ADMITTED PATIENT (doctor only) ────────────────────────────────
 
-/// Discharge an admitted patient: close the case ('completed') and free the bed.
-/// Only affects appointments currently in the 'admitted' state.
+/// Discharge an admitted patient: generate the final bill (consultation by
+/// priority + medicines + admission nights), then close the case ('completed')
+/// and free the bed. Only affects appointments currently in the 'admitted' state.
 pub async fn discharge_patient(pool: &PgPool, appointment_id: Uuid) -> Result<(), String> {
-    let result = sqlx::query(
+    let mut tx = pool.begin().await.map_err(|e| format!("discharge begin: {}", e))?;
+
+    // Fetch the admitted appointment: patient, acuity, and nights stayed (min 1).
+    let appt = sqlx::query(
+        r#"
+        SELECT patient_id,
+               priority_level,
+               GREATEST(1, (CURRENT_DATE - date))::INT AS nights
+        FROM appointment
+        WHERE id = $1 AND status = 'admitted'::appointment_status
+        "#,
+    )
+    .bind(appointment_id)
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(|e| format!("discharge fetch appt: {}", e))?;
+
+    let appt = match appt {
+        Some(r) => r,
+        None => return Err("Patient is not currently admitted.".to_string()),
+    };
+
+    let patient_id:     Uuid = appt.get("patient_id");
+    let priority_level: i32  = appt.get("priority_level");
+    let nights:         i32  = appt.get("nights");
+
+    // Sum medicine charges across every prescription written during the visit.
+    let med_rows = sqlx::query("SELECT medicine_name FROM prescription WHERE appointment_id = $1")
+        .bind(appointment_id)
+        .fetch_all(&mut *tx)
+        .await
+        .map_err(|e| format!("discharge fetch meds: {}", e))?;
+
+    let medicine_fee: f64 = med_rows
+        .iter()
+        .map(|r| crate::pricing::medicine_price(&r.get::<String, _>("medicine_name")))
+        .sum();
+
+    let consultation_fee = crate::pricing::consultation_fee(priority_level);
+    let admission_fee    = crate::pricing::admission_fee(nights as i64);
+    let total            = consultation_fee + medicine_fee + admission_fee;
+
+    // Generate the discharge bill (admitted patients are billed here, not earlier).
+    sqlx::query(
+        r#"
+        INSERT INTO bills
+            (patient_id, appointment_id, consultation_fee, medicine_fee, admission_fee, total_amount, payment_status)
+        VALUES ($1, $2, $3::numeric, $4::numeric, $5::numeric, $6::numeric, 'unpaid'::bill_status)
+        "#,
+    )
+    .bind(patient_id)
+    .bind(appointment_id)
+    .bind(consultation_fee)
+    .bind(medicine_fee)
+    .bind(admission_fee)
+    .bind(total)
+    .execute(&mut *tx)
+    .await
+    .map_err(|e| format!("discharge insert bill: {}", e))?;
+
+    // Close the case and free the bed.
+    sqlx::query(
         r#"
         UPDATE appointment
         SET    status     = 'completed'::appointment_status,
                room_id    = NULL,
                updated_at = NOW()
-        WHERE  id     = $1
-          AND  status = 'admitted'::appointment_status
+        WHERE  id = $1
         "#,
     )
     .bind(appointment_id)
-    .execute(pool)
+    .execute(&mut *tx)
     .await
-    .map_err(|e| format!("discharge_patient: {}", e))?;
+    .map_err(|e| format!("discharge update appt: {}", e))?;
 
-    if result.rows_affected() == 0 {
-        return Err("Patient is not currently admitted.".to_string());
-    }
+    tx.commit().await.map_err(|e| format!("discharge commit: {}", e))?;
     Ok(())
 }

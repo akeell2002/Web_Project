@@ -13,6 +13,7 @@ pub struct PendingBillItem {
     // Explicitly using Decimal types
     pub consultation_fee: Decimal,
     pub medicine_fee: Decimal,
+    pub admission_fee: Decimal,
     pub total_amount: Decimal,
     
     pub created_at: Option<DateTime<Utc>>,

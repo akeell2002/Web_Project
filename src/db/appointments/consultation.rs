@@ -87,7 +87,7 @@ pub async fn finalize_consultation_and_bill(
     let mut tx = pool.begin().await?;
 
     let appt = sqlx::query!(
-        "SELECT patient_id, doctor_id FROM appointment WHERE id = $1",
+        "SELECT patient_id, doctor_id, priority_level FROM appointment WHERE id = $1",
         appointment_id
     )
     .fetch_one(&mut *tx)
@@ -108,9 +108,7 @@ pub async fn finalize_consultation_and_bill(
     .execute(&mut *tx)
     .await?;
 
-    let mut medicine_fee: f64 = 0.0;
-    let consultation_fee: f64 = 50.0;
-
+    // Save the prescription from the consultation form (if any medicine was entered).
     if let Some(medicine) = form.medicine_name {
         if !medicine.trim().is_empty() {
             sqlx::query!(
@@ -128,30 +126,15 @@ pub async fn finalize_consultation_and_bill(
             )
             .execute(&mut *tx)
             .await?;
-            medicine_fee = 20.0;
         }
     }
 
-    sqlx::query!(
-        r#"
-        INSERT INTO bills
-            (patient_id, appointment_id, consultation_fee, medicine_fee, total_amount, payment_status)
-        VALUES ($1, $2, $3::FLOAT8, $4::FLOAT8, $5::FLOAT8, 'unpaid')
-        "#,
-        patient_id, appointment_id,
-        consultation_fee, medicine_fee, consultation_fee + medicine_fee
-    )
-    .execute(&mut *tx)
-    .await?;
-
-    // Admission decision: when the doctor chose "yes" we admit the patient to a
-    // free inpatient bed and keep the case open as 'admitted'. Otherwise we close
-    // the encounter as usual ('completed') and release the consultation room.
-    let admit = form.admit.as_deref() == Some("yes");
+    // Decide the outcome from which button the doctor pressed.
+    let admit = form.action.as_deref() == Some("admit");
 
     if admit {
-        // Find a free admission bed (not in maintenance, not already holding an
-        // admitted patient). May be None if the ward is full.
+        // Admit: assign a free inpatient bed and keep the case open as 'admitted'.
+        // No bill is generated now — admitted patients are billed at discharge.
         let bed = sqlx::query!(
             r#"
             SELECT id
@@ -181,6 +164,31 @@ pub async fn finalize_consultation_and_bill(
         .execute(&mut *tx)
         .await?;
     } else {
+        // Sign off: bill the consultation now (priority-based) plus any medicines,
+        // then close the encounter and release the consultation room.
+        let meds = sqlx::query!(
+            "SELECT medicine_name FROM prescription WHERE appointment_id = $1",
+            appointment_id
+        )
+        .fetch_all(&mut *tx)
+        .await?;
+
+        let consultation_fee = crate::pricing::consultation_fee(appt.priority_level);
+        let medicine_fee     = crate::pricing::medicine_fee_total(meds.iter().map(|m| m.medicine_name.as_str()));
+        let total            = consultation_fee + medicine_fee;
+
+        sqlx::query!(
+            r#"
+            INSERT INTO bills
+                (patient_id, appointment_id, consultation_fee, medicine_fee, admission_fee, total_amount, payment_status)
+            VALUES ($1, $2, $3::FLOAT8, $4::FLOAT8, 0::FLOAT8, $5::FLOAT8, 'unpaid')
+            "#,
+            patient_id, appointment_id,
+            consultation_fee, medicine_fee, total
+        )
+        .execute(&mut *tx)
+        .await?;
+
         sqlx::query!(
             r#"
             UPDATE appointment

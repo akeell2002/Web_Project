@@ -133,6 +133,7 @@ CREATE TABLE bills (
     appointment_id UUID UNIQUE NOT NULL REFERENCES appointment(id) ON DELETE CASCADE,
     consultation_fee NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
     medicine_fee NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+    admission_fee NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
     total_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
     payment_status bill_status NOT NULL DEFAULT 'unpaid',
     created_by_staff_id UUID REFERENCES staff(id) ON DELETE SET NULL,
