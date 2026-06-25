@@ -339,3 +339,93 @@ function updateAdmitButtons() {
 }
 // Set the initial enabled/disabled state once the page has loaded.
 document.addEventListener('DOMContentLoaded', updateAdmitButtons);
+
+/* ── NURSE TRIAGE VITALS — LIVE RANGE VALIDATION ─────────────────────
+   Flags a vitals value the moment it exceeds what the column can store
+   (so the DB never throws a numeric overflow) and disables that row's
+   "Submit Vitals" button while anything is out of range. No-op on pages
+   without vitals inputs. */
+// Single source of truth for triage vitals limits — tweak these values here.
+// Numeric fields use {min, max}; text fields (BP) use {maxLength, pattern}.
+var VITALS_LIMITS = {
+    'temperature':    { min: 0, max: 50.00,  label: 'Temperature' },
+    'weight_kg':      { min: 0, max: 999.99, label: 'Weight' },
+    'height_cm':      { min: 0, max: 999.99, label: 'Height' },
+    'blood_pressure': { maxLength: 20, pattern: /^\d{1,3}\s*\/\s*\d{1,3}$/, label: 'BP' }
+};
+
+// Returns an error message if the vitals input is out of range, else ''.
+function vitalsError(input) {
+    var rule = VITALS_LIMITS[input.name];
+    if (!rule) return '';
+
+    var v = input.value.trim();
+    if (v === '') return '';
+
+    // Text field (e.g. BP): length + format.
+    if (rule.maxLength != null || rule.pattern) {
+        if (rule.maxLength != null && v.length > rule.maxLength) {
+            return rule.label + ' max ' + rule.maxLength + ' characters';
+        }
+        if (rule.pattern && !rule.pattern.test(v)) {
+            return 'Use format like 120/80';
+        }
+        return '';
+    }
+
+    // Numeric field.
+    var num = parseFloat(v);
+    if (isNaN(num)) return rule.label + ' looks invalid';
+    if (rule.max != null && num > rule.max) return rule.label + ' max is ' + rule.max;
+    if (rule.min != null && num < rule.min) return rule.label + ' must be ' + rule.min + ' or more';
+    return '';
+}
+
+function validateVitalsInput(input) {
+    if (!VITALS_LIMITS[input.name]) return;
+
+    var message = vitalsError(input);
+    var err     = input.parentNode.querySelector('.vitals-error');
+
+    if (message) {
+        input.style.borderColor = '#DC2626';
+        if (!err) {
+            err = document.createElement('div');
+            err.className = 'vitals-error';
+            err.style.cssText = 'color:#DC2626; font-size:11px; font-weight:600; margin-top:3px;';
+            input.parentNode.appendChild(err);
+        }
+        err.textContent = message;
+        err.style.display = 'block';
+    } else {
+        input.style.borderColor = '';
+        if (err) { err.style.display = 'none'; }
+    }
+
+    // Disable this row's submit button while any vitals field is out of range.
+    var formEl = input.closest('form');
+    if (!formEl) return;
+    var anyInvalid = Array.prototype.slice
+        .call(formEl.querySelectorAll('.vitals-input'))
+        .some(function (i) { return vitalsError(i) !== ''; });
+    var btn = formEl.querySelector('button[type="submit"]');
+    if (btn) {
+        btn.disabled      = anyInvalid;
+        btn.style.opacity = anyInvalid ? '0.5' : '';
+        btn.style.cursor  = anyInvalid ? 'not-allowed' : '';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.vitals-input').forEach(function (input) {
+        var rule = VITALS_LIMITS[input.name];
+        if (rule) {
+            // Apply the limits set above to the input natively, so the form
+            // and the live check always follow app.js (the single source).
+            if (rule.min != null)       { input.min = rule.min; }
+            if (rule.max != null)       { input.max = rule.max; }
+            if (rule.maxLength != null) { input.maxLength = rule.maxLength; }
+        }
+        input.addEventListener('input', function () { validateVitalsInput(input); });
+    });
+});
