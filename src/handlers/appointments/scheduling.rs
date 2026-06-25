@@ -201,12 +201,9 @@ pub async fn process_check_in(
     let appointment_id = path.into_inner();
 
     match crate::db::appointments::check_in_patient(&pool, appointment_id).await {
-        Ok(_)  => {
-            crate::handlers::audit_clinical_action(&pool, &session, appointment_id, "patient_checked_in", "checked in").await;
-            HttpResponse::SeeOther()
-                .append_header(("Location", "/staff/receptionist/reception?success=checked_in"))
-                .finish()
-        }
+        Ok(_)  => HttpResponse::SeeOther()
+            .append_header(("Location", "/staff/receptionist/reception?success=checked_in"))
+            .finish(),
         Err(_) => HttpResponse::SeeOther()
             .append_header(("Location", "/staff/receptionist/reception?error=check_in_failed"))
             .finish(),

@@ -129,14 +129,9 @@ pub async fn discharge_patient_handler(
     let appointment_id = path.into_inner();
 
     match db::beds::discharge_patient(&pool, appointment_id).await {
-        Ok(_) => {
-            crate::handlers::audit_clinical_action(
-                &pool, &session, appointment_id, "patient_discharged", "discharged",
-            ).await;
-            HttpResponse::SeeOther()
-                .append_header(("Location", "/staff/beds?success=discharged"))
-                .finish()
-        }
+        Ok(_) => HttpResponse::SeeOther()
+            .append_header(("Location", "/staff/beds?success=discharged"))
+            .finish(),
         Err(e) => {
             eprintln!("discharge_patient error: {}", e);
             HttpResponse::SeeOther()

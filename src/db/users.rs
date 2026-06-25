@@ -266,27 +266,6 @@ where
     Ok(())
 }
 
-/// Resolve a patient's user id + email from an appointment, for audit logging.
-/// Runtime query (not the compile-checked macro) to keep build risk low.
-pub async fn appointment_patient_for_audit(
-    pool: &PgPool,
-    appointment_id: uuid::Uuid,
-) -> Result<(uuid::Uuid, String), sqlx::Error> {
-    let row = sqlx::query(
-        r#"
-        SELECT p.id AS patient_id, u.email AS email
-        FROM appointment a
-        JOIN patient p ON a.patient_id = p.id
-        JOIN users   u ON u.id = p.id
-        WHERE a.id = $1
-        "#,
-    )
-    .bind(appointment_id)
-    .fetch_one(pool)
-    .await?;
-    Ok((row.get("patient_id"), row.get("email")))
-}
-
 pub async fn get_access_logs(pool: &PgPool, limit: i64) -> Result<Vec<AccessLogEntry>, sqlx::Error> {
     let safe_limit = limit.clamp(1, 200);
 

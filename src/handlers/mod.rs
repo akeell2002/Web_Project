@@ -7,8 +7,6 @@ pub mod beds;
 
 use actix_session::Session;
 use actix_web::HttpResponse;
-use sqlx::PgPool;
-use uuid::Uuid;
 
 /// Read the user's display name from session.
 /// Falls back to the email prefix if "name" was never stored (e.g. old sessions).
@@ -33,32 +31,6 @@ pub(crate) fn staff_only(session: &Session) -> Result<(), HttpResponse> {
         Ok(Some(role)) if matches!(role.as_str(), "doctor" | "nurse" | "receptionist" | "admin") => Ok(()),
         Ok(Some(_)) => Err(HttpResponse::Forbidden().body("Access Denied: Staff access required.")),
         _ => Err(HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish()),
-    }
-}
-
-/// Write a clinical action (check-in, admit, discharge) to the audit log.
-/// Best-effort: never blocks the user action if logging fails.
-pub(crate) async fn audit_clinical_action(
-    pool:           &PgPool,
-    session:        &Session,
-    appointment_id: Uuid,
-    action_type:    &str,
-    verb:           &str,
-) {
-    let actor_id    = session.get::<Uuid>("user_id").unwrap_or(None);
-    let actor_email = session.get::<String>("email").unwrap_or(None);
-    if let Ok((patient_id, patient_email)) =
-        crate::db::users::appointment_patient_for_audit(pool, appointment_id).await
-    {
-        let details = format!(
-            "Patient {} {} by {}.",
-            patient_email, verb,
-            actor_email.as_deref().unwrap_or("staff")
-        );
-        let _ = crate::db::users::log_access_event(
-            pool, actor_id, actor_email.as_deref(),
-            action_type, Some(patient_id), &patient_email, "patient", &details,
-        ).await;
     }
 }
 
