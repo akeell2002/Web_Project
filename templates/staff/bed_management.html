@@ -6,12 +6,13 @@
 {% block nav_recep_beds %}class="active"{% endblock %}
 {% block extra_head %}{% endblock %}
 {% block content %}
-    <!-- Header -->
+
     <div class="bm-header">
         <h1>Bed & Patient Management</h1>
         <p>Monitor room occupancy and manage patient transfers across the clinic.</p>
     </div>
-    <!-- Stats row - identical for doctor, nurse and receptionist -->
+
+    {# Stats row - identical for doctor, nurse and receptionist but not the admin #}
     <div class="bm-stats">
         <div class="bm-stat">
             <div class="bm-stat-label">Total Beds</div>
@@ -30,9 +31,8 @@
             <div class="bm-stat-value">{{ bed_stats.maintenance }}</div>
         </div>
     </div>
-    <!-- Two-column body -->
+    
     <div class="bm-body">
-        <!-- LEFT: Main content -->
         <div class="bm-main">
             <div class="bm-toolbar">
                 <div class="bm-tabs">
@@ -54,7 +54,8 @@
                     ↔ Request Transfer
                 </button>
             </div>
-            <!-- Bed grid: shown to all clinical staff -->
+            
+            {# Bed grid for all clinical staff #}
             <div class="bed-grid" id="bedGrid">
                 {% for bed in beds %}
                         <div class="bed-card {{ bed.computed_status }}"
@@ -81,7 +82,8 @@
                         </div>
                 {% endfor %}
             </div>
-            <!-- All roles: patient table -->
+            
+            {# All roles: patient table #}
             {% if patients %}
                 <table class="table table-hover align-middle" id="patientTable">
                     <thead>
@@ -206,6 +208,7 @@
             {% endif %}
         </div>
     </div>
+    
     <!-- REQUEST TRANSFER MODAL -->
     <div class="modal-overlay"
          id="transferModal"

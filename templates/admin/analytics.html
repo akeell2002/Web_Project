@@ -5,14 +5,14 @@
 {% block extra_head %}{% endblock %}
 {% block content %}
 
-    {# ── Page header ── #}
+    {# Page header #}
     <div class="mb-4">
         <h2 style="font-size:20px; font-weight:700; margin:0 0 4px;">System Analytics</h2>
         <p style="color:#64748B; font-size:14px; margin:0;">Live operational metrics across patients, appointments, billing, and staff.</p>
     </div>
 
-    {# ── Section: Patients & Appointments ── #}
-    <div class="analytics-section-label">Patients &amp; Appointments</div>
+    {# Section: Patients & Appointments #}
+    <div class="analytics-section-label">Patients &amp; Appointments</div> {# @Akeell change to &amp for the & #}
     <div class="stats-grid" style="margin-bottom:28px;">
 
         <div class="stat-card">
@@ -53,8 +53,8 @@
 
     </div>
 
-    {# ── Section: Billing & Revenue ── #}
-    <div class="analytics-section-label">Billing &amp; Revenue</div>
+    {# Section: Billing & Revenue #}
+    <div class="analytics-section-label">Billing &amp; Revenue</div> {# Remember touse &amp for the & #}
     <div class="stats-grid" style="margin-bottom:28px;">
 
         <div class="stat-card">
@@ -83,7 +83,7 @@
 
     </div>
 
-    {# ── Section: Breakdowns ── #}
+    {# Breakdown of Staff/Appointments #}
     <div class="analytics-section-label">Breakdowns</div>
     <div class="row g-3">
 
@@ -187,7 +187,6 @@
                 {% endif %}
             </div>
         </div>
-
     </div>
 
 {% endblock %}

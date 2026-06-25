@@ -5,7 +5,7 @@
 {% block extra_head %}{% endblock %}
 {% block content %}
 
-    <!-- Top nav -->
+    {# Back to Queue button #}
     <div style="margin-bottom:16px;">
         <a href="/staff/doctor/queue"
            style="display:inline-block;
@@ -21,10 +21,10 @@
         </a>
     </div>
 
-    <!-- Patient Info Panel -->
+    {# Patient Info Panel #}
     <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; margin-bottom:20px; overflow:hidden;">
 
-        <!-- Panel header: avatar + name + appt info -->
+        {# Panel header: avatar + name + appt info #}
         <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid #E5E7EB;">
             <div style="display:flex; align-items:center; gap:14px;">
                 <div style="width:48px; height:48px; border-radius:50%; background:#1E3A8A; color:white;
@@ -61,7 +61,7 @@
             </button>
         </div>
 
-        <!-- Tab: General Info -->
+        {# Tab: General info for the current patients appointment #}
         <div id="tab-general" style="padding:20px 24px;">
             <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:20px;">
                 <div>
@@ -89,7 +89,7 @@
             </div>
         </div>
 
-        <!-- Tab: Past Diagnoses -->
+        {# Tab: Past diagnoses for the current patient #}
         <div id="tab-history" style="display:none; padding:16px 24px;">
             {% if patient.past_diagnoses and patient.past_diagnoses | length > 0 %}
                 <table style="width:100%; border-collapse:collapse; font-size:13px;">
@@ -115,7 +115,7 @@
             {% endif %}
         </div>
 
-        <!-- Tab: Prescriptions -->
+        {# Tab: Prescriptions #}
         <div id="tab-rx" style="display:none; padding:16px 24px;">
             {% if patient.past_prescriptions and patient.past_prescriptions | length > 0 %}
                 <table style="width:100%; border-collapse:collapse; font-size:13px;">
@@ -151,7 +151,7 @@
     <form action="/staff/doctor/consultation/{{ appointment_id }}" method="POST">
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:stretch;">
 
-            <!-- LEFT: Clinical Assessment -->
+            {# Clinical Assessment #}
             <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:24px;">
                 <div style="margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid #E5E7EB;">
                     <h3 class="h6 fw-bold text-uppercase text-secondary" style="margin:0;">1. Clinical Assessment</h3>
@@ -179,7 +179,7 @@
                 </div>
             </div>
 
-            <!-- RIGHT: Prescription Details -->
+            {# Prescription Details #}
             <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:24px;">
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid #E5E7EB;">
                     <h3 class="h6 fw-bold text-uppercase text-secondary" style="margin:0;">2. Prescription Details</h3>
@@ -219,7 +219,8 @@
                     <textarea class="form-control" name="instructions" rows="4"
                               placeholder="E.g., Take after meals">{{ instructions }}</textarea>
                 </div>
-                <!-- Admit decision toggle: default "No" so only Sign Notes is active -->
+
+                {# Admit decision toggle: default "No" so only Sign Notes is active #}
                 <div style="display:flex; align-items:center; justify-content:flex-end; gap:18px; margin-top:8px; margin-bottom:14px;">
                     <span style="font-size:14px; font-weight:600; color:#374151;">Need to admit patient?</span>
                     <label style="display:flex; align-items:center; gap:6px; font-size:14px; font-weight:600; color:#374151; cursor:pointer;">
@@ -242,24 +243,6 @@
                         Sign Notes &amp; Generate Bill
                     </button>
                 </div>
-
-                <script>
-                    function updateAdmitButtons() {
-                        var choice = document.querySelector('input[name="admit_choice"]:checked');
-                        var admit  = choice && choice.value === 'yes';
-                        var btnAdmit = document.getElementById('btn-admit');
-                        var btnSign  = document.getElementById('btn-sign');
-
-                        btnAdmit.disabled = !admit;
-                        btnSign.disabled  = admit;
-
-                        btnAdmit.style.opacity = admit ? '1' : '0.45';
-                        btnAdmit.style.cursor  = admit ? 'pointer' : 'not-allowed';
-                        btnSign.style.opacity  = admit ? '0.45' : '1';
-                        btnSign.style.cursor   = admit ? 'not-allowed' : 'pointer';
-                    }
-                    updateAdmitButtons();
-                </script>
             </div>
         </div>
     </form>

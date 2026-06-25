@@ -4,9 +4,6 @@
 {% block nav_admin_support %}class="active"{% endblock %}
 {% block extra_head %}{% endblock %}
 {% block content %}
-    {% if replied %}
-        <div class="alert alert-success">Reply sent and ticket marked as resolved.</div>
-    {% endif %}
     <div class="page-header">
         <h2>Support Tickets</h2>
         <p>Messages submitted from the public contact form. Reply to mark as resolved.</p>
@@ -27,7 +24,7 @@
                 <div class="ticket-reply">
                     {% if t.reply_notes %}
                         <div class="reply-existing">
-                            <strong>Your reply · {{ t.replied_at }}</strong> {{ t.reply_notes }}
+                            <strong>Your reply · {{ t.replied_at }}</strong> {{ t.reply_notes }} 
                         </div>
                     {% endif %}
                     <form method="POST" action="/admin/support/reply" class="reply-form">
@@ -55,11 +52,4 @@
             <p style="margin-top: 8px;">No support tickets yet.</p>
         </div>
     {% endif %}
-    <script> 
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('replied') === '1') {
-            const banner = document.querySelector('.success-banner');
-            if (banner) banner.style.display = 'block';
-        }
-    </script>
 {% endblock %}

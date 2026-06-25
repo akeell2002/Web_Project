@@ -14,7 +14,7 @@
     {% endif %}
 {% endblock %}
 
-{# Mark the "Overview / Home" nav item active for each role #}
+{# This one is for marking the active nav item #}
 {% block nav_admin_overview %}class="active"{% endblock %}
 {% block nav_doctor_overview %}class="active"{% endblock %}
 {% block nav_nurse_overview %}class="active"{% endblock %}
@@ -24,7 +24,7 @@
 
 {% block content %}
 
-    <!-- Welcome Banner -->
+    {# General welcome banner for all the different roles #}
     <div class="welcome-banner {% if specific_role == "patient" %}patient-theme{% endif %}">
         <h2>Welcome back, {{ display_name }}</h2>
         <p>
@@ -42,7 +42,9 @@
         </p>
     </div>
 
-    <!-- ADMIN -->
+    {# ANY EDITS TO THE DASHBOARD SHOULD BE DONE IN THIS FILE GUYS, NOT THE INDIVIDUAL ROLE TEMPLATES #}
+
+    {# ADMIN DASHBOARD #}
     {% if specific_role == "admin" %}
         <div class="stats-grid stats-grid-5">
             <a href="/admin/staff" class="stat-card accent-navy">
@@ -112,7 +114,7 @@
         </div>
     {% endif %}
 
-    <!-- DOCTOR -->
+    {# DOCTOR DASHBOARD #}
     {% if specific_role == "doctor" %}
         <div class="action-grid">
             <div class="action-card">
@@ -139,7 +141,7 @@
         </div>
     {% endif %}
 
-    <!-- NURSE -->
+    {# NURSE DASHBOARD #}
     {% if specific_role == "nurse" %}
         <div class="action-grid">
             <div class="action-card">
@@ -173,7 +175,7 @@
         </div>
     {% endif %}
 
-    <!-- RECEPTIONIST -->
+    {# RECEPTIONIST DASHBOARD #}
     {% if specific_role == "receptionist" %}
         <div class="action-grid">
             <div class="action-card">
@@ -200,7 +202,7 @@
         </div>
     {% endif %}
 
-    <!-- PATIENT -->
+    {# PATIENT DASHBOARD #}
     {% if specific_role == "patient" %}
         <div id="flash-banner"
              style="display:none;

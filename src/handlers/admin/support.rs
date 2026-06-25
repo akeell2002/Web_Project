@@ -107,7 +107,7 @@ pub async fn submit_reply(
     }
 
     match crate::db::support::reply_to_ticket(&pool, form.ticket_id, &form.reply_notes).await {
-        Ok(_)  => HttpResponse::SeeOther().append_header(("Location", "/admin/support?replied=1")).finish(),
+        Ok(_)  => HttpResponse::SeeOther().append_header(("Location", "/admin/support?success=reply_sent")).finish(),
         Err(e) => HttpResponse::InternalServerError().body(format!("DB error: {}", e)),
     }
 }

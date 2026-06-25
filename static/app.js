@@ -56,6 +56,7 @@ document.addEventListener('mousemove', function (e) {
         'discharged':            'Patient discharged successfully. Bed is now free.',
         'staff_updated':         'Staff account updated successfully.',
         'staff_deleted':         'Staff account deleted successfully.',
+        'reply_sent':            'Reply sent and ticket marked as resolved.',
         'no_show':               'Patient marked as no-show successfully.',
         'doctor_created':        'Doctor account created successfully.',
         'nurse_created':         'Nurse account created successfully.',
@@ -315,3 +316,25 @@ function reloadAvailableSlots() {
     window.location.href =
         `${base}?doctor_id=${docId}&date=${dateVal}&duration_minutes=${durationVal}&visit_type=${visitTypeVal}`;
 }
+
+/* ── CONSULTATION ADMIT TOGGLE ───────────────────────────────────────
+   On the doctor consultation page, the "Need to admit?" Yes/No choice
+   enables exactly one of the two submit buttons. No-op on other pages.  */
+function updateAdmitButtons() {
+    var btnAdmit = document.getElementById('btn-admit');
+    var btnSign  = document.getElementById('btn-sign');
+    if (!btnAdmit || !btnSign) return;
+
+    var choice = document.querySelector('input[name="admit_choice"]:checked');
+    var admit  = choice && choice.value === 'yes';
+
+    btnAdmit.disabled = !admit;
+    btnSign.disabled  = admit;
+
+    btnAdmit.style.opacity = admit ? '1' : '0.45';
+    btnAdmit.style.cursor  = admit ? 'pointer' : 'not-allowed';
+    btnSign.style.opacity  = admit ? '0.45' : '1';
+    btnSign.style.cursor   = admit ? 'not-allowed' : 'pointer';
+}
+// Set the initial enabled/disabled state once the page has loaded.
+document.addEventListener('DOMContentLoaded', updateAdmitButtons);

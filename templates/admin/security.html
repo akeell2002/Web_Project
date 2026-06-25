@@ -10,7 +10,7 @@
     </div>
     <div class="monitor-panel">
 
-        {# ── Filter bar ── #}
+        {# Quality of life update, I included a filter bar for the searching #}
         <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
             <input id="sec-search"
                    type="text"
@@ -26,7 +26,7 @@
             <button id="sec-clear" type="button" class="btn btn-sm btn-outline-secondary ms-auto">Clear filters</button>
         </div>
 
-        {# ── Count line (no space before "s") ── #}
+        {# IMPORTANT! This one for displaying the count of events #}
         <div class="monitor-count" id="sec-count">
             {{ log_count }} event{% if log_count != 1 %}s{% endif %} found
         </div>

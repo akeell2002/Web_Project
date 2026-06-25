@@ -1,9 +1,9 @@
 {% extends "shared/base.html" %}
-
 {% block body %}
+
 <body class="page-app{% if specific_role == 'patient' %} page-app-patient{% endif %}{% block body_class %}{% endblock %}">
 
-    <!-- SIDEBAR -->
+    {# SIDEBAR #}
     <aside class="sidebar">
         <div class="sidebar-brand">
             <div style="display:flex; align-items:center; gap:10px;">
@@ -82,7 +82,7 @@
         </div>
     </aside>
 
-    <!-- MAIN AREA -->
+    {# TOPBAR #}
     <div class="main-area">
         <div class="topbar">
             <div class="topbar-title">{% block page_title %}{% endblock %}</div>

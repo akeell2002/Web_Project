@@ -1,6 +1,7 @@
 {% extends "shared/layout.html" %}
 {% block title %}Patient Directory - HealthHub{% endblock %}
 {% block page_title %}Patient Directory{% endblock %}
+
 {# Mark Patients nav active for whichever role is viewing #}
 {% block nav_admin_patients %}class="active"{% endblock %}
 {% block nav_doctor_patients %}class="active"{% endblock %}
@@ -16,6 +17,7 @@
             </div>
             <a href="/staff/patients/add" class="btn btn-primary">+ Register New Patient</a>
         </div>
+        {# Search bar #}
         <div class="search-wrap" style="margin-bottom: 18px;">
             <input class="form-control"
                    type="text"

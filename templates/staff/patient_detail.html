@@ -7,6 +7,7 @@
 {% block nav_recep_patients %}class="active"{% endblock %}
 {% block extra_head %}{% endblock %}
 {% block content %}
+
     <div style="display:flex;
                 justify-content:space-between;
                 align-items:center;
@@ -50,7 +51,7 @@
         {% endif %}
     </div>
 </div>
-<!-- Profile Header -->
+{# Profile Header #}
 <div class="profile-header">
     <div class="profile-avatar">{{ patient.first_name | truncate(length=1, end="") | upper }}</div>
     <div class="profile-header-info">
@@ -75,7 +76,7 @@
     </span>
 </div>
 </div>
-<!-- Demographics + Emergency Contact -->
+{# Demographics + Emergency Contact #}
 <div class="detail-grid">
     <div class="detail-card">
         <h3>Demographics</h3>
@@ -138,7 +139,7 @@
 <div class="detail-row"> <span class="detail-label">Registered</span> <span class="detail-value">{{ patient.registered_at }}</span> </div>
 </div>
 </div>
-<!-- Visit History -->
+{# Visit History #}
 <div class="history-card">
     <div class="history-card-header">
         <h3>Visit History</h3>
