@@ -54,6 +54,8 @@ document.addEventListener('mousemove', function (e) {
         'admitted':              'Patient admitted, an admission bed has been assigned.',
         'consultation_saved':    'Consultation saved and bill generated.',
         'discharged':            'Patient discharged successfully. Bed is now free.',
+        'staff_updated':         'Staff account updated successfully.',
+        'staff_deleted':         'Staff account deleted successfully.',
         'no_show':               'Patient marked as no-show successfully.',
         'doctor_created':        'Doctor account created successfully.',
         'nurse_created':         'Nurse account created successfully.',

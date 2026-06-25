@@ -1,0 +1,53 @@
+{% extends "shared/layout.html" %}
+{% block title %}Edit Staff - HealthHub Admin{% endblock %}
+{% block page_title %}Edit Staff Member{% endblock %}
+{% block nav_admin_staff %}class="active"{% endblock %}
+{% block extra_head %}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-start py-4">
+    <div class="onboard-card w-100" style="max-width:520px">
+        <h3>Edit Staff Member</h3>
+        <p>Update the account details for <strong>{{ staff.full_name }}</strong>.</p>
+
+        {% if error_message %}
+        <div class="alert alert-danger">{{ error_message }}</div>
+        {% endif %}
+
+        <form method="POST" action="/admin/staff/{{ staff.id }}/edit">
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Role</label>
+                <select class="form-select" name="role" required>
+                    <option value="doctor"       {% if staff.role == "doctor" %}selected{% endif %}>Doctor</option>
+                    <option value="nurse"        {% if staff.role == "nurse" %}selected{% endif %}>Nurse</option>
+                    <option value="receptionist" {% if staff.role == "receptionist" %}selected{% endif %}>Receptionist</option>
+                    <option value="admin"        {% if staff.role == "admin" %}selected{% endif %}>Admin</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Email Address</label>
+                <input class="form-control" type="email" name="email"
+                       value="{{ staff.email }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">First Name</label>
+                <input class="form-control" type="text" name="first_name"
+                       value="{{ staff.first_name | default(value='') }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Last Name</label>
+                <input class="form-control" type="text" name="last_name"
+                       value="{{ staff.last_name | default(value='') }}" required>
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-semibold small">Phone Number</label>
+                <input class="form-control" type="text" name="phone_number"
+                       value="{{ staff.phone | default(value='') }}" placeholder="e.g. 012-345-6789">
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill py-2 fw-semibold">Save Changes</button>
+                <a href="/admin/staff" class="btn btn-secondary py-2 px-4">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

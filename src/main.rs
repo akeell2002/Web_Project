@@ -86,6 +86,9 @@ async fn main() -> std::io::Result<()> {
             .route("/admin/staff/onboard", web::get().to(handlers::admin::onboard_staff_page))
             .route("/admin/staff/onboard", web::post().to(handlers::admin::onboard_staff_submit))
             .route("/admin/staff", web::get().to(handlers::admin::staff_directory_page))
+            .route("/admin/staff/{id}/edit", web::get().to(handlers::admin::show_edit_staff_page))
+            .route("/admin/staff/{id}/edit", web::post().to(handlers::admin::process_edit_staff))
+            .route("/admin/staff/{id}/delete", web::post().to(handlers::admin::process_delete_staff))
 
             // === PUBLIC INDEX ROUTES ===
             .route("/support", web::get().to(handlers::admin::support_form_page))

@@ -6,15 +6,20 @@
 <body style="background:#fff; font-family:'Segoe UI',system-ui,sans-serif; color:#1a1a1a;">
 
 <div class="print-bar">
-    <a href="/staff/patients/{{ patient.id }}">Back to Patient Profile</a>
+    <a href="/staff/patients/{{ patient.id }}">&larr; Back to Patient Profile</a>
     <button class="btn-print" onclick="window.print()">Print / Save as PDF</button>
 </div>
+
+<div class="report-doc">
 
 <!-- Report Header -->
 <div class="report-header">
     <div class="report-clinic">
-        <h1>HealthHub Medical Centre</h1>
-        <p>Official Patient Medical Report</p>
+        <img src="/static/logo.png" alt="HealthHub" class="report-logo">
+        <div>
+            <h1>HealthHub Medical Centre</h1>
+            <p>Official Patient Medical Report</p>
+        </div>
     </div>
     <div class="report-meta">
         <div>Report Date: <strong>{{ report_date }}</strong></div>
@@ -32,8 +37,16 @@
             <span class="info-value">{{ patient.full_name }}</span>
         </div>
         <div class="info-row">
+            <span class="info-label">Patient ID</span>
+            <span class="info-value" style="font-family:monospace; font-size:12px;">{{ patient.id }}</span>
+        </div>
+        <div class="info-row">
             <span class="info-label">Date of Birth</span>
             <span class="info-value">{{ patient.date_of_birth }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Age</span>
+            <span class="info-value">{{ patient.age }} years</span>
         </div>
         <div class="info-row">
             <span class="info-label">Gender</span>
@@ -60,6 +73,123 @@
     </div>
 </div>
 
+<!-- Clinical Summary -->
+<div class="section">
+    <div class="section-title">Clinical Summary</div>
+    <div class="report-summary">
+        <div class="summary-item">
+            <span class="summary-label">Total Encounters</span>
+            <span class="summary-value">{{ patient.visit_count }}</span>
+        </div>
+        {% if patient.visits %}
+            {% set lv = patient.visits | first %}
+            <div class="summary-item">
+                <span class="summary-label">Most Recent Visit</span>
+                <span class="summary-value">{{ lv.appointment_date }}</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Attending Physician</span>
+                <span class="summary-value">{{ lv.doctor_name }}</span>
+            </div>
+        {% endif %}
+        <div class="summary-item">
+            <span class="summary-label">Most Recent Diagnosis</span>
+            <span class="summary-value">{% if patient.latest_diagnosis %}{{ patient.latest_diagnosis }}{% else %}&mdash;{% endif %}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Problem List -->
+<div class="section">
+    <div class="section-title">Problem List / Diagnoses</div>
+    {% if patient.problem_list %}
+        <div class="problem-chips">
+            {% for dx in patient.problem_list %}
+                <span class="problem-chip">{{ dx }}</span>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="report-empty">No documented diagnoses on record.</p>
+    {% endif %}
+</div>
+
+<!-- Medication History -->
+<div class="section">
+    <div class="section-title">Medication History</div>
+    {% if patient.medications %}
+        <table class="med-table">
+            <thead>
+                <tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th></tr>
+            </thead>
+            <tbody>
+                {% for m in patient.medications %}
+                <tr>
+                    <td style="font-weight:600; color:#0F172A;">{{ m.medicine_name }}</td>
+                    <td>{% if m.dosage %}{{ m.dosage }}{% else %}&mdash;{% endif %}</td>
+                    <td>{% if m.frequency %}{{ m.frequency }}{% else %}&mdash;{% endif %}</td>
+                    <td>{% if m.duration %}{{ m.duration }}{% else %}&mdash;{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="report-empty">No medications prescribed.</p>
+    {% endif %}
+</div>
+
+<!-- Clinical Encounters -->
+<div class="section">
+    <div class="section-title">Clinical Encounters ({{ patient.visit_count }})</div>
+    {% if patient.visits %}
+        {% for visit in patient.visits %}
+        <div class="encounter">
+            <div class="encounter-head">
+                <div>
+                    <span class="enc-date">{{ visit.appointment_date }}</span>
+                    <span class="enc-time">{{ visit.start_time }}</span>
+                </div>
+                <div class="enc-head-right">
+                    <span class="enc-doctor">{{ visit.doctor_name }}</span>
+                    <span class="status-pill status-{{ visit.status }}">{{ visit.status }}</span>
+                </div>
+            </div>
+            <div class="encounter-body">
+                <div class="enc-field">
+                    <div class="enc-label">Diagnosis</div>
+                    <div class="enc-value">
+                        {% if visit.diagnosis %}{{ visit.diagnosis }}
+                        {% else %}<span class="muted">{% if visit.status == "completed" %}Not documented{% else %}Pending assessment{% endif %}</span>{% endif %}
+                    </div>
+                </div>
+                <div class="enc-field">
+                    <div class="enc-label">Location</div>
+                    <div class="enc-value">{{ visit.room }}</div>
+                </div>
+                {% if visit.treatment_notes %}
+                <div class="enc-field wide">
+                    <div class="enc-label">Treatment Notes</div>
+                    <div class="enc-value">{{ visit.treatment_notes }}</div>
+                </div>
+                {% endif %}
+                {% if visit.medicine_name %}
+                <div class="enc-field wide">
+                    <div class="enc-label">Prescription</div>
+                    <div class="enc-value">
+                        <strong>{{ visit.medicine_name }}</strong>
+                        {% if visit.dosage %} &middot; {{ visit.dosage }}{% endif %}
+                        {% if visit.frequency %} &middot; {{ visit.frequency }}{% endif %}
+                        {% if visit.duration %} &middot; {{ visit.duration }}{% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="report-empty">No clinical encounters recorded.</p>
+    {% endif %}
+</div>
+
 <!-- Emergency Contact -->
 <div class="section">
     <div class="section-title">Emergency Contact</div>
@@ -79,64 +209,24 @@
     </div>
 </div>
 
-<!-- Visit History -->
-<div class="section">
-    <div class="section-title">
-        Visit History ({{ patient.visit_count }} record{% if patient.visit_count != 1 %}s{% endif %})
+<!-- Signature -->
+<div class="report-signature">
+    <div class="sig-block">
+        <div class="sig-line"></div>
+        <div class="sig-label">Attending Physician</div>
     </div>
-    {% if patient.visits %}
-    <table class="table table-bordered align-middle">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Doctor</th>
-                <th>Room</th>
-                <th>Status</th>
-                <th>Diagnosis &amp; Prescription</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for visit in patient.visits %}
-            <tr>
-                <td style="font-weight:600; white-space:nowrap;">{{ visit.appointment_date }}</td>
-                <td style="white-space:nowrap; color:#6B7280;">{{ visit.start_time }}</td>
-                <td style="font-weight:500;">{{ visit.doctor_name }}</td>
-                <td style="color:#0369a1; font-weight:600;">{{ visit.room }}</td>
-                <td><span class="status-pill status-{{ visit.status }}">{{ visit.status }}</span></td>
-                <td>
-                    {% if visit.diagnosis %}
-                        <div style="font-weight:600; margin-bottom:3px;">{{ visit.diagnosis }}</div>
-                        {% if visit.treatment_notes %}
-                        <div style="color:#6B7280; font-size:11px; margin-bottom:4px;">{{ visit.treatment_notes }}</div>
-                        {% endif %}
-                        {% if visit.medicine_name %}
-                        <div class="rx-inline">
-                            <strong>{{ visit.medicine_name }}</strong>
-                            {% if visit.dosage %} · {{ visit.dosage }}{% endif %}
-                            {% if visit.frequency %} · {{ visit.frequency }}{% endif %}
-                            {% if visit.duration %} · {{ visit.duration }}{% endif %}
-                        </div>
-                        {% endif %}
-                    {% else %}
-                        <span style="color:#9CA3AF; font-style:italic;">
-                            {% if visit.status == "completed" %}No notes{% else %}Pending{% endif %}
-                        </span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p style="color:#9CA3AF; font-style:italic;">No visit records found for this patient.</p>
-    {% endif %}
+    <div class="sig-block">
+        <div class="sig-line"></div>
+        <div class="sig-label">Date</div>
+    </div>
 </div>
 
 <div class="report-footer">
     <span>Generated by HealthHub Medical Centre</span>
-    <span>Report Date: {{ report_date }} - CONFIDENTIAL</span>
+    <span>Report Date: {{ report_date }} &middot; CONFIDENTIAL</span>
 </div>
+
+</div><!-- /report-doc -->
 
 </body>
 {% endblock %}

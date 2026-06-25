@@ -44,26 +44,31 @@
 
     <!-- ADMIN -->
     {% if specific_role == "admin" %}
-        <div class="stats-grid">
-            <a href="/admin/staff" class="stat-card">
-                <h3>Total Staff</h3>
+        <div class="stats-grid stats-grid-5">
+            <a href="/admin/staff" class="stat-card accent-navy">
+                <div class="stat-top"><span class="stat-dot"></span><h3>Total Staff</h3></div>
                 <div class="value">{{ staff_counts.total_staff }}</div>
+                <div class="stat-hint">View all &rarr;</div>
             </a>
-            <a href="/admin/staff?role=doctor" class="stat-card">
-                <h3>Doctors</h3>
+            <a href="/admin/staff?role=doctor" class="stat-card accent-blue">
+                <div class="stat-top"><span class="stat-dot"></span><h3>Doctors</h3></div>
                 <div class="value">{{ staff_counts.doctors }}</div>
+                <div class="stat-hint">View doctors &rarr;</div>
             </a>
-            <a href="/admin/staff?role=nurse" class="stat-card">
-                <h3>Nurses</h3>
+            <a href="/admin/staff?role=nurse" class="stat-card accent-green">
+                <div class="stat-top"><span class="stat-dot"></span><h3>Nurses</h3></div>
                 <div class="value">{{ staff_counts.nurses }}</div>
+                <div class="stat-hint">View nurses &rarr;</div>
             </a>
-            <a href="/admin/staff?role=receptionist" class="stat-card">
-                <h3>Receptionists</h3>
+            <a href="/admin/staff?role=receptionist" class="stat-card accent-purple">
+                <div class="stat-top"><span class="stat-dot"></span><h3>Receptionists</h3></div>
                 <div class="value">{{ staff_counts.receptionists }}</div>
+                <div class="stat-hint">View receptionists &rarr;</div>
             </a>
-            <a href="/admin/staff?role=admin" class="stat-card">
-                <h3>Admins</h3>
+            <a href="/admin/staff?role=admin" class="stat-card accent-red">
+                <div class="stat-top"><span class="stat-dot"></span><h3>Admins</h3></div>
                 <div class="value">{{ staff_counts.admins }}</div>
+                <div class="stat-hint">View admins &rarr;</div>
             </a>
         </div>
 

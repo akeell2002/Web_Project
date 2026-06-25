@@ -4,28 +4,51 @@
 {% block nav_admin_staff %}class="active"{% endblock %}
 {% block extra_head %}{% endblock %}
 {% block content %}
-    <div class="directory-header">
-        <h2>{{ directory_title }}</h2>
-        <p>Browse registered staff accounts. Use the filters to switch between roles or view the full staff registry.</p>
-        <div class="filter-row"> <a href="/admin/staff"
-    class="filter-chip {% if selected_role == 'all' %}active{% endif %}">All Staff</a> <a href="/admin/staff?role=doctor"
-    class="filter-chip {% if selected_role == 'doctor' %}active{% endif %}">Doctors</a> <a href="/admin/staff?role=nurse"
-    class="filter-chip {% if selected_role == 'nurse' %}active{% endif %}">Nurses</a> <a href="/admin/staff?role=receptionist"
-    class="filter-chip {% if selected_role == 'receptionist' %}active{% endif %}">Receptionists</a> <a href="/admin/staff?role=admin"
-    class="filter-chip {% if selected_role == 'admin' %}active{% endif %}">Admins</a> </div>
+
+    <div class="directory-header" style="margin-bottom:18px;">
+        <h2 style="margin-bottom:4px;">Staff Management</h2>
+        <p style="color:#6B7280; margin:0;">Browse, edit, and remove staff accounts. Click a card to filter by role.</p>
     </div>
+
+    <!-- Role summary cards double as the role filter -->
+    <div class="staff-filter-grid">
+        <a href="/admin/staff" class="staff-filter-card {% if selected_role == 'all' %}active{% endif %}"
+           style="--accent:#1E3A8A;">
+            <div class="sf-label">Total Staff</div>
+            <div class="sf-value" style="color:#1E3A8A;">{{ counts.total_staff }}</div>
+        </a>
+        <a href="/admin/staff?role=doctor" class="staff-filter-card {% if selected_role == 'doctor' %}active{% endif %}"
+           style="--accent:#2563EB;">
+            <div class="sf-label">Doctors</div>
+            <div class="sf-value" style="color:#1E40AF;">{{ counts.doctors }}</div>
+        </a>
+        <a href="/admin/staff?role=nurse" class="staff-filter-card {% if selected_role == 'nurse' %}active{% endif %}"
+           style="--accent:#059669;">
+            <div class="sf-label">Nurses</div>
+            <div class="sf-value" style="color:#047857;">{{ counts.nurses }}</div>
+        </a>
+        <a href="/admin/staff?role=receptionist" class="staff-filter-card {% if selected_role == 'receptionist' %}active{% endif %}"
+           style="--accent:#7C3AED;">
+            <div class="sf-label">Receptionists</div>
+            <div class="sf-value" style="color:#6D28D9;">{{ counts.receptionists }}</div>
+        </a>
+        <a href="/admin/staff?role=admin" class="staff-filter-card {% if selected_role == 'admin' %}active{% endif %}"
+           style="--accent:#DC2626;">
+            <div class="sf-label">Admins</div>
+            <div class="sf-value" style="color:#B91C1C;">{{ counts.admins }}</div>
+        </a>
+    </div>
+
     <div class="directory-panel">
         <div class="directory-topline">
             <div>
-                <h3 style="margin-bottom: 4px; color: #0F172A;">Registry</h3>
-                <div class="directory-count">{{ staff_count }} account
-                    {% if staff_count != 1 %}s{% endif %}
-                found</div>
+                <h3 style="margin-bottom: 4px; color: #0F172A;">{{ directory_title }}</h3>
+                <div class="directory-count">{{ staff_count }} account{% if staff_count != 1 %}s{% endif %} found</div>
             </div>
-            <a href="/admin/staff/onboard"
-               class="btn btn-primary px-4 py-2 fw-semibold">Onboard New Staff</a>
+            <a href="/admin/staff/onboard" class="btn btn-primary px-4 py-2 fw-semibold">+ Onboard New Staff</a>
         </div>
-        <table class="table table-bordered table-hover align-middle">
+
+        <table class="table table-hover align-middle">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -33,26 +56,58 @@
                     <th>Role</th>
                     <th>Phone</th>
                     <th>Registered</th>
+                    <th style="text-align:right;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for member in staff_members %}
                     <tr>
-                        <td>{{ member.display_name }}</td>
-                        <td>{{ member.email }}</td>
-                        <td><span class="badge bg-primary">{{ member.role }}</span></td>
                         <td>
-                            {% if member.phone_number %}
-                                {{ member.phone_number }}
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="width:36px; height:36px; border-radius:50%; flex-shrink:0;
+                                            background:#1E3A8A; color:white; display:flex; align-items:center;
+                                            justify-content:center; font-weight:700; font-size:14px;">
+                                    {{ member.display_name | truncate(length=1, end="") | upper }}
+                                </div>
+                                <span style="font-weight:600; color:#0F172A;">{{ member.display_name }}</span>
+                            </div>
+                        </td>
+                        <td style="color:#374151;">{{ member.email }}</td>
+                        <td>
+                            {% if member.role == "Doctor" %}
+                                <span style="background:#DBEAFE; color:#1E40AF; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:700;">Doctor</span>
+                            {% elif member.role == "Nurse" %}
+                                <span style="background:#D1FAE5; color:#047857; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:700;">Nurse</span>
+                            {% elif member.role == "Receptionist" %}
+                                <span style="background:#EDE9FE; color:#6D28D9; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:700;">Receptionist</span>
+                            {% elif member.role == "Admin" %}
+                                <span style="background:#FEE2E2; color:#B91C1C; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:700;">Admin</span>
                             {% else %}
-                                -
+                                <span style="background:#F3F4F6; color:#374151; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:700;">{{ member.role }}</span>
                             {% endif %}
                         </td>
-                        <td>{{ member.created_at }}</td>
+                        <td style="color:#374151;">{% if member.phone_number %}{{ member.phone_number }}{% else %}-{% endif %}</td>
+                        <td style="color:#6B7280;">{{ member.created_at }}</td>
+                        <td>
+                            <div style="display:flex; gap:8px; justify-content:flex-end;">
+                                <a href="/admin/staff/{{ member.id }}/edit"
+                                   style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE;
+                                          padding:5px 14px; border-radius:6px; font-size:13px; font-weight:600;
+                                          text-decoration:none;">Edit</a>
+                                <form method="POST" action="/admin/staff/{{ member.id }}/delete"
+                                      onsubmit="return confirm('Delete {{ member.display_name }}\'s account? This cannot be undone.');"
+                                      style="margin:0;">
+                                    <button type="submit"
+                                            style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;
+                                                   padding:5px 14px; border-radius:6px; font-size:13px; font-weight:600;
+                                                   cursor:pointer;">Delete</button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="5">
+                        <td colspan="6">
                             <div class="text-center text-muted py-5">No staff members found for this role.</div>
                         </td>
                     </tr>

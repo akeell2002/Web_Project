@@ -319,6 +319,39 @@ pub async fn get_patient_detail(
         })
     }).collect();
 
+    // Derived clinical summary data for the medical report.
+    let today = chrono::Local::now().date_naive();
+    let age = today.years_since(dob).unwrap_or(0);
+
+    let mut problem_list: Vec<String> = Vec::new();
+    let mut medications: Vec<serde_json::Value> = Vec::new();
+    let mut latest_diagnosis: Option<String> = None;
+    for r in &visit_rows {
+        let dx: Option<String> = r.get("diagnosis");
+        if let Some(d) = dx {
+            let d = d.trim().to_string();
+            if !d.is_empty() {
+                if latest_diagnosis.is_none() {
+                    latest_diagnosis = Some(d.clone());
+                }
+                if !problem_list.contains(&d) {
+                    problem_list.push(d);
+                }
+            }
+        }
+        let med: Option<String> = r.get("medicine_name");
+        if let Some(m) = med {
+            if !m.trim().is_empty() {
+                medications.push(json!({
+                    "medicine_name": m,
+                    "dosage":    r.get::<Option<String>, _>("dosage"),
+                    "frequency": r.get::<Option<String>, _>("frequency"),
+                    "duration":  r.get::<Option<String>, _>("duration"),
+                }));
+            }
+        }
+    }
+
     let visit_count = visits.len();
     Ok(Some(json!({
         "id": patient_id.to_string(),
@@ -327,6 +360,7 @@ pub async fn get_patient_detail(
         "last_name": last_name,
         "date_of_birth": dob.format("%d %b %Y").to_string(),
         "date_of_birth_raw": dob.format("%Y-%m-%d").to_string(), // ISO format for HTML date inputs
+        "age": age,
         "gender": gender,
         "phone": phone,
         "emergency_contact_name": ec_name,
@@ -335,5 +369,8 @@ pub async fn get_patient_detail(
         "registered_at": registered_at.format("%d %b %Y").to_string(),
         "visits": visits,
         "visit_count": visit_count,
+        "problem_list": problem_list,
+        "medications": medications,
+        "latest_diagnosis": latest_diagnosis,
     })))
 }

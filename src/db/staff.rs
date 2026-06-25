@@ -240,6 +240,119 @@ pub async fn update_staff_profile(
     Ok(())
 }
 
+/// Admin: update a staff member's account (email + role) and profile (name + phone).
+pub async fn admin_update_staff(
+    pool:         &PgPool,
+    user_id:      Uuid,
+    email:        &str,
+    first_name:   &str,
+    last_name:    &str,
+    phone_number: Option<String>,
+    role:         UserRole,
+    admin_email:  Option<&str>,
+) -> Result<(), String> {
+    let mut tx: Transaction<'_, Postgres> = pool
+        .begin()
+        .await
+        .map_err(|e| format!("Transaction error: {}", e))?;
+
+    sqlx::query!(
+        r#"
+        UPDATE users
+        SET email = $2, role = $3::user_role, updated_at = NOW()
+        WHERE id = $1
+        "#,
+        user_id,
+        email,
+        role.clone() as UserRole
+    )
+    .execute(&mut *tx)
+    .await
+    .map_err(|e| {
+        let s = e.to_string();
+        if s.contains("duplicate key") || s.contains("unique constraint") {
+            format!("The email '{}' is already in use by another account.", email)
+        } else {
+            format!("Failed to update staff account: {}", s)
+        }
+    })?;
+
+    sqlx::query!(
+        r#"
+        UPDATE staff
+        SET first_name = $2, last_name = $3, phone_number = $4, updated_at = NOW()
+        WHERE id = $1
+        "#,
+        user_id,
+        first_name,
+        last_name,
+        phone_number
+    )
+    .execute(&mut *tx)
+    .await
+    .map_err(|e| format!("Failed to update staff profile: {}", e))?;
+
+    let details = format!(
+        "Staff account {} updated by {}.",
+        email,
+        admin_email.unwrap_or("system")
+    );
+    log_access_event(
+        &mut *tx,
+        None,
+        admin_email,
+        "staff_account_updated",
+        Some(user_id),
+        email,
+        role_label(&role),
+        &details,
+    )
+    .await
+    .map_err(|e| format!("Audit log failed: {}", e))?;
+
+    tx.commit()
+        .await
+        .map_err(|e| format!("Transaction commit failed: {}", e))?;
+    Ok(())
+}
+
+/// Admin: delete a staff member's account (cascades to the staff profile).
+/// Refuses to touch patient accounts. Logs before deleting so the audit trail
+/// is preserved (the FK is set null on delete).
+pub async fn delete_staff(
+    pool:         &PgPool,
+    user_id:      Uuid,
+    admin_email:  &str,
+    target_email: &str,
+    target_role:  &str,
+) -> Result<(), String> {
+    let details = format!("Staff account {} deleted by {}.", target_email, admin_email);
+    let _ = log_access_event(
+        pool,
+        None,
+        Some(admin_email),
+        "staff_account_deleted",
+        Some(user_id),
+        target_email,
+        target_role,
+        &details,
+    )
+    .await;
+
+    let result = sqlx::query!(
+        "DELETE FROM users WHERE id = $1 AND role <> 'patient'::user_role",
+        user_id
+    )
+    .execute(pool)
+    .await
+    .map_err(|e| format!("Failed to delete staff: {}", e))?;
+
+    if result.rows_affected() == 0 {
+        return Err("Staff account not found.".to_string());
+    }
+    Ok(())
+}
+
 /// Fetch a single staff member's own profile for the /staff/profile page
 pub async fn get_staff_profile(pool: &PgPool, user_id: Uuid) -> Result<Option<serde_json::Value>, String> {
     let row = sqlx::query(
