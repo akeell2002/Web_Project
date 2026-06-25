@@ -1,7 +1,7 @@
 {% extends "shared/base.html" %}
 
 {% block body %}
-<body class="page-app{% if specific_role == 'patient' %} page-app-patient{% endif %}">
+<body class="page-app{% if specific_role == 'patient' %} page-app-patient{% endif %}{% block body_class %}{% endblock %}">
 
     <!-- SIDEBAR -->
     <aside class="sidebar">

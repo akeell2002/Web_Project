@@ -2,24 +2,6 @@
 {% block title %}Update Appointment - HealthHub{% endblock %}
 {% block page_title %}Reschedule Appointment{% endblock %}
 {% block nav_patient_book %}class="active"{% endblock %}
-{% block extra_head %}
-    <script>
-        function reloadAvailableSlots() {
-            const docId    = document.getElementById("doctor_select").value;
-            const dateVal  = document.getElementById("date_select").value;
-            const visitDd  = document.getElementById("visit_type");
-            const apptId   = document.getElementById("appointment_id").value;
-
-            if (docId && dateVal && visitDd.value) {
-                const selectedOption = visitDd.options[visitDd.selectedIndex];
-                const durationVal    = selectedOption.getAttribute("data-duration");
-                const visitTypeVal   = visitDd.value;
-                window.location.href =
-                    `/patient/appointments/${apptId}/edit?doctor_id=${docId}&date=${dateVal}&duration_minutes=${durationVal}&visit_type=${visitTypeVal}`;
-            }
-        }
-    </script>
-{% endblock %}
 {% block content %}
     <div class="booking-card">
         <h2>Reschedule Your Appointment</h2>

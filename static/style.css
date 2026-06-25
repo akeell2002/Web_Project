@@ -213,6 +213,16 @@ body.page-app-patient .slot-available input[type="radio"] { accent-color: #16a34
 .topbar-logout:hover { background: #B91C1C; color: white; }
 .page-content { padding: 28px; flex: 1; }
 
+/* Booking page: card fills the content area edge-to-edge */
+.page-book .page-content { padding: 0; }
+.page-book .booking-card {
+    border-radius: 0;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    box-shadow: none;
+}
+
 /* ── AUTH GLASSMORPHISM ─────────────────────────────────────────── */
 
 /* Background orbs */
@@ -330,9 +340,10 @@ body.page-app-patient .slot-available input[type="radio"] { accent-color: #16a34
 .directory-card, .directory-panel, .monitor-panel,
 .progress-card, .table-card, .form-container,
 .intake-card, .onboard-card, .booking-card {
-    background: white;
-    border-radius: 12px;
-    border: 1px solid #E5E7EB;
+    background: #FFFFFF;
+    border-radius: 14px;
+    border: 1px solid #ECEFF3;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 6px 16px rgba(16, 24, 40, 0.05);
 }
 
 /* ── WELCOME BANNER ─────────────────────────────────────────────── */
@@ -443,7 +454,6 @@ body.page-app-patient .slot-available input[type="radio"] { accent-color: #16a34
 /* ── CONTENT CARD ───────────────────────────────────────────────── */
 .content-card {
     padding: 24px; margin-bottom: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 .content-card h2 { font-size: 17px; font-weight: 700; color: #0F172A; margin: 0 0 16px; }
 .content-card h2.green-accent { color: #047857; }

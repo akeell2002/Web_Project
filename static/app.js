@@ -291,3 +291,27 @@ function searchTable(q) {
     card.style.display = (name.includes(query) || patient.includes(query)) ? '' : 'none';
     });
 }
+
+/* ── APPOINTMENT SLOT RELOAD ─────────────────────────────────────────
+   Reloads the page with the chosen doctor / date / visit type so the
+   backend can render available time slots. Shared by the booking page
+   and the reschedule page — if a hidden #appointment_id field is present
+   we target the reschedule (edit) route, otherwise the booking route.   */
+function reloadAvailableSlots() {
+    const docId   = document.getElementById("doctor_select").value;
+    const dateVal = document.getElementById("date_select").value;
+    const visitDd = document.getElementById("visit_type");
+
+    if (!docId || !dateVal || !visitDd.value) return;
+
+    const durationVal  = visitDd.options[visitDd.selectedIndex].getAttribute("data-duration");
+    const visitTypeVal = visitDd.value;
+    const apptEl       = document.getElementById("appointment_id");
+
+    const base = apptEl
+        ? `/patient/appointments/${apptEl.value}/edit`
+        : `/patient/appointments/book`;
+
+    window.location.href =
+        `${base}?doctor_id=${docId}&date=${dateVal}&duration_minutes=${durationVal}&visit_type=${visitTypeVal}`;
+}
