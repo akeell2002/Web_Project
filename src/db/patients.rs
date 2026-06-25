@@ -302,12 +302,19 @@ pub async fn get_patient_detail(
         let frequency: Option<String>      = r.get("frequency");
         let duration: Option<String>       = r.get("duration");
 
+        // A completed/cancelled/no-show visit no longer holds a room (it was
+        // freed), so don't mislabel a finished visit as "Waiting Area".
+        let room_display = room.unwrap_or_else(|| match status.as_str() {
+            "completed" | "cancelled" | "no_show" | "admitted" => "—".to_string(),
+            _ => "Waiting Area".to_string(),
+        });
+
         json!({
             "appointment_date": appt_date.format("%d %b %Y").to_string(),
             "start_time": start.format("%I:%M %p").to_string(),
             "end_time": end.format("%I:%M %p").to_string(),
             "status": status,
-            "room": room.unwrap_or_else(|| "Waiting Area".to_string()),
+            "room": room_display,
             "queue_number": queue,
             "doctor_name": format!("Dr. {} {}", doc_first, doc_last),
             "diagnosis": diagnosis,
