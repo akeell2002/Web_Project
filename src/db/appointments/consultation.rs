@@ -37,7 +37,7 @@ pub async fn get_doctor_daily_appointments(
             LEFT JOIN room         r  ON a.room_id      = r.id
             LEFT JOIN triage_vitals tv ON a.id           = tv.appointment_id
             WHERE a.doctor_id = $1 AND a.date = $2
-              AND a.status NOT IN ('cancelled', 'no_show', 'admitted')
+              AND a.status NOT IN ('cancelled', 'no_show', 'admitted', 'completed')
             ORDER BY
                 CASE WHEN a.status IN ('vitals_taken', 'checked_in') THEN 1
                      WHEN a.status = 'scheduled' THEN 2

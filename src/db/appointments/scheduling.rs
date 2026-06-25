@@ -135,7 +135,9 @@ pub async fn get_patient_appointments(
                 (Some(f), Some(l)) => format!("Dr. {} {}", f, l),
                 _ => "Assigned Practitioner".to_string(),
             };
-            let is_terminal = matches!(row.status.as_str(), "cancelled" | "no_show");
+            // A visit that's been completed, admitted, cancelled or marked no-show
+            // is finished — it belongs in Past Visits, never in Upcoming.
+            let is_terminal = matches!(row.status.as_str(), "cancelled" | "no_show" | "completed" | "admitted");
             let is_upcoming = !is_terminal && if row.date > now_date {
                 true
             } else if row.date == now_date {
@@ -178,6 +180,10 @@ pub async fn get_today_clinic_schedule(pool: &PgPool) -> Result<Vec<serde_json::
         LEFT JOIN room r ON a.room_id  = r.id
         LEFT JOIN bills b ON b.appointment_id = a.id
         WHERE a.date = $1
+          -- Drop patients who are fully done (completed AND paid). Completed but
+          -- unpaid stay so the receptionist can still collect payment.
+          AND (a.status <> 'completed'::appointment_status
+               OR b.payment_status IS DISTINCT FROM 'paid'::bill_status)
         ORDER BY a.start_time ASC
         "#,
         today
