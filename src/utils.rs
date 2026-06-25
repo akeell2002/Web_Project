@@ -3,7 +3,7 @@ use argon2::{
     Argon2,
 };
 
-/// Hash a password before storing it in the database
+// Hash a password before storing it in the database
 pub fn hash_password(password: &str) -> Result<String, String> {
     let salt = SaltString::generate(&mut OsRng);
     let argon2 = Argon2::default();
@@ -14,10 +14,8 @@ pub fn hash_password(password: &str) -> Result<String, String> {
         .map(|hash| hash.to_string())
 }
 
-/// Verify a plain-text password against a stored database hash.
-/// Returns true if valid, false if invalid or corrupted.
+// Verify the password entered against the database hash
 pub fn verify_password(password: &str, hash: &str) -> bool {
-    // If the hash in the DB is corrupted and fails to parse, treat it as an auth failure
     let parsed_hash = match PasswordHash::new(hash) {
         Ok(h) => h,
         Err(_) => return false,

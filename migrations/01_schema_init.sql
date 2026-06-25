@@ -1,17 +1,13 @@
--- Enable UUID generation extension
+-- For UUID generation extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
----
---- 0. CUSTOM ENUM TYPES
----
+-- Custom Enum Types
 CREATE TYPE user_role AS ENUM ('admin', 'doctor', 'nurse', 'receptionist', 'patient');
 CREATE TYPE bill_status AS ENUM ('unpaid', 'paid', 'partially_paid', 'refunded');
 CREATE TYPE ticket_status AS ENUM ('open', 'in_progress', 'resolved');
 CREATE TYPE appointment_status AS ENUM ('scheduled', 'checked_in', 'vitals_taken', 'completed', 'cancelled', 'no_show', 'admitted');
 
----
---- 1. USER SYSTEM
----
+-- User Table
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -21,9 +17,7 @@ CREATE TABLE users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
----
---- 2. PROFILES
----
+-- Patient Table
 CREATE TABLE patient (
     id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     first_name VARCHAR(100) NOT NULL,
@@ -36,6 +30,7 @@ CREATE TABLE patient (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Staff Table
 CREATE TABLE staff (
     id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     first_name VARCHAR(100) NOT NULL,
@@ -44,9 +39,7 @@ CREATE TABLE staff (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
----
---- 3. INFRASTRUCTURE & ROOMS
----
+-- Room Table
 CREATE TABLE room (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     room_name VARCHAR(100) NOT NULL,
@@ -57,9 +50,7 @@ CREATE TABLE room (
         CHECK (bed_status IN ('available', 'maintenance'))
 );
 
----
---- 4. SCHEDULING & LIVE QUEUE
----
+-- Appointment Table for scheduling patient visits, triage, and consultations
 CREATE TABLE appointment (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     patient_id UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
@@ -78,6 +69,7 @@ CREATE TABLE appointment (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Triage Vitals Table for recording patient vitals during triage
 CREATE TABLE triage_vitals (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     appointment_id UUID UNIQUE NOT NULL REFERENCES appointment(id) ON DELETE CASCADE,
@@ -89,9 +81,7 @@ CREATE TABLE triage_vitals (
     recorded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
----
---- 5. CLINICAL RECORDS
----
+-- Medical Records Table for storing patient medical history and consultation details
 CREATE TABLE medical_records (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     patient_id UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
@@ -104,6 +94,7 @@ CREATE TABLE medical_records (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Prescription Table for managing patient prescriptions
 CREATE TABLE prescription (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     appointment_id UUID NOT NULL REFERENCES appointment(id) ON DELETE CASCADE,
@@ -116,6 +107,7 @@ CREATE TABLE prescription (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Medication Log Table for tracking medication administration to patients
 CREATE TABLE medication_administration_log (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     prescription_id UUID NOT NULL REFERENCES prescription(id) ON DELETE CASCADE,
@@ -124,9 +116,7 @@ CREATE TABLE medication_administration_log (
     remarks TEXT
 );
 
----
---- 6. FINANCE & BILLING
----
+-- Billing Table for patient billing and payment status
 CREATE TABLE bills (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     patient_id UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
@@ -141,9 +131,7 @@ CREATE TABLE bills (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
----
---- 7. SUPPORT TICKETS
----
+-- Support Tickets Table for managing support requests
 CREATE TABLE support_tickets (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     submitted_by_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -158,9 +146,7 @@ CREATE TABLE support_tickets (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
----
---- 8. SYSTEM ACCESS LOGS
----
+-- System Access Logs Table for auditing all user actions in admin
 CREATE TABLE system_access_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     actor_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -173,9 +159,7 @@ CREATE TABLE system_access_logs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
----
---- 9. BED TRANSFERS
----
+-- Bed Transfers Table for managing patient bed transfers within the hospital
 CREATE TABLE bed_transfers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     patient_id UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
@@ -190,9 +174,7 @@ CREATE TABLE bed_transfers (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
----
---- 10. INDEXES
----
+-- Indexes for performance
 CREATE INDEX idx_appointment_patient ON appointment(patient_id);
 CREATE INDEX idx_appointment_date ON appointment(date);
 CREATE INDEX idx_appointment_queue ON appointment(status, queue_number);
@@ -203,10 +185,8 @@ CREATE INDEX idx_system_access_logs_action_type ON system_access_logs(action_typ
 CREATE INDEX idx_bed_transfers_status ON bed_transfers(status);
 CREATE INDEX idx_bed_transfers_patient ON bed_transfers(patient_id);
 
----
---- 11. SEED DATA
----
--- 5 triage stations
+-- Sample Data Insertion for rooms
+-- 5 triage, 10 consultation, 20 admission rooms
 INSERT INTO room (room_name, room_type, location) VALUES
 ('Triage Station 1', 'triage', 'Level 1 Lobby'),
 ('Triage Station 2', 'triage', 'Level 1 Lobby'),
@@ -214,7 +194,6 @@ INSERT INTO room (room_name, room_type, location) VALUES
 ('Triage Station 4', 'triage', 'Level 1 Lobby'),
 ('Triage Station 5', 'triage', 'Level 1 Lobby');
 
--- 10 consultation rooms
 INSERT INTO room (room_name, room_type, location) VALUES
 ('Room 101', 'consultation', 'Clinic Wing A'),
 ('Room 102', 'consultation', 'Clinic Wing A'),
@@ -227,7 +206,6 @@ INSERT INTO room (room_name, room_type, location) VALUES
 ('Room 109', 'consultation', 'Clinic Wing C'),
 ('Room 110', 'consultation', 'Clinic Wing C');
 
--- 20 admission beds (inpatient ward)
 INSERT INTO room (room_name, room_type, location)
 SELECT 'Admission Bed ' || g, 'admission', 'Inpatient Ward ' ||
        CASE WHEN g <= 10 THEN 'A' ELSE 'B' END
