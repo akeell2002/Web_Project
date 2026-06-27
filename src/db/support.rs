@@ -2,6 +2,7 @@ use sqlx::{PgPool, Row};
 use uuid::Uuid;
 use serde::Serialize;
 
+// Support ticket structure for serialization and database interaction
 #[derive(Debug, Serialize)]
 pub struct SupportTicket {
     pub id: Uuid,
@@ -14,7 +15,7 @@ pub struct SupportTicket {
     pub created_at: String,
 }
 
-/// Insert a new public support ticket (anonymous - no user account required)
+// Insert a new public support ticket
 pub async fn submit_ticket(
     pool: &PgPool,
     submitter_name: &str,
@@ -36,7 +37,7 @@ pub async fn submit_ticket(
     Ok(())
 }
 
-/// Fetch all tickets ordered by newest first - for the receptionist dashboard
+// Fetch all tickets ordered by newest first for the receptionist dashboard
 pub async fn get_all_tickets(pool: &PgPool) -> Result<Vec<SupportTicket>, sqlx::Error> {
     let rows = sqlx::query(
         r#"
@@ -76,7 +77,7 @@ pub async fn get_all_tickets(pool: &PgPool) -> Result<Vec<SupportTicket>, sqlx::
     Ok(tickets)
 }
 
-/// Save a receptionist reply and mark the ticket as resolved
+// Save a receptionist reply and mark the ticket as resolved
 pub async fn reply_to_ticket(
     pool: &PgPool,
     ticket_id: Uuid,

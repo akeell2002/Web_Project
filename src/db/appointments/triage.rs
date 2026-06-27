@@ -1,7 +1,7 @@
 use sqlx::PgPool;
 use uuid::Uuid;
 
-/// Patients checked in today waiting for triage (Sorted by Dynamic Priority Algorithm)
+// Patients checked in today waiting for triage sorted by Dynamic Priority Algorithm
 pub async fn get_triage_queue(pool: &PgPool) -> Result<Vec<serde_json::Value>, String> {
     let today = chrono::Local::now().date_naive();
 
@@ -52,7 +52,7 @@ pub async fn get_triage_queue(pool: &PgPool) -> Result<Vec<serde_json::Value>, S
         .collect())
 }
 
-/// Record vitals, auto-assign a consultation room, and advance status to vitals_taken
+// Record vitals, auto-assign a consultation room and advance status to vitals_taken
 pub async fn record_patient_vitals(
     pool: &PgPool,
     appointment_id: Uuid,
@@ -82,7 +82,7 @@ pub async fn record_patient_vitals(
     .await
     .map_err(|e| format!("Failed to insert vitals: {}", e))?;
 
-    // Try to assign a free consultation room
+    // Try to assign a free consultation room, else just update the status to vitals_taken without a room assignment
     let free_room = sqlx::query!(
         r#"
         SELECT id FROM room
@@ -128,7 +128,7 @@ pub async fn record_patient_vitals(
     Ok(())
 }
 
-/// Active prescriptions from the last 3 days for nurse medication administration
+// Active prescriptions from the last 3 days for nurse medication administration
 pub async fn get_active_prescriptions_for_nurse(
     pool: &PgPool,
 ) -> Result<Vec<serde_json::Value>, String> {
@@ -177,7 +177,7 @@ pub async fn get_active_prescriptions_for_nurse(
         .collect())
 }
 
-/// Log that a nurse administered a prescription dose
+// Log when a nurse administered a prescription dose
 pub async fn log_medication_administration(
     pool: &PgPool,
     prescription_id: Uuid,

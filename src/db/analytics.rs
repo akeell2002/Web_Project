@@ -19,7 +19,7 @@ pub struct ClinicAnalytics {
     pub total_receptionists: i64,
 }
 
-/// Fetch all clinic-wide analytics metrics for the admin dashboard.
+// Fetch all clinic-wide analytics metrics for the admin dashboard
 pub async fn get_clinic_analytics(pool: &PgPool) -> Result<ClinicAnalytics, String> {
     let today = chrono::Local::now().date_naive();
     let now   = chrono::Local::now();

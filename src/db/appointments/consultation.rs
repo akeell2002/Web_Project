@@ -2,7 +2,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 use chrono::Datelike;
 
-/// Doctor's daily clinical queue with dynamic priority scoring
+// Doctor daily clinical queue with dynamic priority scoring
 pub async fn get_doctor_daily_appointments(
     pool: &PgPool,
     doctor_id: Uuid,
@@ -78,7 +78,7 @@ pub async fn get_doctor_daily_appointments(
     Ok(list)
 }
 
-/// Finalize a consultation: writes medical record, optional prescription, bill, and closes appointment
+// Finalize a consultation: writes medical record, optional prescription, bill, and closes appointment
 pub async fn finalize_consultation_and_bill(
     pool: &PgPool,
     appointment_id: Uuid,
@@ -108,7 +108,7 @@ pub async fn finalize_consultation_and_bill(
     .execute(&mut *tx)
     .await?;
 
-    // Save the prescription from the consultation form (if any medicine was entered).
+    // Save the prescription from the consultation form if any medicine was entered
     if let Some(medicine) = form.medicine_name {
         if !medicine.trim().is_empty() {
             sqlx::query!(
@@ -129,12 +129,12 @@ pub async fn finalize_consultation_and_bill(
         }
     }
 
-    // Decide the outcome from which button the doctor pressed.
+    // Decide the outcome from which button the doctor pressed
     let admit = form.action.as_deref() == Some("admit");
 
     if admit {
-        // Admit: assign a free inpatient bed and keep the case open as 'admitted'.
-        // No bill is generated now — admitted patients are billed at discharge.
+        // If admit, assign a free inpatient bed and keep the case open as admitted.
+        // No bill is generated now, admitted patients are billed at discharge.
         let bed = sqlx::query!(
             r#"
             SELECT id
@@ -164,8 +164,8 @@ pub async fn finalize_consultation_and_bill(
         .execute(&mut *tx)
         .await?;
     } else {
-        // Sign off: bill the consultation now (priority-based) plus any medicines,
-        // then close the encounter and release the consultation room.
+        // If no admit, sign off and bill the consultation based on priority plus any medicines,
+        // Then close the encounter and release the consultation room.
         let meds = sqlx::query!(
             "SELECT medicine_name FROM prescription WHERE appointment_id = $1",
             appointment_id
@@ -205,7 +205,7 @@ pub async fn finalize_consultation_and_bill(
     Ok(())
 }
 
-/// One card per patient with all qualifying appointments nested (for prescribe page)
+// One card per patient with all qualifying appointments for prescribe page
 pub async fn get_doctor_prescribable_appointments(
     pool: &PgPool,
     doctor_id: Uuid,
@@ -270,7 +270,7 @@ pub async fn get_doctor_prescribable_appointments(
     Ok(patients.into_values().collect())
 }
 
-/// Insert a standalone prescription (used from the prescribe page)
+// Insert a standalone prescription used from the prescribe page
 pub async fn insert_prescription(
     pool: &PgPool,
     appointment_id: Uuid,
@@ -296,7 +296,7 @@ pub async fn insert_prescription(
     Ok(())
 }
 
-/// Fetch patient info + triage vitals + past diagnoses + past prescriptions for the consultation form
+// Fetch patient info + triage vitals + past diagnoses + past prescriptions for the consultation form
 pub async fn get_consultation_patient_info(
     pool:           &PgPool,
     appointment_id: Uuid,

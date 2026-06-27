@@ -4,6 +4,7 @@ use crate::models::user::{User, UserRole};
 use crate::models::staff::{CreateStaffProfile, StaffDashboardCounts, StaffDirectoryRow};
 use crate::db::users::log_access_event;
 
+// Helper function to convert UserRole enum to a string
 fn role_label(role: &UserRole) -> &'static str {
     match role {
         UserRole::Admin => "Admin",
@@ -14,6 +15,7 @@ fn role_label(role: &UserRole) -> &'static str {
     }
 }
 
+// Helper function to determine the display name for a staff member
 fn display_name(first_name: Option<String>, last_name: Option<String>, email: &str, role: &UserRole) -> String {
     match (first_name, last_name) {
         (Some(first_name), Some(last_name)) => format!("{} {}", first_name, last_name),
@@ -24,7 +26,7 @@ fn display_name(first_name: Option<String>, last_name: Option<String>, email: &s
     }
 }
 
-/// Provisions staff credentials and metadata mapping via an Admin execution block
+// Register staff credentials via Admin
 pub async fn register_staff(
     pool: &PgPool,
     email: &str,
@@ -95,6 +97,7 @@ pub async fn register_staff(
         Ok(user)
 }
 
+// Fetch counts of staff members by role for the admin dashboard
 pub async fn get_staff_dashboard_counts(pool: &PgPool) -> Result<StaffDashboardCounts, String> {
     let counts = sqlx::query!(
         r#"
@@ -127,6 +130,7 @@ pub async fn get_staff_dashboard_counts(pool: &PgPool) -> Result<StaffDashboardC
     })
 }
 
+// Fetch a list of staff members for the admin dashboard with filtering by role
 pub async fn get_staff_directory(pool: &PgPool, role_filter: Option<UserRole>) -> Result<Vec<StaffDirectoryRow>, String> {
     let rows = match role_filter {
         Some(role) => {
@@ -212,7 +216,7 @@ pub async fn get_staff_directory(pool: &PgPool, role_filter: Option<UserRole>) -
     Ok(rows)
 }
 
-/// Update a staff member's own name and phone number
+// Update a staff members name and phone number
 pub async fn update_staff_profile(
     pool:         &PgPool,
     user_id:      Uuid,
@@ -240,7 +244,7 @@ pub async fn update_staff_profile(
     Ok(())
 }
 
-/// Admin: update a staff member's account (email + role) and profile (name + phone).
+// Admin can update a staff member's email, role, and profile info
 pub async fn admin_update_staff(
     pool:         &PgPool,
     user_id:      Uuid,
@@ -316,9 +320,7 @@ pub async fn admin_update_staff(
     Ok(())
 }
 
-/// Admin: delete a staff member's account (cascades to the staff profile).
-/// Refuses to touch patient accounts. Logs before deleting so the audit trail
-/// is preserved (the FK is set null on delete).
+// Admin can delete a staff member's account
 pub async fn delete_staff(
     pool:         &PgPool,
     user_id:      Uuid,
@@ -353,7 +355,7 @@ pub async fn delete_staff(
     Ok(())
 }
 
-/// Fetch a single staff member's own profile for the /staff/profile page
+// Fetch a single staff member's profile for the /staff/profile page
 pub async fn get_staff_profile(pool: &PgPool, user_id: Uuid) -> Result<Option<serde_json::Value>, String> {
     let row = sqlx::query(
         r#"

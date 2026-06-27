@@ -2,7 +2,7 @@ use sqlx::{PgPool, Postgres, Executor, Row};
 use crate::models::user::{User, UserRole, AccessLogEntry};
 use crate::utils::{hash_password, verify_password};
 
-/// Find a user strictly by their email (since we use email instead of username for logins)
+// Find a user by their email
 pub async fn find_user_by_email(pool: &PgPool, email: &str) -> Result<Option<User>, String> {
     let user = sqlx::query_as!(
         User,
@@ -20,19 +20,18 @@ pub async fn find_user_by_email(pool: &PgPool, email: &str) -> Result<Option<Use
     Ok(user)
 }
 
-/// Authenticate user via email and plain-text password
+// Authenticate user via email and password that is hashed and stored in db
 pub async fn authenticate_user(pool: &PgPool, email: &str, password: &str) -> Result<Option<User>, String> {
     // 1. Locate the user profile
     let user = match find_user_by_email(pool, email).await? {
         Some(u) => u,
-        None => return Ok(None), // User matching this email doesn't exist
+        None => return Ok(None), // If user not found return None
     };
-    
-    // 2. Use our simplified verify_password function from utils.rs
+
     if verify_password(password, &user.password) {
         Ok(Some(user))
     } else {
-        Ok(None) // Password mismatch
+        Ok(None) // If password mismatch
     }
 }
 
@@ -46,15 +45,15 @@ pub async fn seed_default_staff_users(pool: &PgPool) -> Result<(), String> {
         (UserRole::Patient, vec!["patient@clinic.com"]),
     ];
 
-    // Loop to check each role and email and creating or refreshing as needed
     for (role, emails) in seed_accounts {
         for email in emails {
+            // all seeded acc use same pw
             let hashed_password = hash_password("faipi")?;
             let existing_user = find_user_by_email(pool, email).await?;
 
             match existing_user {
                 Some(user) => {
-                    // Update existing user with new password and role in case of changes, but keep the created_at timestamp
+                    // Update just in case
                     sqlx::query!(
                         r#"
                         UPDATE users
@@ -73,7 +72,6 @@ pub async fn seed_default_staff_users(pool: &PgPool) -> Result<(), String> {
 
                     let mut tx = pool.begin().await.map_err(|e| format!("Transaction error: {}", e))?;
                     
-                    // To make sure we avoid database integrity issues by inserting into patient and staff tables
                     if role == UserRole::Patient {
                         sqlx::query!(
                             r#"
@@ -89,7 +87,6 @@ pub async fn seed_default_staff_users(pool: &PgPool) -> Result<(), String> {
                         .await
                         .map_err(|e| format!("Failed to backfill patient profile: {}", e))?;
                     } else {
-                        // Admin, Doctor, Nurse, and Receptionists go into the staff table
                         sqlx::query!(
                             r#"
                             INSERT INTO staff (id, first_name, last_name, phone_number)
@@ -115,10 +112,9 @@ pub async fn seed_default_staff_users(pool: &PgPool) -> Result<(), String> {
                     println!("Seeding layer: {} and accompanying profiles verified/refreshed.", email);
                 }
                 None => {
-                    // Same thing but is users dont exist we create them from scratch with the same default password and profile info
+                    // Create seeded user from scratch
                     let mut tx = pool.begin().await.map_err(|e| format!("Transaction error: {}", e))?;
 
-                    // Insert the user credentials first
                     let new_user_id = uuid::Uuid::new_v4();
                     sqlx::query!(
                         r#"
@@ -134,7 +130,6 @@ pub async fn seed_default_staff_users(pool: &PgPool) -> Result<(), String> {
                     .await
                     .map_err(|e| format!("Database seed user insertion failed: {}", e))?;
 
-                    // Branch profile generation based on the target entity role context
                     if role == UserRole::Patient {
                         sqlx::query!(
                             r#"
@@ -209,7 +204,7 @@ pub async fn seed_default_staff_users(pool: &PgPool) -> Result<(), String> {
     Ok(())
 }
 
-/// Update a user's password by email (used by password reset flow)
+// Update a user's password by email
 pub async fn update_user_password(pool: &PgPool, email: &str, new_raw_password: &str) -> Result<bool, String> {
     let hashed = hash_password(new_raw_password)?;
     let result = sqlx::query!(
@@ -224,8 +219,7 @@ pub async fn update_user_password(pool: &PgPool, email: &str, new_raw_password: 
     Ok(result.rows_affected() > 0)
 }
 
-// --- Moved from db/security.rs ---
-
+// Log access events for auditing purposes
 pub async fn log_access_event<'e, E>(
     executor: E,
     actor_user_id: Option<uuid::Uuid>,
@@ -266,6 +260,7 @@ where
     Ok(())
 }
 
+// Retrieve access logs
 pub async fn get_access_logs(pool: &PgPool, limit: i64) -> Result<Vec<AccessLogEntry>, sqlx::Error> {
     let safe_limit = limit.clamp(1, 200);
 

@@ -7,20 +7,18 @@ use uuid::Uuid;
 use sqlx::Row;
 use chrono::NaiveDate;
 
-/// Registers a new patient user account and profile atomically using a transaction
+// Registers a new patient user account and profile
 pub async fn register_patient(
     pool: &PgPool,
     email: &str,
     raw_password: &str,
     profile: CreatePatientProfile,
 ) -> Result<User, String> {
-    // 1. Begin a transaction block
     let mut tx: Transaction<'_, Postgres> = pool
         .begin()
         .await
         .map_err(|e| format!("Failed to start transaction: {}", e))?;
 
-    // 2. Reuse your hashing & insertion logic inside the transaction context
     let hashed_password = crate::utils::hash_password(raw_password)?;
     
     let user = sqlx::query_as!(
@@ -37,7 +35,6 @@ pub async fn register_patient(
     .await
     .map_err(|e| format!("Database error while inserting user: {}", e))?;
 
-    // 3. Insert into the profile table linking back to the user ID
     sqlx::query!(
         r#"
         INSERT INTO patient (id, first_name, last_name, date_of_birth, gender, phone_number, emergency_contact_name, emergency_contact_phone)
@@ -56,11 +53,9 @@ pub async fn register_patient(
     .await
     .map_err(|e| format!("Database error while creating patient profile: {}", e))?;
 
-    // To audit the creation process
     let details = format!("Account created for {} for type patient",  email);
     tx.commit().await.map_err(|e| format!("Transaction commit failed for {}: {}", email, e))?;
 
-    // Execute logging after a successful transaction commit
     let _ = crate::db::users::log_access_event(
         pool,
         Some(user.id),
@@ -76,7 +71,7 @@ pub async fn register_patient(
     Ok(user)
 }
 
-/// Retrieve a simplified patient directory suitable for staff listing
+// Retrieve  patient directory for staff dashboard
 pub async fn get_patient_directory(pool: &PgPool) -> Result<Vec<serde_json::Value>, String> {
     let rows = sqlx::query(
         r#"
@@ -115,7 +110,7 @@ pub async fn get_patient_directory(pool: &PgPool) -> Result<Vec<serde_json::Valu
     Ok(out)
 }
 
-/// Update a patient's demographic details
+// Update patient profile info
 pub async fn update_patient_profile(
     pool: &PgPool,
     email: &str,
@@ -179,14 +174,14 @@ pub async fn update_patient_profile(
     Ok(())
 }
 
-/// Delete a patient's user account (cascades to patient profile and all related records)
+// Delete a patients account
 pub async fn delete_patient(pool: &PgPool, patient_id: Uuid, admin_email:&str, patient_email: &str,) -> Result<(), String> {
     let mut tx: Transaction<'_, Postgres> = pool
         .begin()
         .await
         .map_err(|e| format!("Failed to start transaction: {}", e))?;
 
-    // To audit the delete process, we log the deletion attempt before actually deleting the account
+    // To audit the deletion process
     let details = format!("Account {} deleted by {}.", patient_email, admin_email);
     tx.commit().await.map_err(|e| format!("Transaction commit failed for {}: {}", patient_email, e))?;
 
@@ -216,12 +211,11 @@ pub async fn delete_patient(pool: &PgPool, patient_id: Uuid, admin_email:&str, p
     Ok(())
 }
 
-/// Fetch a single patient's full profile + appointment/visit history for the detail page
+// Fetch a single patient's full profile and appointment history for the detail page
 pub async fn get_patient_detail(
     pool: &PgPool,
     patient_id: Uuid,
 ) -> Result<Option<serde_json::Value>, String> {
-    // 1. Core profile (demographics + email)
     let profile_row = sqlx::query(
         r#"
         SELECT u.id, u.email, u.created_at,
@@ -253,7 +247,6 @@ pub async fn get_patient_detail(
     let email: Option<String>    = profile_row.get("email");
     let registered_at: chrono::DateTime<chrono::Utc> = profile_row.get("created_at");
 
-    // 2. Appointment + visit history
     let visit_rows = sqlx::query(
         r#"
         SELECT
@@ -302,8 +295,6 @@ pub async fn get_patient_detail(
         let frequency: Option<String>      = r.get("frequency");
         let duration: Option<String>       = r.get("duration");
 
-        // A completed/cancelled/no-show visit no longer holds a room (it was
-        // freed), so don't mislabel a finished visit as "Waiting Area".
         let room_display = room.unwrap_or_else(|| match status.as_str() {
             "completed" | "cancelled" | "no_show" | "admitted" => "—".to_string(),
             _ => "Waiting Area".to_string(),
@@ -326,7 +317,7 @@ pub async fn get_patient_detail(
         })
     }).collect();
 
-    // Derived clinical summary data for the medical report.
+    // Derived clinical summary data for the medical report
     let today = chrono::Local::now().date_naive();
     let age = today.years_since(dob).unwrap_or(0);
 
@@ -366,7 +357,7 @@ pub async fn get_patient_detail(
         "first_name": first_name,
         "last_name": last_name,
         "date_of_birth": dob.format("%d %b %Y").to_string(),
-        "date_of_birth_raw": dob.format("%Y-%m-%d").to_string(), // ISO format for HTML date inputs
+        "date_of_birth_raw": dob.format("%Y-%m-%d").to_string(),
         "age": age,
         "gender": gender,
         "phone": phone,

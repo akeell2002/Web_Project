@@ -2,9 +2,8 @@ use sqlx::{PgPool, Row};
 use uuid::Uuid;
 use serde_json::Value;
 
-// ─── BED OVERVIEW ────────────────────────────────────────────────────────────
 
-/// All rooms with computed occupancy status and current patient (if any).
+// All rooms with computed occupancy status and current patient
 pub async fn get_bed_overview(pool: &PgPool) -> Result<Vec<Value>, String> {
     let rows = sqlx::query(
         r#"
@@ -59,8 +58,7 @@ pub async fn get_bed_overview(pool: &PgPool) -> Result<Vec<Value>, String> {
     Ok(beds)
 }
 
-// ─── BED STATS ───────────────────────────────────────────────────────────────
-
+// Bed stats showing total beds, available, occupied, and under maintenance
 pub async fn get_bed_stats(pool: &PgPool) -> Result<Value, String> {
     let row = sqlx::query(
         r#"
@@ -90,9 +88,7 @@ pub async fn get_bed_stats(pool: &PgPool) -> Result<Value, String> {
     }))
 }
 
-// ─── PATIENT CENSUS ──────────────────────────────────────────────────────────
-
-/// All patients active in the clinic today (checked-in, vitals taken, or completed).
+// All patients active in the clinic today - checked-in, vitals taken, or completed
 pub async fn get_patient_census(pool: &PgPool) -> Result<Vec<Value>, String> {
     let rows = sqlx::query(
         r#"
@@ -165,8 +161,7 @@ pub async fn get_patient_census(pool: &PgPool) -> Result<Vec<Value>, String> {
     Ok(patients)
 }
 
-// ─── PATIENT STATS ───────────────────────────────────────────────────────────
-
+// Patient stats showing total patients, emergency, vitals taken, and discharged today
 pub async fn get_patient_stats(pool: &PgPool) -> Result<Value, String> {
     let row = sqlx::query(
         r#"
@@ -192,8 +187,7 @@ pub async fn get_patient_stats(pool: &PgPool) -> Result<Value, String> {
     }))
 }
 
-// ─── TRANSFER REQUESTS ───────────────────────────────────────────────────────
-
+// All pending or approved bed transfer requests with patient and room details
 pub async fn get_transfer_requests(pool: &PgPool) -> Result<Vec<Value>, String> {
     let rows = sqlx::query(
         r#"
@@ -253,8 +247,7 @@ pub async fn get_transfer_requests(pool: &PgPool) -> Result<Vec<Value>, String> 
     Ok(transfers)
 }
 
-// ─── CREATE TRANSFER ─────────────────────────────────────────────────────────
-
+// Create a new bed transfer request by doctor or nurse
 pub async fn create_transfer_request(
     pool: &PgPool,
     patient_id: Uuid,
@@ -282,8 +275,7 @@ pub async fn create_transfer_request(
     Ok(row.get("id"))
 }
 
-// ─── APPROVE TRANSFER (doctor only) ──────────────────────────────────────────
-
+// Doctor to approve a pending bed transfer request
 pub async fn approve_transfer(
     pool: &PgPool,
     transfer_id: Uuid,
@@ -341,8 +333,7 @@ pub async fn approve_transfer(
     Ok(())
 }
 
-// ─── REJECT TRANSFER (doctor only) ───────────────────────────────────────────
-
+// Doctor to reject a pending bed transfer request
 pub async fn reject_transfer(
     pool: &PgPool,
     transfer_id: Uuid,
@@ -367,8 +358,7 @@ pub async fn reject_transfer(
     Ok(())
 }
 
-// ─── SET ROOM MAINTENANCE ────────────────────────────────────────────────────
-
+// Update the bed status of a room
 pub async fn set_room_status(pool: &PgPool, room_id: Uuid, status: &str) -> Result<(), String> {
     sqlx::query("UPDATE room SET bed_status = $1 WHERE id = $2")
         .bind(status)
@@ -379,15 +369,11 @@ pub async fn set_room_status(pool: &PgPool, room_id: Uuid, status: &str) -> Resu
     Ok(())
 }
 
-// ─── DISCHARGE ADMITTED PATIENT (doctor only) ────────────────────────────────
-
-/// Discharge an admitted patient: generate the final bill (consultation by
-/// priority + medicines + admission nights), then close the case ('completed')
-/// and free the bed. Only affects appointments currently in the 'admitted' state.
+// Discharge a patient and generate the final bill, close the bill and free the bed
 pub async fn discharge_patient(pool: &PgPool, appointment_id: Uuid) -> Result<(), String> {
     let mut tx = pool.begin().await.map_err(|e| format!("discharge begin: {}", e))?;
 
-    // Fetch the admitted appointment: patient, acuity, and nights stayed (min 1).
+    // Fetch the appointment details
     let appt = sqlx::query(
         r#"
         SELECT patient_id,
@@ -411,7 +397,7 @@ pub async fn discharge_patient(pool: &PgPool, appointment_id: Uuid) -> Result<()
     let priority_level: i32  = appt.get("priority_level");
     let nights:         i32  = appt.get("nights");
 
-    // Sum medicine charges across every prescription written during the visit.
+    // Sum medicine charges across every prescription written during the visit
     let med_rows = sqlx::query("SELECT medicine_name FROM prescription WHERE appointment_id = $1")
         .bind(appointment_id)
         .fetch_all(&mut *tx)
@@ -427,7 +413,7 @@ pub async fn discharge_patient(pool: &PgPool, appointment_id: Uuid) -> Result<()
     let admission_fee    = crate::pricing::admission_fee(nights as i64);
     let total            = consultation_fee + medicine_fee + admission_fee;
 
-    // Generate the discharge bill (admitted patients are billed here, not earlier).
+    // Generate the discharge bill
     sqlx::query(
         r#"
         INSERT INTO bills
@@ -445,7 +431,7 @@ pub async fn discharge_patient(pool: &PgPool, appointment_id: Uuid) -> Result<()
     .await
     .map_err(|e| format!("discharge insert bill: {}", e))?;
 
-    // Close the case and free the bed.
+    // Close the case and free the bed
     sqlx::query(
         r#"
         UPDATE appointment

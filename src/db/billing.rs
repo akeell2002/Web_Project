@@ -2,7 +2,7 @@ use sqlx::{PgPool, Error};
 use uuid::Uuid;
 use crate::models::billing::PendingBillItem;
 
-/// Fetches all invoices currently flagged as unpaid along with patient identity data
+// Fetches all invoices currently flagged as unpaid along with patient identity data
 pub async fn get_unpaid_bills(pool: &PgPool) -> Result<Vec<PendingBillItem>, Error> {
     let bills = sqlx::query_as!(
         PendingBillItem,
@@ -29,7 +29,7 @@ pub async fn get_unpaid_bills(pool: &PgPool) -> Result<Vec<PendingBillItem>, Err
     Ok(bills)
 }
 
-/// Fetches all bills for a specific patient, joined with appointment date
+// Fetches all bills for a specific patient joined with appointment date
 pub async fn get_patient_bills(pool: &PgPool, patient_id: Uuid) -> Result<Vec<serde_json::Value>, Error> {
     let rows = sqlx::query!(
         r#"
@@ -68,7 +68,7 @@ pub async fn get_patient_bills(pool: &PgPool, patient_id: Uuid) -> Result<Vec<se
     Ok(list)
 }
 
-/// Transitions a bill status to paid securely inside a single database connection
+// Transition a bill status to paid
 pub async fn mark_bill_as_paid(pool: &PgPool, bill_id: Uuid, staff_user_id: Uuid) -> Result<(), Error> {
     sqlx::query!(
         r#"

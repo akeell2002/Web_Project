@@ -2,7 +2,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 use chrono::{NaiveDate, NaiveTime};
 
-/// Fetches all active busy periods for a specific doctor on a given day
+// Fetches all active busy periods for a specific doctor on a given day
 pub async fn get_doctor_busy_periods(
     pool: &PgPool,
     doctor_id: Uuid,
@@ -26,7 +26,7 @@ pub async fn get_doctor_busy_periods(
     Ok(rows.into_iter().map(|r| (r.start_time, r.end_time)).collect())
 }
 
-/// Fetches all active busy periods for a specific patient on a given day
+// Fetches all active busy periods for a specific patient on a given day
 pub async fn get_patient_busy_periods(
     pool: &PgPool,
     patient_id: Uuid,
@@ -50,7 +50,7 @@ pub async fn get_patient_busy_periods(
     Ok(rows.into_iter().map(|r| (r.start_time, r.end_time)).collect())
 }
 
-/// Atomic INSERT that prevents double-booking for both the doctor and the patient
+// INSERT that prevents double-booking for both the doctor and the patient
 pub async fn book_patient_appointment(
     pool: &PgPool,
     patient_id: Uuid,
@@ -100,7 +100,7 @@ pub async fn book_patient_appointment(
     }
 }
 
-/// All appointments for a specific patient, enriched with doctor and room info
+// All appointments for a specific patient with doctor and room info
 pub async fn get_patient_appointments(
     pool: &PgPool,
     patient_id: Uuid,
@@ -136,7 +136,7 @@ pub async fn get_patient_appointments(
                 _ => "Assigned Practitioner".to_string(),
             };
             // A visit that's been completed, admitted, cancelled or marked no-show
-            // is finished — it belongs in Past Visits, never in Upcoming.
+            // is finished and should belong in Past Visits
             let is_terminal = matches!(row.status.as_str(), "cancelled" | "no_show" | "completed" | "admitted");
             let is_upcoming = !is_terminal && if row.date > now_date {
                 true
@@ -162,7 +162,7 @@ pub async fn get_patient_appointments(
     Ok(list)
 }
 
-/// Full clinic schedule for today - used by the receptionist
+// Full clinic schedule for today for the receptionist
 pub async fn get_today_clinic_schedule(pool: &PgPool) -> Result<Vec<serde_json::Value>, String> {
     let today = chrono::Local::now().date_naive();
 
@@ -210,25 +210,21 @@ pub async fn get_today_clinic_schedule(pool: &PgPool) -> Result<Vec<serde_json::
         .collect())
 }
 
-/// Check a patient in and assign the next queue number safely using transaction locks
+// Check a patient in and assign the next queue number safely using transaction locks
 pub async fn check_in_patient(pool: &PgPool, appointment_id: Uuid) -> Result<i32, String> {
-    // 1. Open an atomic transaction
     let mut tx = pool.begin().await.map_err(|e| e.to_string())?;
 
-    // 2. Look up the doctor associated with this appointment
     let appt_meta = sqlx::query!(
         "SELECT doctor_id FROM appointment WHERE id = $1", 
         appointment_id
     ).fetch_one(&mut *tx).await.map_err(|e| e.to_string())?;
 
-    // 3. Apply a Postgres Advisory Lock mapped to the doctor's ID.
-    // This forces competing check-ins for the SAME doctor to wait in a single-file line,
-    // without blocking check-ins for OTHER doctors.
+    // Acquire a lock based on doctor's UUID to prevent race conditions when multiple patients check in for the same doctor at the same time.
     let lock_id = (appt_meta.doctor_id.unwrap_or_default().as_u128() % 2147483647) as i64;
     sqlx::query!("SELECT pg_advisory_xact_lock($1)", lock_id)
         .execute(&mut *tx).await.map_err(|e| e.to_string())?;
 
-    // 4. Now it is mathematically safe to SELECT MAX and UPDATE
+    // Safely update the appointment status to 'checked_in' and assign the next queue number
     let record = sqlx::query!(
         r#"
         UPDATE appointment
@@ -248,8 +244,7 @@ pub async fn check_in_patient(pool: &PgPool, appointment_id: Uuid) -> Result<i32
     .await
     .map_err(|e| format!("Failed to update check-in status: {}", e))?;
 
-    // 4b. Assign an available triage station (best-effort). If every station is
-    //     occupied the patient simply waits with no room until one frees up.
+    // Assign a triage station if the appointment is checked in and doesn't already have a room assigned
     sqlx::query!(
         r#"
         UPDATE appointment
@@ -276,7 +271,6 @@ pub async fn check_in_patient(pool: &PgPool, appointment_id: Uuid) -> Result<i32
     .await
     .map_err(|e| format!("Failed to assign triage station: {}", e))?;
 
-    // 5. Commit the transaction (which automatically releases the lock)
     tx.commit().await.map_err(|e| e.to_string())?;
 
     match record {
@@ -285,7 +279,7 @@ pub async fn check_in_patient(pool: &PgPool, appointment_id: Uuid) -> Result<i32
     }
 }
 
-/// Mark an appointment as no_show (receptionist action, appointment must be scheduled/checked_in)
+// Mark an appointment as no_show for receptionist use
 pub async fn mark_appointment_no_show(
     pool:           &PgPool,
     appointment_id: Uuid,
@@ -306,7 +300,7 @@ pub async fn mark_appointment_no_show(
     Ok(())
 }
 
-/// Fetch a single appointment by ID for a specific patient (ownership check)
+// Fetch a single appointment by ID for a specific patient
 pub async fn get_patient_appointment_by_id(
     pool:           &PgPool,
     appointment_id: Uuid,
@@ -330,7 +324,7 @@ pub async fn get_patient_appointment_by_id(
     .await
 }
 
-/// Update an existing patient appointment (reschedule)
+// Update an existing patient appointment
 pub async fn update_patient_appointment(
     pool:           &PgPool,
     appointment_id: Uuid,
@@ -380,7 +374,7 @@ pub async fn update_patient_appointment(
     Ok(())
 }
 
-/// Cancel a patient's own appointment (only if still scheduled)
+// Cancel a patient's own appointment
 pub async fn cancel_patient_appointment(
     pool:           &PgPool,
     appointment_id: Uuid,

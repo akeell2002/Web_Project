@@ -2,7 +2,7 @@ mod scheduling;
 mod triage;
 mod consultation;
 
-// Re-export everything so callers see no change: db::appointments::X still works
+// To export for use in other modules
 pub use scheduling::*;
 pub use triage::*;
 pub use consultation::*;
