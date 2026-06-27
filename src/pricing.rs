@@ -11,7 +11,7 @@ pub fn consultation_fee(priority_level: i32) -> f64 {
     }
 }
 
-// Price 1 prescribed medicine
+// Price for 1 prescribed medicine
 pub fn medicine_price(name: &str) -> f64 {
     match name.trim().to_lowercase().as_str() {
         ""            => 0.0,

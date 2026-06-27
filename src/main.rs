@@ -30,11 +30,9 @@ async fn home_page(tera: web::Data<Tera>) -> impl Responder {
 // Main function to start the server
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    // Guys this is to load environment variables from .env file and initialize logger, do not rm
+    // Guys this is to load environment variables from .env file and initialize logger, do not remove
     dotenv::dotenv().ok();
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
-
-    println!("Starting Patient Management System...");
 
     // Create database pool and run migrations
     let db_pool = db::create_db_pool()
@@ -61,6 +59,7 @@ async fn main() -> std::io::Result<()> {
         .unwrap_or_else(|_| "a_very_long_and_secure_static_64_byte_secret_for_dev_testing_purposes!!".to_string());
     let secret_key = Key::from(session_secret.as_bytes());
 
+    println!("Starting Patient Management System...");
     println!("Server running at http://127.0.0.1:8080");
 
     // Start server

@@ -109,7 +109,7 @@ pub async fn seed_default_staff_users(pool: &PgPool) -> Result<(), String> {
                     }
                     tx.commit().await.map_err(|e| format!("Failed to commit backfill: {}", e))?;
 
-                    println!("Seeding layer: {} and accompanying profiles verified/refreshed.", email);
+                    println!("Seeding layer: {} verified/refreshed.", email);
                 }
                 None => {
                     // Create seeded user from scratch

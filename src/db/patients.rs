@@ -123,7 +123,7 @@ pub async fn update_patient_profile(
     emergency_contact_name:  Option<String>,
     emergency_contact_phone: Option<String>,
 ) -> Result<(), String> {
-    let mut tx: Transaction<'_, Postgres> = pool
+    let tx: Transaction<'_, Postgres> = pool
         .begin()
         .await
         .map_err(|e| format!("Failed to start transaction: {}", e))?;
@@ -176,7 +176,7 @@ pub async fn update_patient_profile(
 
 // Delete a patients account
 pub async fn delete_patient(pool: &PgPool, patient_id: Uuid, admin_email:&str, patient_email: &str,) -> Result<(), String> {
-    let mut tx: Transaction<'_, Postgres> = pool
+    let tx: Transaction<'_, Postgres> = pool
         .begin()
         .await
         .map_err(|e| format!("Failed to start transaction: {}", e))?;
