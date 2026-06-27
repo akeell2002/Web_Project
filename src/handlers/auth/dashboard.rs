@@ -5,6 +5,7 @@ use sqlx::PgPool;
 
 use crate::db::staff::get_staff_dashboard_counts;
 
+// Handler for the patient dashboard
 pub async fn patient_dashboard(
     session: Session,
     pool:web::Data<PgPool>,
@@ -46,6 +47,7 @@ pub async fn patient_dashboard(
     HttpResponse::SeeOther().append_header(("Location", "/patient/login")).finish()
 }
 
+// Handler for the staff dashboard
 pub async fn staff_dashboard(session: Session, tera: web::Data<Tera>) -> impl Responder {
     if let Ok(Some(role)) = session.get::<String>("role") {
         if role == "doctor" || role == "nurse" || role == "receptionist" {
@@ -70,6 +72,7 @@ pub async fn staff_dashboard(session: Session, tera: web::Data<Tera>) -> impl Re
     HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish()
 }
 
+// Handler for the admin dashboard
 pub async fn admin_dashboard(session: Session, pool: web::Data<PgPool>, tera: web::Data<Tera>) -> impl Responder {
     if let Ok(Some(role)) = session.get::<String>("role") {
         if role == "admin" {

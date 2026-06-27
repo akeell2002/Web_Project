@@ -14,11 +14,13 @@ use crate::db::staff::{
 
 use super::{admin_only, parse_role, parse_directory_role, staff_role_title};
 
+// Structs for query parameters and form submissions
 #[derive(Deserialize)]
 pub struct StaffDirectoryQuery {
     pub role: Option<String>,
 }
 
+// Form data for editing staff accounts
 #[derive(Deserialize)]
 pub struct EditStaffForm {
     pub first_name:   String,
@@ -28,6 +30,7 @@ pub struct EditStaffForm {
     pub role:         String,
 }
 
+// Handlers for admin staff management page
 pub async fn onboard_staff_page(tmpl: web::Data<Tera>, session: Session) -> impl Responder {
     if let Err(response) = admin_only(&session) {
         return response;
@@ -50,6 +53,7 @@ pub async fn onboard_staff_page(tmpl: web::Data<Tera>, session: Session) -> impl
     }
 }
 
+// Handler for processing the staff onboarding form submission
 pub async fn onboard_staff_submit(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -93,7 +97,7 @@ pub async fn onboard_staff_submit(
                 .finish()
         }
         Err(err_msg) => {
-            // Show a friendly inline error instead of a raw 400 page
+            // Show inline error instead of error 400 page
             let friendly = if err_msg.contains("duplicate key") || err_msg.contains("unique constraint") {
                 format!("An account with the email '{}' already exists. Please use a different email.", form.email)
             } else {
@@ -119,6 +123,7 @@ pub async fn onboard_staff_submit(
     }
 }
 
+// Handler for the staff directory page
 pub async fn staff_directory_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -165,7 +170,7 @@ pub async fn staff_directory_page(
     }
 }
 
-/// GET /admin/staff/{id}/edit - show the staff edit form pre-filled
+// Handler for the edit staff page
 pub async fn show_edit_staff_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -195,7 +200,7 @@ pub async fn show_edit_staff_page(
     }
 }
 
-/// POST /admin/staff/{id}/edit - save updated staff account
+// Handler for saving updated staff account information
 pub async fn process_edit_staff(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -221,7 +226,7 @@ pub async fn process_edit_staff(
             .append_header(("Location", "/admin/staff?success=staff_updated"))
             .finish(),
         Err(err_msg) => {
-            // Re-render the edit form with the error and the values just entered.
+            // Re-render the edit form with the error and the values just entered
             let staff = serde_json::json!({
                 "id":         staff_id.to_string(),
                 "email":      form.email,
@@ -245,7 +250,7 @@ pub async fn process_edit_staff(
     }
 }
 
-/// POST /admin/staff/{id}/delete - remove a staff account
+// Handler for deleting a staff account
 pub async fn process_delete_staff(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -256,7 +261,7 @@ pub async fn process_delete_staff(
     let staff_id    = path.into_inner();
     let admin_email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
 
-    // Guard: an admin cannot delete their own account.
+    // Make sure admin cannot delete their own account.
     if session.get::<Uuid>("user_id").unwrap_or(None) == Some(staff_id) {
         return HttpResponse::SeeOther()
             .append_header(("Location", "/admin/staff?error=self_delete"))

@@ -6,11 +6,13 @@ use serde::Deserialize;
 
 use super::ResetTokenStore;
 
+// Struct for the forgot password form submission
 #[derive(Deserialize)]
 pub struct ForgotPasswordForm {
     pub email: String,
 }
 
+// Struct for the reset password form submission
 #[derive(Deserialize)]
 pub struct ResetPasswordForm {
     pub token:            String,
@@ -18,11 +20,13 @@ pub struct ResetPasswordForm {
     pub confirm_password: String,
 }
 
+// Struct for the reset token query parameter
 #[derive(Deserialize)]
 pub struct ResetTokenQuery {
     pub token: Option<String>,
 }
 
+// Handler for the Forgot Password page
 pub async fn forgot_password_page(tera: web::Data<Tera>, req: HttpRequest) -> impl Responder {
     let mut ctx = Context::new();
     let referer = req
@@ -45,6 +49,7 @@ pub async fn forgot_password_page(tera: web::Data<Tera>, req: HttpRequest) -> im
     }
 }
 
+// Handler for processing the Forgot Password form submission
 pub async fn submit_forgot_password(
     pool:        web::Data<PgPool>,
     tera:        web::Data<Tera>,
@@ -63,7 +68,7 @@ pub async fn submit_forgot_password(
                 form.email, token
             );
         }
-        _ => {} // Don't reveal whether the email exists
+        _ => {} // To not reveal whether the email exists
     }
 
     let mut ctx = Context::new();
@@ -74,6 +79,7 @@ pub async fn submit_forgot_password(
     }
 }
 
+// Handler for displaying the Reset Password page
 pub async fn reset_password_page(
     tera:        web::Data<Tera>,
     token_store: web::Data<ResetTokenStore>,
@@ -102,6 +108,7 @@ pub async fn reset_password_page(
     }
 }
 
+// Handler for processing the Reset Password form submission
 pub async fn submit_reset_password(
     pool:        web::Data<PgPool>,
     tera:        web::Data<Tera>,

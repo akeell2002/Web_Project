@@ -5,6 +5,7 @@ use sqlx::PgPool;
 use serde::Deserialize;
 use uuid::Uuid;
 
+// Structs for form data and query parameters
 #[derive(Deserialize)]
 pub struct SupportTicketForm {
     pub submitter_name:      String,
@@ -12,23 +13,26 @@ pub struct SupportTicketForm {
     pub issue_description:   String,
 }
 
+// Struct for reply form data
 #[derive(Deserialize)]
 pub struct ReplyForm {
     pub ticket_id:   Uuid,
     pub reply_notes: String,
 }
 
+// Struct for the support form page query parameters
 #[derive(Deserialize)]
 pub struct SupportQuery {
     pub sent: Option<String>,
 }
 
+// Struct for the support dashboard query parameters
 #[derive(Deserialize)]
 pub struct SupportDashQuery {
     pub replied: Option<String>,
 }
 
-/// GET /support - public contact form
+// Handler for the support form page
 pub async fn support_form_page(
     tmpl:  web::Data<Tera>,
     query: web::Query<SupportQuery>,
@@ -42,7 +46,7 @@ pub async fn support_form_page(
     }
 }
 
-/// POST /support/submit - anonymous ticket submission
+// Handler for processing the support ticket submission
 pub async fn submit_support_ticket(
     pool: web::Data<PgPool>,
     form: web::Form<SupportTicketForm>,
@@ -57,7 +61,7 @@ pub async fn submit_support_ticket(
     }
 }
 
-/// GET /admin/support - admin support ticket dashboard
+// Handler for the admin support ticket dashboard
 pub async fn support_dashboard(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -94,7 +98,7 @@ pub async fn support_dashboard(
     }
 }
 
-/// POST /admin/support/reply - admin sends reply
+// Handler for submitting a reply to a support ticket
 pub async fn submit_reply(
     pool:    web::Data<PgPool>,
     session: Session,

@@ -9,6 +9,7 @@ use serde::Deserialize;
 use crate::models::appointment::UIAppointmentSlot;
 use crate::db::appointments::{get_doctor_busy_periods, get_patient_busy_periods};
 
+// Struct for booking query parameters
 #[derive(Deserialize)]
 pub struct BookingQuery {
     pub doctor_id:        Option<Uuid>,
@@ -17,6 +18,7 @@ pub struct BookingQuery {
     pub visit_type:       Option<String>,
 }
 
+// Struct for doctor dropdown items in the booking form
 #[derive(serde::Serialize)]
 struct DoctorDropdownItem {
     id:         Uuid,
@@ -24,7 +26,7 @@ struct DoctorDropdownItem {
     last_name:  String,
 }
 
-/// GET - patient appointment booking form with time-slot grid
+// Handler to display the booking form for patients
 pub async fn show_booking_form(
     tmpl:    web::Data<Tera>,
     pool:    web::Data<PgPool>,
@@ -103,6 +105,7 @@ pub async fn show_booking_form(
     }
 }
 
+// Struct for the appointment booking form data submission
 #[derive(Deserialize)]
 pub struct SubmitAppointmentForm {
     pub doctor_id:        Uuid,
@@ -112,7 +115,7 @@ pub struct SubmitAppointmentForm {
     pub visit_type:       String,
 }
 
-/// POST - book the appointment
+// Handler to process the appointment booking form submission
 pub async fn submit_appointment(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -156,9 +159,7 @@ pub async fn submit_appointment(
     }
 }
 
-// --- RECEPTIONIST DESK ---
-
-/// GET - receptionist reception desk
+// Handler to display the reception desk page for receptionists
 pub async fn reception_desk_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -187,7 +188,7 @@ pub async fn reception_desk_page(
     }
 }
 
-/// POST - check a patient in from the reception desk
+// Handler to process checking a patient in from the reception desk
 pub async fn process_check_in(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -210,7 +211,7 @@ pub async fn process_check_in(
     }
 }
 
-/// POST - receptionist marks an appointment as no-show
+// Handler to mark an appointment as no-show
 pub async fn process_no_show(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -233,8 +234,7 @@ pub async fn process_no_show(
     }
 }
 
-// --- UPDATE APPOINTMENT ---
-
+// Struct for the appointment update query parameters
 #[derive(Deserialize)]
 pub struct UpdateQuery {
     pub doctor_id:        Option<Uuid>,
@@ -243,7 +243,7 @@ pub struct UpdateQuery {
     pub visit_type:       Option<String>,
 }
 
-/// GET - patient appointment update form (pre-seeded with current values)
+// Handler to display the appointment update form for patients
 pub async fn show_update_form(
     tmpl:    web::Data<Tera>,
     pool:    web::Data<PgPool>,
@@ -334,6 +334,7 @@ pub async fn show_update_form(
     }
 }
 
+// Struct for the appointment update form data submission
 #[derive(Deserialize)]
 pub struct SubmitUpdateForm {
     pub doctor_id:        Uuid,
@@ -343,7 +344,7 @@ pub struct SubmitUpdateForm {
     pub visit_type:       String,
 }
 
-/// POST - save rescheduled appointment
+// Handler to save the updated appointment details
 pub async fn submit_update_appointment(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -376,7 +377,7 @@ pub async fn submit_update_appointment(
     }
 }
 
-/// POST - cancel a patient's own appointment
+// Handler to cancel a patient's appointment
 pub async fn cancel_appointment(
     pool:    web::Data<PgPool>,
     session: Session,

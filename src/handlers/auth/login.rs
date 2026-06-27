@@ -7,6 +7,7 @@ use uuid::Uuid;
 use crate::models::user::{LoginForm, UserRole};
 use crate::db::users::{authenticate_user, log_access_event};
 
+// Handler for the staff login page
 pub async fn staff_login(tera: web::Data<Tera>) -> impl Responder {
     let ctx = Context::new();
     match tera.render("staff/login.html", &ctx) {
@@ -15,6 +16,7 @@ pub async fn staff_login(tera: web::Data<Tera>) -> impl Responder {
     }
 }
 
+// Handler for the patient login page
 pub async fn patient_login(tera: web::Data<Tera>) -> impl Responder {
     let ctx = Context::new();
     match tera.render("patient/login.html", &ctx) {
@@ -23,6 +25,7 @@ pub async fn patient_login(tera: web::Data<Tera>) -> impl Responder {
     }
 }
 
+// Handler for processing login form submissions
 pub async fn login(
     pool:    web::Data<PgPool>,
     tera:    web::Data<Tera>,
@@ -32,9 +35,7 @@ pub async fn login(
 ) -> impl Responder {
     match authenticate_user(&pool, &form.email, &form.password).await {
         Ok(Some(user)) => {
-            // Portal enforcement: patient portal → patients only, staff portal → staff only.
-            // Use the same generic error as a wrong password to avoid revealing
-            // whether the account exists on this portal (user enumeration).
+            // Patient login via patient portal only, and staff login via staff portal only
             let is_patient_portal = req.path().starts_with("/patient");
             let is_patient_role   = user.role == UserRole::Patient;
             if is_patient_portal != is_patient_role {
@@ -60,8 +61,7 @@ pub async fn login(
             };
             let _ = session.insert("role", role_str);
 
-            // Cache the user's real name in the session so every page can show it
-            // without an extra DB query, and so name changes take effect immediately.
+            // Cache the user's real name in the session so every page can show it without an extra DB query
             let name: String = match user.role {
                 UserRole::Patient => {
                     sqlx::query_scalar::<_, String>(
@@ -128,6 +128,7 @@ pub async fn login(
     }
 }
 
+// Handler for logging out users
 pub async fn logout(pool: web::Data<PgPool>, session: Session) -> impl Responder {
     let current_user_id = session.get::<Uuid>("user_id").unwrap_or_default();
     let current_email   = session.get::<String>("email").unwrap_or_default().unwrap_or_default();

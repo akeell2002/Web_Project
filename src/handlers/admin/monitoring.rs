@@ -8,6 +8,7 @@ use crate::db::analytics::get_clinic_analytics;
 
 use super::admin_only;
 
+// Handler for the security monitoring page
 pub async fn security_monitoring_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -41,6 +42,7 @@ pub async fn security_monitoring_page(
     }
 }
 
+// Handler for the analytics page
 pub async fn analytics_page(
     pool:    web::Data<PgPool>,
     session: Session,

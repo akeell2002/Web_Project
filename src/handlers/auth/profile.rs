@@ -6,6 +6,7 @@ use uuid::Uuid;
 use serde::Deserialize;
 use chrono::NaiveDate;
 
+// Handler for the patient profile page
 pub async fn patient_profile_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -40,6 +41,7 @@ pub async fn patient_profile_page(
     }
 }
 
+// Struct for the patient profile update form submission
 #[derive(Deserialize)]
 pub struct UpdatePatientProfileForm {
     pub first_name:              String,
@@ -51,6 +53,7 @@ pub struct UpdatePatientProfileForm {
     pub emergency_contact_phone: Option<String>,
 }
 
+// Struct for the staff profile update form submission
 #[derive(Deserialize)]
 pub struct UpdateStaffProfileForm {
     pub first_name:   String,
@@ -58,7 +61,7 @@ pub struct UpdateStaffProfileForm {
     pub phone_number: Option<String>,
 }
 
-/// POST /patient/profile - save updated patient profile
+// Handler for updating the patient profile
 pub async fn update_patient_profile_handler(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -96,7 +99,7 @@ pub async fn update_patient_profile_handler(
     }
 }
 
-/// POST /staff/profile - save updated staff profile
+// Handler for updating the staff profile
 pub async fn update_staff_profile_handler(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -130,7 +133,7 @@ pub async fn update_staff_profile_handler(
     }
 }
 
-/// GET /patient/history - patient views their own visit history
+// Handler for patient viewing their medical history
 pub async fn patient_medical_history_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -141,7 +144,7 @@ pub async fn patient_medical_history_page(
         return HttpResponse::SeeOther().append_header(("Location", "/patient/login")).finish();
     }
 
-    let email      = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
+    let email = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
     let patient_id = match session.get::<Uuid>("user_id").unwrap_or_default() {
         Some(id) => id,
         None     => return HttpResponse::SeeOther().append_header(("Location", "/patient/login")).finish(),
@@ -150,7 +153,7 @@ pub async fn patient_medical_history_page(
 
     match crate::db::patients::get_patient_detail(&pool, patient_id).await {
         Ok(Some(profile)) => {
-            // Extract the visits array from the full profile JSON
+            // Extract the visits array from the full profile in JSON
             let visits = profile.get("visits").cloned().unwrap_or(serde_json::Value::Array(vec![]));
             let mut ctx = Context::new();
             ctx.insert("specific_role", "patient");
@@ -167,7 +170,7 @@ pub async fn patient_medical_history_page(
     }
 }
 
-/// GET /patient/bills - patient views their bill history
+// Handler for patient viewing their bill history
 pub async fn patient_bill_history_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -205,6 +208,7 @@ pub async fn patient_bill_history_page(
     }
 }
 
+// Handler for staff viewing their profile page
 pub async fn staff_profile_page(
     pool:    web::Data<PgPool>,
     session: Session,

@@ -6,6 +6,7 @@ use sqlx::PgPool;
 use crate::models::user::PatientRegisterForm;
 use crate::db::patients::register_patient;
 
+// Handler for displaying the patient registration page
 pub async fn show_register(tera: web::Data<Tera>) -> impl Responder {
     let ctx = Context::new();
     match tera.render("patient/register.html", &ctx) {
@@ -14,6 +15,7 @@ pub async fn show_register(tera: web::Data<Tera>) -> impl Responder {
     }
 }
 
+// Handler for processing the patient registration form submission
 pub async fn register(
     pool:    web::Data<PgPool>,
     form:    web::Form<PatientRegisterForm>,
@@ -36,7 +38,7 @@ pub async fn register(
 
     match register_patient(&pool, &form.email, &form.password, profile).await {
         Ok(_user) => {
-            // Don't auto-login — send to login page with a success banner instead
+            // Make sure not to auto login
             HttpResponse::SeeOther()
                 .append_header(("Location", "/patient/login?registered=1"))
                 .finish()

@@ -2,8 +2,7 @@ use actix_web::HttpResponse;
 use actix_session::Session;
 use crate::models::user::UserRole;
 
-// ── Shared admin helpers ──────────────────────────────────────────────────────
-
+// Helper functions for admin handlers
 pub(super) fn admin_only(session: &Session) -> Result<(), HttpResponse> {
     match session.get::<String>("role") {
         Ok(Some(role)) if role == "admin" => Ok(()),
@@ -46,13 +45,12 @@ pub(super) fn parse_directory_role(role: Option<&str>) -> Result<Option<UserRole
     }
 }
 
-// ── Submodules ────────────────────────────────────────────────────────────────
-
+// Submodules for admin handlers
 mod staff;
 mod monitoring;
 mod patients;
 mod support;
-
+// Re exporting submodules for external use
 pub use staff::*;
 pub use monitoring::*;
 pub use patients::*;

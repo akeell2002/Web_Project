@@ -5,12 +5,13 @@ use uuid::Uuid;
 use tera::{Tera, Context};
 use serde::Deserialize;
 
+// Struct for query parameters to filter the doctor's daily queue view
 #[derive(Deserialize)]
 pub struct QueueFilterParams {
     pub view: Option<String>,
 }
 
-/// GET - doctor's daily clinical queue
+// Handler to display the doctor's daily queue page
 pub async fn doctor_daily_queue_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -56,7 +57,7 @@ pub async fn doctor_daily_queue_page(
     }
 }
 
-/// GET - consultation form for a specific appointment
+// Handler to display the consultation form for a specific appointment
 pub async fn show_consultation_form(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -105,14 +106,14 @@ pub async fn show_consultation_form(
     }
 }
 
-/// POST - submit consultation, create medical record, bill, close appointment
+// Handler to submit consultation, create medical record, bill, close appointment
 pub async fn submit_consultation(
     pool:    web::Data<PgPool>,
     session: Session,
     path:    web::Path<Uuid>,
     form:    web::Form<crate::models::appointment::EncounterForm>,
 ) -> impl Responder {
-    // Only a doctor may finalize a consultation (and decide on admission).
+    // Only a doctor may finalize a consultation and decide on admission
     match session.get::<String>("role") {
         Ok(Some(role)) if role == "doctor" => {}
         _ => return HttpResponse::Forbidden().body("Access Denied: Doctor access required."),
@@ -137,6 +138,7 @@ pub async fn submit_consultation(
     }
 }
 
+// Struct for the prescription form data
 #[derive(Deserialize)]
 pub struct PrescribeForm {
     pub medicine_name: String,
@@ -146,7 +148,7 @@ pub struct PrescribeForm {
     pub instructions:  Option<String>,
 }
 
-/// GET - prescribe medication page (per-patient cards)
+// Handler to display the prescribe medication page per patient appointment
 pub async fn prescribe_medication_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -183,7 +185,7 @@ pub async fn prescribe_medication_page(
     }
 }
 
-/// POST - issue a prescription for a specific appointment
+// Handler to submit a prescription for a specific appointment
 pub async fn submit_prescription(
     pool:    web::Data<PgPool>,
     session: Session,

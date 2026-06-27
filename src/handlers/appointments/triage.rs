@@ -5,6 +5,7 @@ use uuid::Uuid;
 use tera::{Tera, Context};
 use serde::Deserialize;
 
+// Struct for the form data submitted by the nurse during triage
 #[derive(Deserialize)]
 pub struct SubmitVitalsForm {
     pub blood_pressure: String,
@@ -14,7 +15,7 @@ pub struct SubmitVitalsForm {
     pub priority_level: i32,
 }
 
-/// GET - nurse triage queue
+// Handler to display the nurse triage page
 pub async fn nurse_triage_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -43,7 +44,7 @@ pub async fn nurse_triage_page(
     }
 }
 
-/// POST - nurse submits triage vitals
+// Handler to process the submission of patient vitals during triage
 pub async fn submit_triage_vitals(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -74,7 +75,7 @@ pub async fn submit_triage_vitals(
     }
 }
 
-/// GET - nurse medication administration page
+// Handler to display the medication administration page for nurses
 pub async fn medication_administration_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -106,12 +107,13 @@ pub async fn medication_administration_page(
     }
 }
 
+// Struct for the form data submitted by the nurse when logging medication administration
 #[derive(Deserialize)]
 pub struct AdminLogForm {
     pub remarks: Option<String>,
 }
 
-/// POST - nurse logs medication administration
+// Handler to submit medication administration logs
 pub async fn submit_medication_administration(
     pool:    web::Data<PgPool>,
     session: Session,

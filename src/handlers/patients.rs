@@ -1,4 +1,3 @@
-// src/handlers/patients.rs
 use actix_web::{web, HttpResponse, Responder};
 use actix_session::Session;
 use tera::{Tera, Context};
@@ -8,6 +7,7 @@ use uuid::Uuid;
 use chrono::NaiveDate;
 use crate::models::patient::CreatePatientProfile;
 
+// Struct for handling the form submission of adding a new patient
 #[derive(Deserialize)]
 pub struct AddPatientForm {
     pub first_name:              String,
@@ -21,6 +21,7 @@ pub struct AddPatientForm {
     pub raw_password:            String,
 }
 
+// Struct for handling the form submission of editing an existing patient's details
 #[derive(Deserialize)]
 pub struct EditPatientForm {
     pub first_name:              String,
@@ -32,7 +33,7 @@ pub struct EditPatientForm {
     pub emergency_contact_phone: Option<String>,
 }
 
-
+// Handler for displaying the "Add Patient" page to authorized staff members
 pub async fn show_add_patient_page(
     session: Session, 
     tmpl: web::Data<Tera>
@@ -50,13 +51,13 @@ pub async fn show_add_patient_page(
     ctx.insert("email", &email);
     ctx.insert("display_name", &display_name);
 
-    // UPDATED: Points to the secure staff directory template path
     match tmpl.render("staff/add.html", &ctx) {
         Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
         Err(e) => HttpResponse::InternalServerError().body(format!("Form layout load error: {}", e)),
     }
 }
 
+// Handler for displaying the patient detail page to authorized staff members
 pub async fn patient_detail_page(
     pool: web::Data<PgPool>,
     session: Session,
@@ -90,6 +91,7 @@ pub async fn patient_detail_page(
     }
 }
 
+// Handler for displaying the patient report page to authorized staff members
 pub async fn patient_report_page(
     pool: web::Data<PgPool>,
     session: Session,
@@ -119,6 +121,7 @@ pub async fn patient_report_page(
     }
 }
 
+// Handler for processing the addition of a new patient to the system
 pub async fn process_add_patient(
     pool: web::Data<PgPool>,
     session: Session,
@@ -153,7 +156,7 @@ pub async fn process_add_patient(
     }
 }
 
-/// GET /staff/patients/{id}/edit - show edit form pre-filled with current data
+// Handler for displaying the Edit Patient page to authorized staff members
 pub async fn show_edit_patient_page(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -184,7 +187,7 @@ pub async fn show_edit_patient_page(
     }
 }
 
-/// POST /staff/patients/{id}/edit - save updated demographics
+// Handler for processing the update of a patient's details
 pub async fn process_edit_patient(
     pool:    web::Data<PgPool>,
     session: Session,
@@ -215,7 +218,7 @@ pub async fn process_edit_patient(
     }
 }
 
-/// POST /staff/patients/{id}/delete - remove patient account
+// Handler for processing the deletion of a patient account
 pub async fn process_delete_patient(
     pool:    web::Data<PgPool>,
     session: Session,

@@ -7,8 +7,7 @@ use serde::Deserialize;
 
 use crate::db;
 
-// ─── BED MANAGEMENT PAGE ─────────────────────────────────────────────────────
-
+// Handlers for bed management to view beds, approve/reject transfers, and discharging patients
 pub async fn bed_management_page(
     pool: web::Data<PgPool>,
     session: Session,
@@ -22,7 +21,7 @@ pub async fn bed_management_page(
     let email = session.get::<String>("email").unwrap_or(None).unwrap_or_default();
     let display_name = crate::handlers::get_display_name(&session);
 
-    // Fetch all data in parallel (sequentially for simplicity)
+    // Fetch all data in parallel
     let beds = db::beds::get_bed_overview(&pool).await.unwrap_or_default();
     let bed_stats = db::beds::get_bed_stats(&pool).await
         .unwrap_or_else(|_| serde_json::json!({"total_beds":0,"available":0,"occupied":0,"maintenance":0}));
@@ -52,14 +51,13 @@ pub async fn bed_management_page(
     }
 }
 
-// ─── APPROVE TRANSFER ────────────────────────────────────────────────────────
-
+// Handlers for approving transfer requests
 pub async fn approve_transfer_handler(
     pool: web::Data<PgPool>,
     session: Session,
     path: web::Path<Uuid>,
 ) -> impl Responder {
-    // Doctor-only gate
+    // Doctor only
     match session.get::<String>("role") {
         Ok(Some(r)) if r == "doctor" || r == "admin" => {}
         _ => return HttpResponse::Forbidden().body("Only doctors can approve transfers"),
@@ -83,8 +81,7 @@ pub async fn approve_transfer_handler(
     }
 }
 
-// ─── REJECT TRANSFER ─────────────────────────────────────────────────────────
-
+// Handlers for rejecting transfer requests
 pub async fn reject_transfer_handler(
     pool: web::Data<PgPool>,
     session: Session,
@@ -113,14 +110,13 @@ pub async fn reject_transfer_handler(
     }
 }
 
-// ─── DISCHARGE ADMITTED PATIENT (doctor only) ────────────────────────────────
-
+// Handlers for discharging patients
 pub async fn discharge_patient_handler(
     pool: web::Data<PgPool>,
     session: Session,
     path: web::Path<Uuid>,
 ) -> impl Responder {
-    // Doctor-only gate: nurses and receptionists cannot discharge.
+    // Doctor only
     match session.get::<String>("role") {
         Ok(Some(r)) if r == "doctor" || r == "admin" => {}
         _ => return HttpResponse::Forbidden().body("Only doctors can discharge patients"),
@@ -141,8 +137,7 @@ pub async fn discharge_patient_handler(
     }
 }
 
-// ─── REQUEST TRANSFER (POST form) ────────────────────────────────────────────
-
+// Struct for transfer request form data
 #[derive(Deserialize)]
 pub struct TransferForm {
     pub patient_id:   String,
@@ -151,6 +146,7 @@ pub struct TransferForm {
     pub reason:       Option<String>,
 }
 
+// Handler for requesting a transfer
 pub async fn request_transfer_handler(
     pool: web::Data<PgPool>,
     session: Session,

@@ -3,6 +3,7 @@ use actix_session::Session;
 use tera::{Tera, Context};
 use sqlx::PgPool;
 
+// Handler for the patient directory page
 pub async fn patient_directory_page(
     pool:    web::Data<PgPool>,
     session: Session,

@@ -7,13 +7,13 @@ use uuid::Uuid;
 use crate::db::billing::{get_unpaid_bills, mark_bill_as_paid};
 use crate::models::billing::ProcessPaymentForm;
 
-/// GET: Renders a dashboard containing all active unpaid hospital invoices
+// Handler for displaying the billing dashboard to authorized staff members
 pub async fn show_billing_dashboard(
     session: Session,
     tmpl: web::Data<Tera>,
     pool: web::Data<PgPool>,
 ) -> impl Responder {
-    // Role Authorization Check Guard
+    // Role Authorization
     match session.get::<String>("role") {
         Ok(Some(role)) if role == "receptionist" || role == "admin" => {},
         _ => return HttpResponse::SeeOther().insert_header(("Location", "/staff/login")).finish(),
@@ -47,7 +47,7 @@ pub async fn show_billing_dashboard(
     }
 }
 
-/// POST: Receives a targeted invoice payment processing form submission request
+// Handler for processing the payment of a specific bill
 pub async fn checkout_bill_submit(
     session: Session,
     pool: web::Data<PgPool>,
@@ -67,7 +67,6 @@ pub async fn checkout_bill_submit(
 
     match mark_bill_as_paid(&pool, form.bill_id, staff_user_id).await {
         Ok(_) => {
-            // Successfully collected! Refresh the screen tracking directory grid
             HttpResponse::SeeOther()
                 .insert_header(("Location", "/staff/receptionist/billing?success=bill_paid"))
                 .finish()
