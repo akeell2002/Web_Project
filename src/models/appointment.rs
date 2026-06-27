@@ -2,6 +2,7 @@ use uuid::Uuid;
 use chrono::{NaiveDate, NaiveTime, DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
+// Struct representing an appointment in the system
 #[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Appointment {
     pub id: Uuid,
@@ -19,16 +20,15 @@ pub struct Appointment {
     pub updated_at: Option<DateTime<Utc>>,
 }
 
-/// Represents a single 15-minute block calculated by the backend for the front-end grid
+// Struct representing an appointment slot for UI
 #[derive(Debug, Serialize)]
 pub struct UIAppointmentSlot {
-    pub time_string: String, // e.g., "09:15 AM"
-    pub raw_time: NaiveTime,  // Passed back to the form action
-    pub is_available: bool,   // Controls if it's clickable or grayed out
+    pub time_string: String,
+    pub raw_time: NaiveTime,
+    pub is_available: bool,
 }
 
-// --- Moved from models/consultation.rs ---
-
+// Struct representing the form data for an encounter submission
 #[derive(Debug, Deserialize)]
 pub struct EncounterForm {
     // Medical Record Fields
@@ -43,7 +43,6 @@ pub struct EncounterForm {
     pub duration: Option<String>,
     pub instructions: Option<String>,
 
-    // Which submit button was pressed: "admit" admits the patient to an
-    // inpatient bed (no bill yet); anything else signs off and bills now.
+    // Check if admit button pressed
     pub action: Option<String>,
 }

@@ -4,6 +4,7 @@ use uuid::Uuid;
 use chrono::{DateTime, Utc};
 use crate::models::user::UserRole;
 
+// Struct representing a staff member in the system
 #[derive(Debug, Clone, Serialize, FromRow)]
 pub struct Staff {
     pub id: Uuid, // Links directly to user id
@@ -13,7 +14,7 @@ pub struct Staff {
     pub updated_at: DateTime<Utc>,
 }
 
-// Used by the Admin when onboarding a new doctor, nurse, or receptionist
+// Struct representing the form data for creating a new staff profile
 #[derive(Debug, Deserialize)]
 pub struct CreateStaffProfile {
     pub first_name: String,
@@ -21,6 +22,7 @@ pub struct CreateStaffProfile {
     pub phone_number: Option<String>,
 }
 
+// Struct representing the form data for onboarding a new staff member
 #[derive(Debug, serde::Deserialize)]
 pub struct OnboardStaffForm {
     pub email: String,
@@ -31,6 +33,7 @@ pub struct OnboardStaffForm {
     pub role: String,
 }
 
+// Struct representing counts of staff members by role for dashboard display
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct StaffDashboardCounts {
     pub total_staff: i64,
@@ -40,6 +43,7 @@ pub struct StaffDashboardCounts {
     pub receptionists: i64,
 }
 
+// Struct representing a row in the staff directory for display
 #[derive(Debug, Clone, Serialize)]
 pub struct StaffDirectoryRow {
     pub id: Uuid,

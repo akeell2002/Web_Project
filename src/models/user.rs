@@ -3,7 +3,7 @@ use sqlx::FromRow;
 use uuid::Uuid;
 use chrono::{DateTime, Utc};
 
-// Postgres ENUM to Rust Enum
+// Enum representing the different roles a user can have in the system, converted from Postgres ENUM to Rust Enum
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type, PartialEq)]
 #[sqlx(type_name = "user_role", rename_all = "lowercase")]
 pub enum UserRole {
@@ -19,13 +19,14 @@ pub enum UserRole {
 pub struct User {
     pub id: Uuid,
     pub email: String,
-    #[serde(skip_serializing)] // To avoid sending password hash in API responses
+    #[serde(skip_serializing)] // To avoid sending password hash in API responses, safety stuff
     pub password: String,
     pub role: UserRole,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
 
+// Struct representing the form data for registering a new patient
 #[derive(Debug, serde::Deserialize)]
 pub struct PatientRegisterForm {
     pub email: String,
@@ -40,22 +41,22 @@ pub struct PatientRegisterForm {
     pub emergency_contact_phone: Option<String>,
 }
 
+// Struct representing the form data for logging in a user
 #[derive(Debug, serde::Deserialize)]
 pub struct LoginForm {
     pub email: String,
     pub password: String,
 }
 
-// --- Moved from models/access_log.rs ---
-
+// Struct representing log entries for user actions in the system
 #[derive(Debug, Clone, Serialize)]
 pub struct AccessLogEntry {
     pub id: Uuid,
     pub actor_user_id: Option<Uuid>,
     pub actor_email: Option<String>,
     pub action_type: String,
-    pub action_label: String, // human-friendly label, e.g. "Staff Deleted"
-    pub action_kind: String,  // colour group: created | updated | deleted | admitted | discharged | access
+    pub action_label: String,
+    pub action_kind: String,
     pub target_user_id: Option<Uuid>,
     pub target_email: String,
     pub target_role: String,
@@ -63,7 +64,7 @@ pub struct AccessLogEntry {
     pub created_at: String,
 }
 
-/// Turn a raw action_type key into a readable label.
+// Helper function to convert action types into labels
 fn humanize_action(action_type: &str) -> String {
     match action_type {
         "staff_account_created"   => "Staff Created".to_string(),
@@ -81,7 +82,7 @@ fn humanize_action(action_type: &str) -> String {
         "patient_checked_in"      => "Patient Checked In".to_string(),
         "patient_admitted"        => "Patient Admitted".to_string(),
         "patient_discharged"      => "Patient Discharged".to_string(),
-        // Fallback: title-case the snake_case key.
+        // Fallback if none of the above match just in case
         other => other
             .split('_')
             .map(|w| {
@@ -96,7 +97,7 @@ fn humanize_action(action_type: &str) -> String {
     }
 }
 
-/// Colour group for the action badge.
+// Helper function to determine the colour group for the action badge.
 fn action_colour(action_type: &str) -> &'static str {
     if action_type.ends_with("_deleted") { "deleted" }
     else if action_type.ends_with("_updated") { "updated" }
@@ -106,6 +107,7 @@ fn action_colour(action_type: &str) -> &'static str {
     else { "access" }
 }
 
+// Implementation block for AccessLogEntry to create a new instance from its parts
 impl AccessLogEntry {
     pub fn from_parts(
         id: Uuid,
