@@ -99,6 +99,7 @@ pub async fn get_patient_census(pool: &PgPool) -> Result<Vec<Value>, String> {
             COALESCE(p.gender, 'Unknown')                          AS gender,
             a.id::text                                             AS appointment_id,
             a.status::text                                         AS status,
+            r.id::text                                             AS room_id,
             COALESCE(r.room_name, '-')                             AS room_name,
             COALESCE(r.room_type, '')                              AS room_type,
             COALESCE(s.first_name || ' ' || s.last_name, 'Unassigned') AS doctor_name,
@@ -150,6 +151,7 @@ pub async fn get_patient_census(pool: &PgPool) -> Result<Vec<Value>, String> {
                 "status_label":   status_label,
                 "priority_level": priority,
                 "priority_label": priority_label,
+                "room_id":        r.get::<Option<String>, _>("room_id"),
                 "room_name":      r.get::<String, _>("room_name"),
                 "room_type":      r.get::<String, _>("room_type"),
                 "doctor_name":    r.get::<String, _>("doctor_name"),
@@ -303,8 +305,10 @@ pub async fn approve_transfer(
         SET    room_id     = $1,
                updated_at  = NOW()
         WHERE  patient_id  = $2
-          AND  date        = CURRENT_DATE
-          AND  status IN ('checked_in', 'vitals_taken')
+          AND  (
+                 (date = CURRENT_DATE AND status IN ('checked_in', 'vitals_taken'))
+                 OR status = 'admitted'
+               )
         "#,
     )
     .bind(to_room_id)

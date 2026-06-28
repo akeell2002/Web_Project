@@ -430,6 +430,20 @@ function filterPatients(query) {
    document.getElementById('no-results').style.display = (visible === 0 && q.length > 0) ? 'block' : 'none';
 }
 
+/* Bed transfer modal: auto-fill "From Room (current)" with the selected
+   patient's current room. Admitted (or otherwise roomed) patients carry a
+   data-room-id on their option; if absent the field falls back to "None". */
+function autofillFromRoom(patientSelect) {
+    var fromRoom = document.getElementById('transferFromRoom');
+    if (!fromRoom) return;
+
+    var opt    = patientSelect.options[patientSelect.selectedIndex];
+    var roomId = opt ? (opt.getAttribute('data-room-id') || '') : '';
+
+    // Only a valid room id should preselect; '-', '' or missing → None/Unknown.
+    fromRoom.value = roomId && roomId !== '-' ? roomId : '';
+}
+
 /* Bed management status tab filter (All / Waiting / Vitals Taken / Completed) */
 function filterRows(filter, btn) {
     document.querySelectorAll('.bm-tab').forEach(t => t.classList.remove('active'));

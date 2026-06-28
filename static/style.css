@@ -972,21 +972,22 @@ body.page-app-patient .slot-available input[type="radio"] { accent-color: #16a34
     .encounter { break-inside: avoid; }
 }
 
-.modal-overlay {
+.bm-modal-overlay {
     display: none; position: fixed; inset: 0; z-index: 500;
     background: rgba(0,0,0,0.5); align-items: center; justify-content: center;
 }
-.modal-overlay.open { display: flex; }
-.modal {
+.bm-modal-overlay.open { display: flex; }
+.bm-modal {
+    display: block; position: static; height: auto;
     background: white; border-radius: 14px; padding: 28px;
     width: 100%; max-width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
     border: 1px solid #E5E7EB;
 }
-.modal h3    { font-size: 17px; font-weight: 700; margin: 0 0 20px; }
-.modal label { font-size: 13px; font-weight: 600; color: #374151; display: block; margin: 12px 0 4px; }
-.modal select, .modal textarea { width: 100%; padding: 9px 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 14px; }
-.modal textarea  { resize: vertical; }
-.modal-actions   { display: flex; gap: 10px; margin-top: 20px; }
+.bm-modal h3    { font-size: 17px; font-weight: 700; margin: 0 0 20px; }
+.bm-modal label { font-size: 13px; font-weight: 600; color: #374151; display: block; margin: 12px 0 4px; }
+.bm-modal select, .bm-modal textarea { width: 100%; padding: 9px 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 14px; }
+.bm-modal textarea  { resize: vertical; }
+.bm-modal-actions   { display: flex; gap: 10px; margin-top: 20px; }
 
 /* Patient report printing */
 .print-bar {

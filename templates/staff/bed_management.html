@@ -210,21 +210,26 @@
     </div>
     
     <!-- REQUEST TRANSFER MODAL -->
-    <div class="modal-overlay"
+    <div class="bm-modal-overlay"
          id="transferModal"
          onclick="if(event.target===this)this.classList.remove('open')">
-        <div class="modal">
+        <div class="bm-modal">
             <h3>↔ Request Room Transfer</h3>
             <form method="POST" action="/staff/beds/transfer/request">
                 <label class="form-label fw-semibold small">Patient</label>
-                <select class="form-select" name="patient_id" required>
+                <select class="form-select" name="patient_id" id="transferPatient" required
+                        onchange="autofillFromRoom(this)">
                     <option value="">Select patient…</option>
                     {% for p in patients %}
-                        <option value="{{ p.patient_id }}">{{ p.patient_name }}</option>
+                        {% if p.status != "completed" %}
+                            <option value="{{ p.patient_id }}"
+                                    data-room-id="{{ p.room_id }}"
+                                    data-status="{{ p.status }}">{{ p.patient_name }}</option>
+                        {% endif %}
                     {% endfor %}
                 </select>
                 <label class="form-label fw-semibold small">From Room (current)</label>
-                <select class="form-select" name="from_room_id">
+                <select class="form-select" name="from_room_id" id="transferFromRoom">
                     <option value="">- None / Unknown -</option>
                     {% for bed in beds %}
                         <option value="{{ bed.room_id }}">{{ bed.room_name }} ({{ bed.computed_status }})</option>
@@ -242,7 +247,7 @@
                           name="reason"
                           rows="2"
                           placeholder="e.g. Stable vitals, freeing up triage bay"></textarea>
-                <div class="modal-actions">
+                <div class="bm-modal-actions">
                     <button type="submit" class="btn btn-primary">Submit Request</button>
                     <button type="button"
                             class="btn btn-secondary"

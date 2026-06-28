@@ -569,4 +569,4 @@ SESSION_SECRET=<a-64-byte-secret-string>
 
 ---
 
-*Built with Rust 🦀 — Actix-Web · Tera · PostgreSQL · SQLx · Argon2*
+*Built with Rust — Actix-Web · Tera · PostgreSQL · SQLx · Argon2*
