@@ -430,9 +430,9 @@ function filterPatients(query) {
    document.getElementById('no-results').style.display = (visible === 0 && q.length > 0) ? 'block' : 'none';
 }
 
-/* Bed transfer modal: auto-fill "From Room (current)" with the selected
+/* Bed transfer auto-fill "From Room (current)" with the selected
    patient's current room. Admitted (or otherwise roomed) patients carry a
-   data-room-id on their option; if absent the field falls back to "None". */
+   data-room-id on their option, if absent the field  display none. */
 function autofillFromRoom(patientSelect) {
     var fromRoom = document.getElementById('transferFromRoom');
     if (!fromRoom) return;
