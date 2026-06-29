@@ -68,6 +68,10 @@ pub async fn show_booking_form(
         let mut current_slot = NaiveTime::from_hms_opt(9, 0, 0).unwrap();
         let end_of_shift     = NaiveTime::from_hms_opt(17, 0, 0).unwrap();
 
+        let local_now    = chrono::Local::now();
+        let current_date = local_now.date_naive();
+        let current_time = local_now.time();
+
         while current_slot < end_of_shift {
             let slot_end = current_slot + Duration::minutes(selected_duration);
             if slot_end > end_of_shift { break; }
@@ -75,10 +79,13 @@ pub async fn show_booking_form(
             let doc_conflict     = doc_busy.iter().any(|(s, e)| current_slot < *e && slot_end > *s);
             let patient_conflict = patient_busy.iter().any(|(s, e)| current_slot < *e && slot_end > *s);
 
+            let is_in_past = selected_date < current_date 
+                             || (selected_date == current_date && current_slot < current_time);
+
             slots_grid.push(UIAppointmentSlot {
                 time_string:  current_slot.format("%I:%M %p").to_string(),
                 raw_time:     current_slot,
-                is_available: !doc_conflict && !patient_conflict,
+                is_available: !is_in_past && !doc_conflict && !patient_conflict,
             });
 
             current_slot = current_slot + Duration::minutes(15);
@@ -296,6 +303,10 @@ pub async fn show_update_form(
     let mut current_slot = NaiveTime::from_hms_opt(9, 0, 0).unwrap();
     let end_of_shift     = NaiveTime::from_hms_opt(17, 0, 0).unwrap();
 
+    let local_now    = chrono::Local::now();
+    let current_date = local_now.date_naive();
+    let current_time = local_now.time();
+
     while current_slot < end_of_shift {
         let slot_end = current_slot + Duration::minutes(selected_duration);
         if slot_end > end_of_shift { break; }
@@ -306,10 +317,13 @@ pub async fn show_update_form(
         let doc_conflict = !is_own_slot && doc_busy.iter().any(|(s, e)| current_slot < *e && slot_end > *s);
         let pat_conflict = !is_own_slot && patient_busy.iter().any(|(s, e)| current_slot < *e && slot_end > *s);
 
+        let is_in_past = selected_date < current_date 
+                         || (selected_date == current_date && current_slot < current_time);
+
         slots_grid.push(UIAppointmentSlot {
             time_string:  current_slot.format("%I:%M %p").to_string(),
             raw_time:     current_slot,
-            is_available: !doc_conflict && !pat_conflict,
+            is_available: !is_in_past && !doc_conflict && !pat_conflict,
         });
 
         current_slot = current_slot + Duration::minutes(15);
