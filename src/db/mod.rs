@@ -10,6 +10,7 @@ pub mod billing;
 pub mod support;
 pub mod beds;
 pub mod analytics;
+pub mod pricing;
 
 
 // Function to create a database connection pool

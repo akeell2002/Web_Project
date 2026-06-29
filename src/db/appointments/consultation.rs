@@ -173,8 +173,8 @@ pub async fn finalize_consultation_and_bill(
         .fetch_all(&mut *tx)
         .await?;
 
-        let consultation_fee = crate::pricing::consultation_fee(appt.priority_level);
-        let medicine_fee     = crate::pricing::medicine_fee_total(meds.iter().map(|m| m.medicine_name.as_str()));
+        let consultation_fee = crate::db::pricing::consultation_fee(appt.priority_level);
+        let medicine_fee     = crate::db::pricing::medicine_fee_total(meds.iter().map(|m| m.medicine_name.as_str()));
         let total            = consultation_fee + medicine_fee;
 
         sqlx::query!(

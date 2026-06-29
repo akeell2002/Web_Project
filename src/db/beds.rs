@@ -410,11 +410,11 @@ pub async fn discharge_patient(pool: &PgPool, appointment_id: Uuid) -> Result<()
 
     let medicine_fee: f64 = med_rows
         .iter()
-        .map(|r| crate::pricing::medicine_price(&r.get::<String, _>("medicine_name")))
+        .map(|r| crate::db::pricing::medicine_price(&r.get::<String, _>("medicine_name")))
         .sum();
 
-    let consultation_fee = crate::pricing::consultation_fee(priority_level);
-    let admission_fee    = crate::pricing::admission_fee(nights as i64);
+    let consultation_fee = crate::db::pricing::consultation_fee(priority_level);
+    let admission_fee    = crate::db::pricing::admission_fee(nights as i64);
     let total            = consultation_fee + medicine_fee + admission_fee;
 
     // Generate the discharge bill
