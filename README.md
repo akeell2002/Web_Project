@@ -1,6 +1,6 @@
 # Patient Management System
 
-A full-stack, enterprise-grade **hospital / clinic management web application** built with **Rust**, **Actix-Web**, **Tera**, and **PostgreSQL**. The system models a realistic clinical environment end-to-end — from patient self-registration and appointment booking through reception check-in, nurse triage, doctor consultation, prescriptions, medication administration, billing, and bed management — under five distinct, permission-scoped user roles.
+A full-stack, enterprise-grade **hospital / clinic management web application** built with **Rust**, **Actix-Web**, **Tera**, and **PostgreSQL**. The system models a realistic clinical environment end-to-end  from patient self-registration and appointment booking through reception check-in, nurse triage, doctor consultation, prescriptions, medication administration, billing, and bed management  under five distinct, permission-scoped user roles.
 
 It goes well beyond a basic CRUD app: the backend is engineered to be **correct under concurrency** (atomic conflict-safe booking, advisory-lock queueing), **secure by default** (role-based access control, Argon2 password hashing, audit logging, enumeration-resistant authentication), and faithful to a real clinical workflow driven by a PostgreSQL `ENUM` state machine.
 
@@ -29,14 +29,14 @@ It goes well beyond a basic CRUD app: the backend is engineered to be **correct 
 
 ## Key Highlights
 
-- **Five role-scoped portals** — Admin, Doctor, Nurse, Receptionist, and Patient, each with a tailored dashboard and strictly enforced permissions.
-- **Complete patient lifecycle** — registration → booking → check-in → triage → consultation → prescription → medication → billing → discharge.
-- **Concurrency-safe scheduling** — double-booking is impossible via a single atomic conditional `INSERT`; per-doctor queue numbers are assigned under a PostgreSQL advisory lock.
-- **Dynamic triage priority** — an SQL weighted-scoring algorithm combining clinical priority with wait-time aging so urgent patients are seen first without starving routine ones.
-- **Security first** — Argon2 password hashing, signed-cookie sessions, server-side role guards, portal separation, and a full audit trail of authentication and account events.
-- **Compile-time-checked SQL** — SQLx verifies every query against the live schema at build time, eliminating an entire class of runtime database errors.
-- **Server-side rendering** — Tera templates with output escaping keep the trust boundary on the server.
-- **Single consolidated migration** — the entire schema (13 tables, 4 ENUM types, indexes, seed rooms) is applied automatically on startup.
+- **Five role-scoped portals**  Admin, Doctor, Nurse, Receptionist, and Patient, each with a tailored dashboard and strictly enforced permissions.
+- **Complete patient lifecycle**  registration → booking → check-in → triage → consultation → prescription → medication → billing → discharge.
+- **Concurrency-safe scheduling**  double-booking is impossible via a single atomic conditional `INSERT`; per-doctor queue numbers are assigned under a PostgreSQL advisory lock.
+- **Dynamic triage priority**  an SQL weighted-scoring algorithm combining clinical priority with wait-time aging so urgent patients are seen first without starving routine ones.
+- **Security first**  Argon2 password hashing, signed-cookie sessions, server-side role guards, portal separation, and a full audit trail of authentication and account events.
+- **Compile-time-checked SQL**  SQLx verifies every query against the live schema at build time, eliminating an entire class of runtime database errors.
+- **Server-side rendering**  Tera templates with output escaping keep the trust boundary on the server.
+- **Single consolidated migration**  the entire schema (13 tables, 4 ENUM types, indexes, seed rooms) is applied automatically on startup.
 
 ---
 
@@ -90,7 +90,7 @@ The application follows a clean **layered architecture** with a strict separatio
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│  Browser Clients — Patient / Staff / Admin portals                │
+│  Browser Clients  Patient / Staff / Admin portals                │
 │  (Bootstrap 5.3 + custom CSS + static/app.js, rendered by Tera)   │
 └──────────────────────────────────────────────────────────────────┘
                               │  HTTP req/resp
@@ -107,13 +107,13 @@ The application follows a clean **layered architecture** with a strict separatio
 └──────────────────────────────────────────────────────────────────┘
                               │  async queries
 ┌──────────────────────────────────────────────────────────────────┐
-│  Data Access layer  (src/db/ — SQLx, compile-time checked)        │
+│  Data Access layer  (src/db/  SQLx, compile-time checked)        │
 │  patients · staff · users · appointments · billing · analytics    │
 │  beds · support                                                   │
 └──────────────────────────────────────────────────────────────────┘
                               │
 ┌──────────────────────────────────────────────────────────────────┐
-│  PostgreSQL — 13 tables, 4 ENUM types, FK cascades, indexes       │
+│  PostgreSQL  13 tables, 4 ENUM types, FK cascades, indexes       │
 │  migrations/01_schema_init.sql (auto-run on startup)              │
 └──────────────────────────────────────────────────────────────────┘
 ```
@@ -133,53 +133,53 @@ The shared connection pool (`PgPool`, max 5 connections), the compiled Tera engi
 
 ```
 .
-├── Cargo.toml                  — Crate manifest & dependencies
-├── .env                        — DATABASE_URL & SESSION_SECRET (not committed)
+├── Cargo.toml                   Crate manifest & dependencies
+├── .env                         DATABASE_URL & SESSION_SECRET (not committed)
 ├── migrations/
-│   └── 01_schema_init.sql      — Consolidated schema + ENUMs + indexes + seed rooms
+│   └── 01_schema_init.sql       Consolidated schema + ENUMs + indexes + seed rooms
 ├── static/
-│   ├── app.js                  — Front-end interactivity (slot grid, forms)
-│   ├── style.css               — Custom styling on top of Bootstrap
+│   ├── app.js                   Front-end interactivity (slot grid, forms)
+│   ├── style.css                Custom styling on top of Bootstrap
 │   └── logo.png
-├── templates/                  — Tera SSR templates
-│   ├── index.html              — Landing page
-│   ├── auth/                   — Login, register, password reset
-│   ├── patient/                — Patient portal views
-│   ├── staff/                  — Staff portal (doctor/nurse/receptionist) views
-│   ├── admin/                  — Admin panel views
-│   ├── support/                — Support ticket views
-│   └── shared/                 — Shared layout & dashboard partials
+├── templates/                   Tera SSR templates
+│   ├── index.html               Landing page
+│   ├── auth/                    Login, register, password reset
+│   ├── patient/                 Patient portal views
+│   ├── staff/                   Staff portal (doctor/nurse/receptionist) views
+│   ├── admin/                   Admin panel views
+│   ├── support/                 Support ticket views
+│   └── shared/                  Shared layout & dashboard partials
 └── src/
-    ├── main.rs                 — Bootstrap: pool, migrations, seeding, routes, session
-    ├── utils.rs                — Argon2 hash_password / verify_password
-    ├── pricing.rs              — Centralized fee rules (consultation, medicine, admission)
-    ├── models/                 — Domain structs & form DTOs
-    │   ├── user.rs             — User, UserRole enum, login/register forms, audit log entry
-    │   ├── patient.rs          — Patient + CreatePatientProfile
-    │   ├── staff.rs            — Staff, onboarding forms, dashboard counts, directory rows
-    │   ├── appointment.rs      — Appointment, UI slot, EncounterForm (consultation + Rx)
-    │   └── billing.rs          — PendingBillItem, ProcessPaymentForm
-    ├── db/                     — SQLx data-access layer
-    │   ├── mod.rs              — create_db_pool()
-    │   ├── users.rs            — Auth, seeding, audit log writes/reads
-    │   ├── patients.rs         — Patient CRUD + profile queries
-    │   ├── staff.rs            — Staff provisioning, directory, dashboard counts
+    ├── main.rs                  Bootstrap: pool, migrations, seeding, routes, session
+    ├── utils.rs                 Argon2 hash_password / verify_password
+    ├── pricing.rs               Centralized fee rules (consultation, medicine, admission)
+    ├── models/                  Domain structs & form DTOs
+    │   ├── user.rs              User, UserRole enum, login/register forms, audit log entry
+    │   ├── patient.rs           Patient + CreatePatientProfile
+    │   ├── staff.rs             Staff, onboarding forms, dashboard counts, directory rows
+    │   ├── appointment.rs       Appointment, UI slot, EncounterForm (consultation + Rx)
+    │   └── billing.rs           PendingBillItem, ProcessPaymentForm
+    ├── db/                      SQLx data-access layer
+    │   ├── mod.rs               create_db_pool()
+    │   ├── users.rs             Auth, seeding, audit log writes/reads
+    │   ├── patients.rs          Patient CRUD + profile queries
+    │   ├── staff.rs             Staff provisioning, directory, dashboard counts
     │   ├── appointments/
-    │   │   ├── scheduling.rs   — Atomic booking, advisory-lock check-in, reschedule, cancel
-    │   │   ├── triage.rs       — Dynamic priority queue + vitals recording
-    │   │   └── consultation.rs — Diagnosis, prescriptions, auto bill creation
-    │   ├── billing.rs          — Unpaid invoices, patient bills, mark-as-paid
-    │   ├── analytics.rs        — Clinic-wide aggregate KPIs
-    │   ├── beds.rs             — Bed overview/census, transfers, discharge billing
-    │   └── support.rs          — Support ticket queries
-    └── handlers/               — HTTP controllers
-        ├── mod.rs              — get_display_name(), staff_only() guard
-        ├── auth/               — login, register, dashboard, profile, password reset
-        ├── admin/              — staff onboarding/directory, analytics, security, support
-        ├── appointments/      — booking, triage, consultation, reception, meds
-        ├── patients.rs         — Patient CRUD handlers + printable report
-        ├── billing.rs          — Billing dashboard & checkout
-        └── beds.rs             — Bed management, transfers, discharge
+    │   │   ├── scheduling.rs    Atomic booking, advisory-lock check-in, reschedule, cancel
+    │   │   ├── triage.rs        Dynamic priority queue + vitals recording
+    │   │   └── consultation.rs  Diagnosis, prescriptions, auto bill creation
+    │   ├── billing.rs           Unpaid invoices, patient bills, mark-as-paid
+    │   ├── analytics.rs         Clinic-wide aggregate KPIs
+    │   ├── beds.rs              Bed overview/census, transfers, discharge billing
+    │   └── support.rs           Support ticket queries
+    └── handlers/                HTTP controllers
+        ├── mod.rs               get_display_name(), staff_only() guard
+        ├── auth/                login, register, dashboard, profile, password reset
+        ├── admin/               staff onboarding/directory, analytics, security, support
+        ├── appointments/       booking, triage, consultation, reception, meds
+        ├── patients.rs          Patient CRUD handlers + printable report
+        ├── billing.rs           Billing dashboard & checkout
+        └── beds.rs              Bed management, transfers, discharge
 ```
 
 ---
@@ -233,21 +233,21 @@ The migration seeds **35 rooms**: 5 triage stations (Level 1 Lobby), 10 consulta
 
 | Capability | Patient | Receptionist | Nurse | Doctor | Admin |
 |------------|:-------:|:------------:|:-----:|:------:|:-----:|
-| Self-register & manage own profile | ✓ | — | — | — | — |
-| Book / reschedule / cancel own appointments | ✓ | — | — | — | — |
-| View own medical history & bills | ✓ | — | — | — | — |
-| Patient directory & registration | — | ✓ | ✓ | ✓ | ✓ |
-| Check-in / no-show / queue management | — | ✓ | — | — | — |
-| Billing dashboard & payment checkout | — | ✓ | — | — | ✓ |
-| Triage vitals & medication administration | — | — | ✓ | — | — |
-| Consultation, diagnosis & prescriptions | — | — | — | ✓ | — |
-| Bed management & transfer requests | — | ✓ | ✓ | ✓ | ✓ |
-| Approve / reject bed transfers | — | — | — | ✓ | ✓ |
-| Staff onboarding & directory | — | — | — | — | ✓ |
-| Analytics dashboard | — | — | — | — | ✓ |
-| Security / audit log | — | — | — | — | ✓ |
-| Support ticket management & replies | — | — | — | — | ✓ |
-| Delete patient (cascade) | — | — | — | — | ✓ |
+| Self-register & manage own profile | ✓ |  |  |  |  |
+| Book / reschedule / cancel own appointments | ✓ |  |  |  |  |
+| View own medical history & bills | ✓ |  |  |  |  |
+| Patient directory & registration |  | ✓ | ✓ | ✓ | ✓ |
+| Check-in / no-show / queue management |  | ✓ |  |  |  |
+| Billing dashboard & payment checkout |  | ✓ |  |  | ✓ |
+| Triage vitals & medication administration |  |  | ✓ |  |  |
+| Consultation, diagnosis & prescriptions |  |  |  | ✓ |  |
+| Bed management & transfer requests |  | ✓ | ✓ | ✓ | ✓ |
+| Approve / reject bed transfers |  |  |  | ✓ | ✓ |
+| Staff onboarding & directory |  |  |  |  | ✓ |
+| Analytics dashboard |  |  |  |  | ✓ |
+| Security / audit log |  |  |  |  | ✓ |
+| Support ticket management & replies |  |  |  |  | ✓ |
+| Delete patient (cascade) |  |  |  |  | ✓ |
 
 Guards are enforced server-side: `admin_only()` (admin panel), `staff_only()` (any staff role), and inline role checks (e.g., billing allows `receptionist` or `admin`). Unauthorized staff requests receive `403 Forbidden`; unauthenticated requests are redirected to the appropriate login.
 
@@ -260,7 +260,7 @@ Guards are enforced server-side: `admin_only()` (admin panel), `staff_only()` (a
 - Staff-assisted registration via `/staff/patients/add`, capturing emergency contacts.
 - Searchable patient directory at `/staff/patients`.
 - Full patient detail page with visit history, diagnoses, and prescriptions.
-- Profile editing — staff at `/staff/patients/{id}/edit`, patient self-edit at `/patient/profile`.
+- Profile editing  staff at `/staff/patients/{id}/edit`, patient self-edit at `/patient/profile`.
 - Patient deletion (admin only) cascading all related records.
 - Printable patient report at `/staff/patients/{id}/report`.
 
@@ -312,7 +312,7 @@ Guards are enforced server-side: `admin_only()` (admin panel), `staff_only()` (a
 ## Advanced & Notable Technical Features
 
 ### 1. Atomic, Conflict-Safe Appointment Booking
-Booking is performed with a single `INSERT ... SELECT ... WHERE NOT EXISTS (...) AND NOT EXISTS (...)` statement that rejects the write if **either** the doctor **or** the patient already has an overlapping, non-cancelled appointment. Because validation and insertion happen atomically in one statement, there is **no time-of-check-to-time-of-use (TOCTOU) race window** — concurrent requests for the same slot cannot both succeed.
+Booking is performed with a single `INSERT ... SELECT ... WHERE NOT EXISTS (...) AND NOT EXISTS (...)` statement that rejects the write if **either** the doctor **or** the patient already has an overlapping, non-cancelled appointment. Because validation and insertion happen atomically in one statement, there is **no time-of-check-to-time-of-use (TOCTOU) race window**  concurrent requests for the same slot cannot both succeed.
 
 ### 2. Advisory-Lock Queue Numbering
 Check-in assigns a sequential per-doctor queue number. The operation runs inside a transaction that first acquires `pg_advisory_xact_lock(doctor_id)`, forcing competing check-ins **for the same doctor** to serialize single-file while check-ins for **other doctors proceed unblocked**. This makes `SELECT MAX(queue_number) + 1` safe under concurrency without locking the whole table.
@@ -342,7 +342,7 @@ Every login, logout, and account create/update/delete is written to `system_acce
 All fee logic lives in `pricing.rs` so rates are tuned in one place. Consultation fees scale with triage priority; medicine fees are summed per prescribed item; admission fees accrue per night.
 
 ### 7. Compile-Time-Checked SQL
-SQLx's `query!` / `query_as!` macros verify every query against the live database schema at compile time, including nullability and `ENUM` casts — malformed SQL fails the build rather than surfacing at runtime.
+SQLx's `query!` / `query_as!` macros verify every query against the live database schema at compile time, including nullability and `ENUM` casts  malformed SQL fails the build rather than surfacing at runtime.
 
 ### 8. Automatic Migrations & Idempotent Seeding
 On startup the app runs all migrations and then seeds/refreshes the five default accounts inside transactions, backfilling any missing `patient`/`staff` profile rows.
@@ -491,7 +491,7 @@ scheduled ──check-in──► checked_in ──triage──► vitals_taken 
 ## Setup & Installation
 
 ### Prerequisites
-- **Rust** toolchain (stable) — install via [rustup](https://rustup.rs/)
+- **Rust** toolchain (stable)  install via [rustup](https://rustup.rs/)
 - **PostgreSQL** running locally (or reachable via `DATABASE_URL`)
 - A `.env` file at the project root (see [Configuration](#configuration))
 
@@ -502,7 +502,7 @@ Create a database that matches your `DATABASE_URL`, e.g.:
 createdb patient_db
 ```
 
-Migrations run automatically on startup — no manual migration step is required.
+Migrations run automatically on startup  no manual migration step is required.
 
 ### Run
 
@@ -560,13 +560,13 @@ SESSION_SECRET=<a-64-byte-secret-string>
 
 ## Development Notes & Known Limitations
 
-- **Password reset tokens are stored in memory** (`Arc<Mutex<HashMap<...>>>`) and are therefore **cleared on server restart** — suitable for development/demo, not production.
+- **Password reset tokens are stored in memory** (`Arc<Mutex<HashMap<...>>>`) and are therefore **cleared on server restart**  suitable for development/demo, not production.
 - **Default development session key:** if `SESSION_SECRET` is unset, a static development key is used. Always set a real secret outside development.
-- **Default seed password (`faipi`) is for demo/testing only** — change or remove the seeding routine before any real deployment.
+- **Default seed password (`faipi`) is for demo/testing only**  change or remove the seeding routine before any real deployment.
 - **Clinic hours** are fixed at 09:00–17:00 with 15-minute slots.
-- **Email delivery is not integrated** — password-reset tokens are surfaced for the demo rather than emailed.
+- **Email delivery is not integrated**  password-reset tokens are surfaced for the demo rather than emailed.
 - The `target/` build directory and lock files are git-ignored (see `.gitignore`).
 
 ---
 
-*Built with Rust — Actix-Web · Tera · PostgreSQL · SQLx · Argon2*
+*Built with Rust  Actix-Web · Tera · PostgreSQL · SQLx · Argon2*
