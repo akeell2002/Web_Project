@@ -16,6 +16,7 @@ dependencies = [
  "dotenv",
  "env_logger",
  "indexmap",
+ "rand 0.8.6",
  "rust_decimal",
  "serde",
  "serde_json",

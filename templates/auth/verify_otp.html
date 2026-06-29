@@ -1,0 +1,43 @@
+{% extends "shared/base.html" %}
+{% block title %}Verify Code - HealthHub{% endblock %}
+{% block body %}
+
+<body class="page-auth page-auth-reset">
+    <div class="auth-orb auth-orb-1"></div>
+    <div class="auth-orb auth-orb-2"></div>
+    <div class="auth-orb auth-orb-3"></div>
+
+    <div class="glass-card glass-card-narrow">
+        <div class="glass-brand">
+            <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:2px;">
+                <img src="/static/logo.png" alt="HealthHub" class="auth-logo">
+                <div class="glass-brand-logo">HealthHub</div>
+            </div>
+            <div class="glass-brand-sub">Admin Verification</div>
+        </div>
+
+        <div class="glass-title">Two-Factor Verification</div>
+        <div class="glass-subtitle">
+            We've sent a 6-digit code{% if email %} to {{ email }}{% endif %}. Enter it below to continue.
+        </div>
+
+        {% if error %}
+        <div class="glass-error">{{ error }}</div>
+        {% endif %}
+
+        {% if not expired %}
+        <form method="POST" action="/admin/verify-otp">
+            <input type="text" name="code" placeholder="6-digit code"
+                   inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+                   autocomplete="one-time-code" required autofocus>
+            <button type="submit" class="btn-glass-submit">Verify</button>
+        </form>
+        {% endif %}
+
+        <div class="glass-links">
+            <p><a href="/staff/login">Back to Login</a></p>
+        </div>
+    </div>
+</body>
+
+{% endblock %}

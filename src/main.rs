@@ -9,7 +9,7 @@ use actix_web::cookie::Key;
 use tera::{Context, Tera};
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
-use handlers::auth::ResetTokenStore;
+use handlers::auth::{ResetTokenStore, OtpStore};
 
 // Index.html
 async fn home_page(tera: web::Data<Tera>) -> impl Responder {
@@ -49,6 +49,7 @@ async fn main() -> std::io::Result<()> {
 
     let tera = Tera::new("templates/**/*.html").expect("Failed to load templates");
     let reset_token_store: ResetTokenStore = Arc::new(Mutex::new(HashMap::new()));
+    let otp_store: OtpStore = Arc::new(Mutex::new(HashMap::new()));
     
     //to encrypt session cookies, use it after testing is done
     //let secret_key = Key::generate();
@@ -71,6 +72,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(db_pool.clone()))
             .app_data(web::Data::new(tera.clone()))
             .app_data(web::Data::new(reset_token_store.clone()))
+            .app_data(web::Data::new(otp_store.clone()))
             
             // Static files
             .service(actix_files::Files::new("/static", "./static").show_files_listing()) 
@@ -80,6 +82,8 @@ async fn main() -> std::io::Result<()> {
 
             // Guys all routes add below here accordingly
             // Admin interface routes
+            .route("/admin/verify-otp", web::get().to(handlers::auth::verify_otp_page))
+            .route("/admin/verify-otp", web::post().to(handlers::auth::submit_otp))
             .route("/admin/dashboard", web::get().to(handlers::auth::admin_dashboard))
             .route("/admin/security", web::get().to(handlers::admin::security_monitoring_page))
             .route("/admin/analytics", web::get().to(handlers::admin::analytics_page))

@@ -6,6 +6,7 @@ use uuid::Uuid;
 
 use crate::models::user::{LoginForm, UserRole};
 use crate::db::users::{authenticate_user, log_access_event};
+use super::{OtpStore, issue_otp};
 
 // Handler for the staff login page
 pub async fn staff_login(tera: web::Data<Tera>) -> impl Responder {
@@ -29,9 +30,10 @@ pub async fn patient_login(tera: web::Data<Tera>) -> impl Responder {
 pub async fn login(
     pool:    web::Data<PgPool>,
     tera:    web::Data<Tera>,
-    req:     HttpRequest,
-    form:    web::Form<LoginForm>,
-    session: Session,
+    req:       HttpRequest,
+    form:      web::Form<LoginForm>,
+    session:   Session,
+    otp_store: web::Data<OtpStore>,
 ) -> impl Responder {
     match authenticate_user(&pool, &form.email, &form.password).await {
         Ok(Some(user)) => {
@@ -47,6 +49,32 @@ pub async fn login(
                     Ok(html) => HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html),
                     Err(e)   => HttpResponse::InternalServerError().body(format!("Template error: {}", e)),
                 };
+            }
+
+            // Only admim use 2FA
+            if user.role == UserRole::Admin {
+                issue_otp(otp_store.get_ref(), user.id, &user.email);
+                let _ = session.insert("pending_2fa_user_id", user.id);
+                let _ = session.insert("pending_2fa_email", &user.email);
+
+                if let Err(err) = log_access_event(
+                    pool.get_ref(),
+                    Some(user.id),
+                    Some(&user.email),
+                    "login_2fa_challenge",
+                    Some(user.id),
+                    &user.email,
+                    "admin",
+                    &format!("{} passed password check; 2FA code sent.", user.email),
+                )
+                .await
+                {
+                    eprintln!("Security log write failed for login_2fa_challenge: {}", err);
+                }
+
+                return HttpResponse::SeeOther()
+                    .append_header(("Location", "/admin/verify-otp"))
+                    .finish();
             }
 
             let _ = session.insert("user_id", user.id);
