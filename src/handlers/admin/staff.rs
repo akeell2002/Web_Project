@@ -150,6 +150,7 @@ pub async fn staff_directory_page(
 
     let email      = session.get::<String>("email").unwrap_or_default().unwrap_or_default();
     let display_name = crate::handlers::get_display_name(&session);
+    let current_user_id = session.get::<Uuid>("user_id").unwrap_or(None);
 
     let mut ctx = Context::new();
     ctx.insert("specific_role",    "admin");
@@ -160,6 +161,8 @@ pub async fn staff_directory_page(
     ctx.insert("staff_members",    &staff_members);
     ctx.insert("staff_count",      &staff_members.len());
     ctx.insert("counts",           &counts);
+    ctx.insert("current_user_id", &current_user_id.map(|id| id.to_string()).unwrap_or_default());
+
 
     match tmpl.render("admin/staff_directory.html", &ctx) {
         Ok(html) => HttpResponse::Ok()

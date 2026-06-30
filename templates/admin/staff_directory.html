@@ -97,10 +97,17 @@
                                 <form method="POST" action="/admin/staff/{{ member.id }}/delete"
                                       onsubmit="return confirm('Delete {{ member.display_name }}\'s account? This cannot be undone.');"
                                       style="margin:0;">
-                                    <button type="submit"
-                                            style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;
-                                                   padding:5px 14px; border-radius:6px; font-size:13px; font-weight:600;
-                                                   cursor:pointer;">Delete</button>
+                                    {% if member.id == current_user_id %}
+                                        <button type="submit"
+                                                style="background:#F3F4F6; color:#9CA3AF; border:1px solid #E5E7EB;
+                                                       padding:5px 14px; border-radius:6px; font-size:13px; font-weight:600;
+                                                       cursor:not-allowed;" disabled>Delete</button>
+                                    {% else %}
+                                        <button type="submit"
+                                                style="background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA;
+                                                       padding:5px 14px; border-radius:6px; font-size:13px; font-weight:600;
+                                                       cursor:pointer;">Delete</button>
+                                    {% endif %}
                                 </form>
                             </div>
                         </td>

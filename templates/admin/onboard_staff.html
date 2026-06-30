@@ -18,7 +18,7 @@
         <form method="POST" action="/admin/staff/onboard">
             <div class="mb-3">
                 <select class="form-select" name="role" required>
-                    <option value="" disabled selected>Select Staff Role</option>
+                    <option value="" disabled selected>Select Staff Role*</option>
                     <option value="doctor">Doctor</option>
                     <option value="nurse">Nurse</option>
                     <option value="receptionist">Receptionist</option>
@@ -27,37 +27,37 @@
             </div>
             <div class="mb-3">
                 <input class="form-control"
-                       type="email"
-                       name="email"
-                       placeholder="Staff Email Address"
-                       required>
-            </div>
-            <div class="mb-3">
-                <input class="form-control"
-                       type="password"
-                       name="password"
-                       placeholder="Password"
-                       required>
-            </div>
-            <div class="mb-3">
-                <input class="form-control"
                        type="text"
                        name="first_name"
-                       placeholder="First Name"
+                       placeholder="First Name*"
                        required>
             </div>
             <div class="mb-3">
                 <input class="form-control"
                        type="text"
                        name="last_name"
-                       placeholder="Last Name"
+                       placeholder="Last Name*"
                        required>
             </div>
             <div class="mb-3">
                 <input class="form-control"
                        type="text"
                        name="phone_number"
-                       placeholder="Phone Number"
+                       placeholder="Phone Number*"
+                       required>
+            </div>
+            <div class="mb-3">
+                <input class="form-control"
+                       type="email"
+                       name="email"
+                       placeholder="Staff Email Address*"
+                       required>
+            </div>
+            <div class="mb-3">
+                <input class="form-control"
+                       type="password"
+                       name="password"
+                       placeholder="Password*"
                        required>
             </div>
             <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">Create Staff Account</button>
