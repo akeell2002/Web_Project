@@ -6,8 +6,8 @@ use crate::models::user::UserRole;
 pub(super) fn admin_only(session: &Session) -> Result<(), HttpResponse> {
     match session.get::<String>("role") {
         Ok(Some(role)) if role == "admin" => Ok(()),
-        Ok(Some(_)) => Err(HttpResponse::Forbidden().body("Access Denied: Admin access required.")),
-        _ => Err(HttpResponse::SeeOther().append_header(("Location", "/staff/login")).finish()),
+        // Any denial like the wrong role OR not logged in will return the styled 403 page.
+        _ => Err(crate::handlers::forbidden_page()),
     }
 }
 

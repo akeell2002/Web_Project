@@ -167,7 +167,10 @@ async fn main() -> std::io::Result<()> {
 
             // Logout route
             .route("/logout", web::get().to(handlers::auth::logout))
-            
+
+            // Catch-all like when theres any unmatched route it will render the 404 page
+            .default_service(web::route().to(handlers::not_found_handler))
+
         })
         .bind(("127.0.0.1", 8080))?
         .run()
